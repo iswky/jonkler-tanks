@@ -1,0 +1,345 @@
+#include "bot.h"
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_thread.h>
+#include <SDL2/SDL_timer.h>
+#include <SDL2/SDL_ttf.h>
+#include <log/log.h>
+#include <math.h>
+
+#include "../math/math.h"
+#include "player_movement.h"
+
+void botMain(App* app, Player* player1, Player* player2, int* heightMap,
+             RenderObject* projectile, RenderObject* explosion,
+             SDL_bool* regenMap, enum PlayerType playerType) {
+  double initGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
+
+  // calculating angle specifically for a current player
+  if (app->currPlayer == player2) {
+    initGunAngle += 180 - app->currPlayer->tankGunObj->data.texture.angleAlt;
+  } else {
+    initGunAngle += app->currPlayer->tankGunObj->data.texture.angleAlt;
+  }
+
+  // normalizing just to be sure its in [0;2pi) and now its counterclockwise
+  initGunAngle = 360 - normalizeAngle(initGunAngle);
+
+  switch (playerType) {
+    case EASY:
+      while (calcBestOption(app, player1, player2, heightMap, projectile,
+                            explosion, regenMap, 60, initGunAngle,
+                            playerType) &&
+             app->currState != EXIT);
+      break;
+    case NORMAL:
+      while (calcBestOption(app, player1, player2, heightMap, projectile,
+                            explosion, regenMap, 70, initGunAngle,
+                            playerType) &&
+             app->currState != EXIT);
+      break;
+    case HARD:
+      while (calcBestOption(app, player1, player2, heightMap, projectile,
+                            explosion, regenMap, 80, initGunAngle,
+                            playerType) &&
+             app->currState != EXIT);
+      break;
+    default:
+      log_info("[bot] default actiton for bot");
+      break;
+  }
+}
+
+// this func decide what option is the best
+int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
+                   int* heightMap, RenderObject* projectile,
+                   RenderObject* explosion, SDL_bool* regenMap, int hitChance,
+                   double initGunAngle, enum PlayerType playerType) {
+  Player* enemy;
+  if (app->currPlayer == firstPlayer) {
+    enemy = secondPlayer;
+  } else {
+    enemy = firstPlayer;
+  }
+
+  // getting collison for an enemy player
+  SDL_Point collisionP1, collisionP2, collisionP3;
+  int collisionP1R, collisionP2R, collisionP3R;
+  // getting player collisions centers
+  // left player collision
+  if (app->currPlayer == secondPlayer) {
+    collisionP1 = getPixelScreenPosition(
+        (SDL_Point){enemy->tankObj->data.texture.scaleRect.x,
+                    enemy->tankObj->data.texture.scaleRect.y},
+        (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
+        enemy->tankObj->data.texture.angle,
+        (SDL_Point){35 * app->scalingFactorX, 19 * app->scalingFactorY});
+    collisionP2 = getPixelScreenPosition(
+        (SDL_Point){enemy->tankObj->data.texture.scaleRect.x,
+                    enemy->tankObj->data.texture.scaleRect.y},
+        (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
+        enemy->tankObj->data.texture.angle,
+        (SDL_Point){20 * app->scalingFactorX, 12 * app->scalingFactorY});
+    collisionP3 = getPixelScreenPosition(
+        (SDL_Point){enemy->tankObj->data.texture.scaleRect.x,
+                    enemy->tankObj->data.texture.scaleRect.y},
+        (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
+        enemy->tankObj->data.texture.angle,
+        (SDL_Point){7 * app->scalingFactorX, 19 * app->scalingFactorY});
+    // radiuses
+    collisionP1R = 9 * MAX(app->scalingFactorX, app->scalingFactorY);
+    collisionP2R = 13 * MAX(app->scalingFactorX, app->scalingFactorY);
+    collisionP3R = 10 * MAX(app->scalingFactorX, app->scalingFactorY);
+  }
+  // right player collison
+  else {
+    collisionP1 = getPixelScreenPosition(
+        (SDL_Point){enemy->tankObj->data.texture.scaleRect.x,
+                    enemy->tankObj->data.texture.scaleRect.y},
+        (SDL_Point){8 * app->scalingFactorX, 27 * app->scalingFactorY},
+        enemy->tankObj->data.texture.angle,
+        (SDL_Point){11 * app->scalingFactorX, 19 * app->scalingFactorY});
+    collisionP2 = getPixelScreenPosition(
+        (SDL_Point){enemy->tankObj->data.texture.scaleRect.x,
+                    enemy->tankObj->data.texture.scaleRect.y},
+        (SDL_Point){8 * app->scalingFactorX, 27 * app->scalingFactorY},
+        enemy->tankObj->data.texture.angle,
+        (SDL_Point){23 * app->scalingFactorX, 13 * app->scalingFactorY});
+    collisionP3 = getPixelScreenPosition(
+        (SDL_Point){enemy->tankObj->data.texture.scaleRect.x,
+                    enemy->tankObj->data.texture.scaleRect.y},
+        (SDL_Point){8 * app->scalingFactorX, 27 * app->scalingFactorY},
+        enemy->tankObj->data.texture.angle,
+        (SDL_Point){36 * app->scalingFactorX, 18 * app->scalingFactorY});
+    // radiuses
+    collisionP1R = 11 * MAX(app->scalingFactorX, app->scalingFactorY);
+    collisionP2R = 11 * MAX(app->scalingFactorX, app->scalingFactorY);
+    collisionP3R = 9 * MAX(app->scalingFactorX, app->scalingFactorY);
+  }
+
+  SDL_Point initPos = getPixelScreenPosition(
+      (SDL_Point){app->currPlayer->tankObj->data.texture.scaleRect.x,
+                  app->currPlayer->tankObj->data.texture.scaleRect.y},
+      (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
+      app->currPlayer->tankObj->data.texture.angle,
+      (SDL_Point){24 * app->scalingFactorX, 7 * app->scalingFactorY});
+
+  initPos.x /= app->scalingFactorX;
+  initPos.y /= app->scalingFactorY;
+
+  initPos.x += 25 * cos(DEGTORAD(initGunAngle));
+  initPos.y -= 25 * sin(DEGTORAD(initGunAngle));
+
+  SDL_FPoint currPos = {
+      .x = (float)initPos.x,
+      .y = (float)initPos.y,
+  };
+
+  double velMultiplicator;
+  int explosionRadius;
+  SDL_bool isHittableNearby;
+  switch (app->currWeapon) {
+    // small bullet
+    case 0:
+      velMultiplicator = 2;
+      explosionRadius = 0;
+      isHittableNearby = SDL_FALSE;
+      break;
+    // BIG BULLET
+    case 1:
+      velMultiplicator = 1.75;
+      explosionRadius = projectile->data.texture.constRect.w;
+      isHittableNearby = SDL_FALSE;
+      break;
+    // small boom
+    case 2:
+      velMultiplicator = 1.25;
+      explosionRadius = projectile->data.texture.constRect.w * 2;
+      isHittableNearby = SDL_TRUE;
+      break;
+    // BIG BOOM
+    case 3:
+      velMultiplicator = 1.0;
+      explosionRadius = projectile->data.texture.constRect.w * 4;
+      isHittableNearby = SDL_TRUE;
+      break;
+    default:
+      velMultiplicator = 1.0;
+      explosionRadius = projectile->data.texture.constRect.w;
+      isHittableNearby = SDL_FALSE;
+      break;
+  }
+
+  int initVel = app->currPlayer->firingPower * velMultiplicator;
+
+  SDL_bool isMissingShot = getRandomValue(0, 100) > hitChance;
+
+  int hitPos =
+      calcHitPosition(&currPos, initVel, initGunAngle, heightMap, app,
+                      &collisionP1, &collisionP2, &collisionP3, collisionP1R,
+                      collisionP2R, collisionP3R, projectile);
+
+  // if we hitted enemy in the tank (oh yeah, thats the best option)
+  if (hitPos < -1) {
+    log_info("[bot] bot found a move(collision hit) to shoot at %d", -hitPos);
+
+    if (isMissingShot) {
+      int newAngle = app->currPlayer->gunAngle +
+                     getRandomValue(0, 1) * (-1) * getRandomValue(4, 7);
+      int newPower = app->currPlayer->firingPower +
+                     getRandomValue(0, 1) * (-1) * getRandomValue(4, 7);
+
+      if (newAngle < 0) {
+        newAngle = 0;
+      } else if (newAngle > 180) {
+        newAngle = 180;
+      }
+      if (newPower < 1) {
+        newPower = 1;
+      }
+      if (newPower > 100) {
+        newPower = 100;
+      }
+
+      smoothChangeAngle(app->currPlayer, newAngle, &app->currState);
+      smoothChangePower(app->currPlayer, newPower, &app->currState);
+    }
+
+    SDL_Delay(200);
+
+    shoot(app, firstPlayer, secondPlayer, projectile, explosion, heightMap,
+          regenMap);
+    recalcPlayerPos(app, firstPlayer, heightMap, 0, 5);
+    recalcPlayerPos(app, secondPlayer, heightMap, 0, 8);
+    return 0;
+  }
+
+  // hit will be counted if its in [leftCorner; rightCorner] with a really small error (its nearly to zero)
+  int leftCorner =
+      enemy->tankObj->data.texture.constRect.x * app->scalingFactorX -
+      explosionRadius;
+  int rightCorner =
+      enemy->tankObj->data.texture.constRect.x * app->scalingFactorX +
+      enemy->tankObj->data.texture.constRect.w * app->scalingFactorX *
+          cos(DEGTORAD(enemy->tankAngle)) +
+      explosionRadius;
+
+  if (hitPos >= leftCorner && hitPos <= rightCorner && isHittableNearby) {
+    log_info("[bot] bot found a move(nearby hit) to shoot at %d", hitPos);
+
+    if (playerType == NORMAL || playerType == EASY) {
+      if (isMissingShot) {
+        int newAngle = app->currPlayer->gunAngle +
+                       getRandomValue(0, 1) * (-1) * getRandomValue(4, 7);
+        int newPower = app->currPlayer->firingPower +
+                       getRandomValue(0, 1) * (-1) * getRandomValue(4, 7);
+
+        if (newAngle < 0) {
+          newAngle = 0;
+        } else if (newAngle > 180) {
+          newAngle = 180;
+        }
+        if (newPower < 1) {
+          newPower = 1;
+        }
+        if (newPower > 100) {
+          newPower = 100;
+        }
+
+        smoothChangeAngle(app->currPlayer, newAngle, &app->currState);
+        smoothChangePower(app->currPlayer, newPower, &app->currState);
+      }
+      log_info("[bot] SHOOT!");
+
+      shoot(app, firstPlayer, secondPlayer, projectile, explosion, heightMap,
+            regenMap);
+      recalcPlayerPos(app, firstPlayer, heightMap, 0, 5);
+      recalcPlayerPos(app, secondPlayer, heightMap, 0, 8);
+      return 0;
+    } else {
+      log_info("[bot] trying to find a better move!");
+    }
+  }
+
+  log_info("[bot] bot found only a poopy doopy move to shoot at %d", hitPos);
+  log_info("[bot] trying to find better move");
+
+  for (int angle = 0; angle <= 180; ++angle) {
+    double currAngle = app->currPlayer->tankGunObj->data.texture.angle;
+
+    // calculating angle specifically for a current player
+    if (app->currPlayer == secondPlayer) {
+      currAngle += 180 + angle;
+    } else {
+      currAngle += -angle;
+    }
+
+    currAngle = round(currAngle);
+
+    // normalizing just to be sure its in [0;2pi) and now its counterclockwise
+    currAngle = 360 - normalizeAngle(currAngle);
+
+    for (int firingPower = 0; firingPower <= 100; ++firingPower) {
+      int hitPos = calcHitPosition(&currPos, firingPower * velMultiplicator,
+                                   currAngle, heightMap, app, &collisionP1,
+                                   &collisionP2, &collisionP3, collisionP1R,
+                                   collisionP2R, collisionP3R, projectile);
+      // collision hit
+      if (hitPos < -1) {
+        log_info("[bot] bot found the best move for FP:%d and angle:%f",
+                 firingPower, currAngle);
+
+        if (isMissingShot) {
+          angle += getRandomValue(0, 1) * (-1) * getRandomValue(2, 5);
+          angle += getRandomValue(0, 1) * (-1) * getRandomValue(2, 5);
+
+          if (angle < 0) {
+            angle = 0;
+          } else if (angle > 180) {
+            angle = 180;
+          }
+          if (firingPower < 1) {
+            firingPower = 1;
+          } else if (firingPower > 100) {
+            firingPower = 100;
+          }
+        }
+
+        smoothChangeAngle(app->currPlayer, angle, &app->currState);
+        smoothChangePower(app->currPlayer, firingPower, &app->currState);
+        SDL_Delay(200);
+        shoot(app, firstPlayer, secondPlayer, projectile, explosion, heightMap,
+              regenMap);
+        recalcPlayerPos(app, firstPlayer, heightMap, 0, 5);
+        recalcPlayerPos(app, secondPlayer, heightMap, 0, 8);
+        return 0;
+      }
+    }
+  }
+
+  if (app->currPlayer->movesLeft == 0) {
+    shoot(app, firstPlayer, secondPlayer, projectile, explosion, heightMap,
+          regenMap);
+  } else {
+    if (app->currPlayer == firstPlayer) {
+      if (smoothMove(app, SDL_TRUE, SDL_TRUE, heightMap) != 0) {
+        if (smoothMove(app, SDL_TRUE, SDL_FALSE, heightMap) != 0) {
+          shoot(app, firstPlayer, secondPlayer, projectile, explosion,
+                heightMap, regenMap);
+          return 0;
+        }
+      }
+    } else {
+      if (smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap) != 0) {
+        if (smoothMove(app, SDL_FALSE, SDL_TRUE, heightMap) != 0) {
+          shoot(app, firstPlayer, secondPlayer, projectile, explosion,
+                heightMap, regenMap);
+          return 0;
+        }
+      }
+    }
+  }
+  return 0;
+}
