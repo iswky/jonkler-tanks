@@ -7,7 +7,7 @@
 - [x] score board
 - [x] bots
 	- [x] difficulties for bots
-#### yeah i like this ones
+#### yeah i like these 1s
 - [x] map generating with perlin 1d noise
 	- [x] mb do some small improvements for map generating cuz of strange differences in resolutions 
 	- [x] main things
@@ -22,6 +22,15 @@
 
 
 
-## dependencies (not req.)
-### 1. sdl libs and extensions
+## dependencies
 `sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev`
+
+## building
+```
+mkdir build && cd build
+cmake ..
+make -j4
+```
+
+## running
+Just run the 'JonklerTanks' executable
