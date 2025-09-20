@@ -111,7 +111,7 @@ void preGameMain(App* app) {
   RenderObject* startTextButton = createRenderObject(
       app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_PREGAME_START,
       "START NEW GAME", mainFont, &(SDL_Point){0, 0},
-      &(SDL_Color){128, 128, 128, 255}, &(SDL_Color){230, 25, 25, 255});
+      &(SDL_Color){0, 255, 189, 200}, &(SDL_Color){230, 25, 25, 255});
   startTextButton->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX -
        startTextButton->data.texture.constRect.w) /

@@ -82,7 +82,7 @@ void menuRenderLoop(App* app, RenderObject* logo) {
   // play button
   RenderObject* playTextObj = createRenderObject(
       app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_PLAY, "PLAY",
-      menuButtonsFont, &(SDL_Point){500, 404}, &(SDL_Color){128, 128, 128, 255},
+      menuButtonsFont, &(SDL_Point){500, 404}, &(SDL_Color){0, 255, 159, 200},
       &(SDL_Color){230, 25, 25, 255});
   playTextObj->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX -
