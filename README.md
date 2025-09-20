@@ -23,8 +23,10 @@
 
 
 ## dependencies
-`sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev`
-
+### 1. Building tools
+`cmake make gcc`
+### 2. SDL libs
+`libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev` 
 ## building
 ```
 mkdir build && cd build
