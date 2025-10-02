@@ -166,9 +166,9 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
         enemyPlayer->tankObj->data.texture.angle,
         (SDL_Point){7 * app->scalingFactorX, 19 * app->scalingFactorY});
     // radiuses
-    collisionP1R = 9 * MAX(app->scalingFactorX, app->scalingFactorY);
-    collisionP2R = 13 * MAX(app->scalingFactorX, app->scalingFactorY);
-    collisionP3R = 10 * MAX(app->scalingFactorX, app->scalingFactorY);
+    collisionP1R = 9 * hypot(app->scalingFactorX, app->scalingFactorY);
+    collisionP2R = 13 * hypot(app->scalingFactorX, app->scalingFactorY);
+    collisionP3R = 10 * hypot(app->scalingFactorX, app->scalingFactorY);
   }
   // right player collison
   else {
@@ -191,9 +191,9 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
         enemyPlayer->tankObj->data.texture.angle,
         (SDL_Point){36 * app->scalingFactorX, 18 * app->scalingFactorY});
     // radiuses
-    collisionP1R = 11 * MAX(app->scalingFactorX, app->scalingFactorY);
-    collisionP2R = 11 * MAX(app->scalingFactorX, app->scalingFactorY);
-    collisionP3R = 9 * MAX(app->scalingFactorX, app->scalingFactorY);
+    collisionP1R = 11 * hypot(app->scalingFactorX, app->scalingFactorY);
+    collisionP2R = 11 * hypot(app->scalingFactorX, app->scalingFactorY);
+    collisionP3R = 9 * hypot(app->scalingFactorX, app->scalingFactorY);
   }
 
   // main shooting loop
@@ -208,7 +208,7 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
 
     // calculating angle between the old projectile pos and the new 1
     double currAngle =
-        360 - atan2(savedPos.y - currY, currX - savedPos.x) * 180.0 / M_PI;
+        360 - RADTODEG(atan2(savedPos.y - currY, currX - savedPos.x));
 
     // printf("angle: %lf\n", currAngle);
     //
@@ -238,18 +238,29 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
 
     int currXScaled = currX * app->scalingFactorX;
     int currYScaled = currY * app->scalingFactorY;
+    // if we hit enemy straight
     if (isInCircle(currXScaled, currYScaled, &collisionP1, collisionP1R) ||
         isInCircle(currXScaled, currYScaled, &collisionP2, collisionP2R) ||
         isInCircle(currXScaled, currYScaled, &collisionP3, collisionP3R)) {
       //     printf("COLLISION HIT!\n");
       //
 
-      // if we hit enemy straight
-      app->currPlayer->score +=
-          abs(currX - enemyPlayer->tankObj->data.texture.constRect.x -
-              enemyPlayer->tankObj->data.texture.constRect.w / 2) *
-          damageMultiplier;
-
+      int enemyCenter = enemyPlayer->tankObj->data.texture.constRect.x +
+                        enemyPlayer->tankObj->data.texture.constRect.w / 2.;
+      // hitting father than center
+      if (currX > enemyCenter) {
+        app->currPlayer->score +=
+            10 + ((enemyCenter +
+                   enemyPlayer->tankObj->data.texture.constRect.w / 2.) -
+                  currX) *
+                     damageMultiplier;
+      }
+      // hitting before the center
+      else {
+        app->currPlayer->score +=
+            10 + (currX - enemyPlayer->tankObj->data.texture.constRect.x) *
+                     damageMultiplier;
+      }
       if (isHittableNearby == SDL_FALSE) {
         explosion->data.texture.constRect.h =
             projectile->data.texture.constRect.h;
@@ -276,16 +287,30 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
       //
 
       if (isHittableNearby) {
-        // hit near to enemy
-        if (currX >= enemyPlayer->tankObj->data.texture.constRect.x -
-                         explosionRadius &&
-            currX <= enemyPlayer->tankObj->data.texture.constRect.x +
-                         enemyPlayer->tankObj->data.texture.constRect.w *
-                             cos(DEGTORAD(enemyPlayer->tankAngle)) +
-                         explosionRadius) {
-          int center = enemyPlayer->tankObj->data.texture.constRect.x +
-                       enemyPlayer->tankObj->data.texture.constRect.w / 2;
-          app->currPlayer->score += abs(center - currX) * damageMultiplier;
+        int center = enemyPlayer->tankObj->data.texture.constRect.x +
+                     enemyPlayer->tankObj->data.texture.constRect.w / 2;
+
+        // hit near to enemy, so shot in [leftTankCorner - explRadius; rightTankCorner + explRadius];
+        if (currX <= center + explosionRadius +
+                         enemyPlayer->tankObj->data.texture.constRect.w / 2 ||
+            currX >= center - explosionRadius -
+                         enemyPlayer->tankObj->data.texture.constRect.w / 2) {
+          // hitting after center (after right tank corner)
+          if (currX > center) {
+            app->currPlayer->score +=
+                5 +
+                ((center + enemyPlayer->tankObj->data.texture.constRect.w / 2. +
+                  explosionRadius) -
+                 currX) *
+                    damageMultiplier / 1.5;
+          }
+          // hitting before center (before left tank corner)
+          else {
+            app->currPlayer->score +=
+                5 + (currX - (enemyPlayer->tankObj->data.texture.constRect.x -
+                              explosionRadius)) *
+                        damageMultiplier / 1.5;
+          }
         }
 
         int explosionCenter = currX * app->scalingFactorX;
@@ -307,6 +332,7 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
         recalcPlayerPos(app, firstPlayer, heightMap, 0, 5);
         recalcPlayerPos(app, secondPlayer, heightMap, 0, 8);
       }
+      // 'respawning' explosion texture
       explosion->data.texture.constRect.h = explosionRadius;
       explosion->data.texture.constRect.w = explosionRadius;
       explosion->data.texture.constRect.x =
@@ -444,7 +470,7 @@ int playerMove(void* data) {
         while (app->keyStateArr[SDL_SCANCODE_UP]) {
           SDL_Delay(30);
           // if angle is already maxed
-          if (fabs((app->currPlayer->gunAngle - 180.0)) < 1e-9) {
+          if (fabs((app->currPlayer->gunAngle - 120.0)) < 1e-9) {
             break;
           }
           recalcPlayerGunAngle(app->currPlayer, 1);

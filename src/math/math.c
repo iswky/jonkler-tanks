@@ -79,8 +79,8 @@ SDL_Point getPixelScreenPosition(SDL_Point drawPos, SDL_Point center,
 // func return a random(not really) value from a native linux file
 // if it cant do it, res will be (max + min) / 2
 int getRandomValue(int min, int max) {
-  unsigned res;
-  FILE* randFile = fopen("/dev/random", "r");
+  int res;
+  FILE* randFile = fopen("/dev/urandom", "r");
   if (randFile == NULL) {
     return min + (max - min) / 2;
   }
@@ -89,7 +89,11 @@ int getRandomValue(int min, int max) {
     return min + (max - min) / 2;
   }
   fclose(randFile);
-  return res % (max - min + 1) + min;
+  res = (res % (max - min + 1));
+  if (res < 0) {
+    res += max - min + 1;
+  }
+  return res + min;
 }
 
 // function return x coord of a possible hit
@@ -105,7 +109,7 @@ int calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
 
   const double G = 9.81;
 
-  double dt = 1. / 60;
+  double dt = 1. / 500;
   double currTime = 0.0;
 
   int currX = (int)initPos->x;

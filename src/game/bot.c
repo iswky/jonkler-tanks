@@ -6,6 +6,7 @@
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL_stdinc.h>
 #include <log/log.h>
 #include <math.h>
 
@@ -30,21 +31,21 @@ void botMain(App* app, Player* player1, Player* player2, int* heightMap,
   switch (playerType) {
     case EASY:
       while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, 60, initGunAngle,
+                            explosion, regenMap, 44, initGunAngle,
                             playerType) &&
-             app->currState != EXIT);
+             app->currState == PLAY);
       break;
     case NORMAL:
       while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, 70, initGunAngle,
+                            explosion, regenMap, 77, initGunAngle,
                             playerType) &&
-             app->currState != EXIT);
+             app->currState == PLAY);
       break;
     case HARD:
       while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, 80, initGunAngle,
+                            explosion, regenMap, 90, initGunAngle,
                             playerType) &&
-             app->currState != EXIT);
+             app->currState == PLAY);
       break;
     default:
       log_info("[bot] default actiton for bot");
@@ -173,8 +174,8 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
   }
 
   int initVel = app->currPlayer->firingPower * velMultiplicator;
-
-  SDL_bool isMissingShot = getRandomValue(0, 100) > hitChance;
+  int rnnndmTest = getRandomValue(0, 100);
+  SDL_bool isMissingShot = rnnndmTest > hitChance;
 
   int hitPos =
       calcHitPosition(&currPos, initVel, initGunAngle, heightMap, app,
@@ -186,15 +187,13 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
     log_info("[bot] bot found a move(collision hit) to shoot at %d", -hitPos);
 
     if (isMissingShot) {
-      int newAngle = app->currPlayer->gunAngle +
-                     getRandomValue(0, 1) * (-1) * getRandomValue(4, 7);
-      int newPower = app->currPlayer->firingPower +
-                     getRandomValue(0, 1) * (-1) * getRandomValue(4, 7);
+      int newAngle = app->currPlayer->gunAngle + getRandomValue(7, 10);
+      int newPower = app->currPlayer->firingPower + getRandomValue(7, 10);
 
       if (newAngle < 0) {
         newAngle = 0;
-      } else if (newAngle > 180) {
-        newAngle = 180;
+      } else if (newAngle > 120) {
+        newAngle = 120;
       }
       if (newPower < 1) {
         newPower = 1;
@@ -231,15 +230,13 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
 
     if (playerType == NORMAL || playerType == EASY) {
       if (isMissingShot) {
-        int newAngle = app->currPlayer->gunAngle +
-                       getRandomValue(0, 1) * (-1) * getRandomValue(4, 7);
-        int newPower = app->currPlayer->firingPower +
-                       getRandomValue(0, 1) * (-1) * getRandomValue(4, 7);
+        int newAngle = app->currPlayer->gunAngle + getRandomValue(4, 7);
+        int newPower = app->currPlayer->firingPower + getRandomValue(4, 7);
 
         if (newAngle < 0) {
           newAngle = 0;
-        } else if (newAngle > 180) {
-          newAngle = 180;
+        } else if (newAngle > 120) {
+          newAngle = 120;
         }
         if (newPower < 1) {
           newPower = 1;
@@ -266,6 +263,8 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
   log_info("[bot] bot found only a poopy doopy move to shoot at %d", hitPos);
   log_info("[bot] trying to find better move");
 
+  SDL_bool isFinded = SDL_FALSE;
+
   for (int angle = 0; angle <= 180; ++angle) {
     double currAngle = app->currPlayer->tankGunObj->data.texture.angle;
 
@@ -288,12 +287,18 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
                                    collisionP2R, collisionP3R, projectile);
       // collision hit
       if (hitPos < -1) {
+        if (!isFinded) {
+          isFinded = SDL_TRUE;
+          angle += 5;
+          break;
+        }
+
         log_info("[bot] bot found the best move for FP:%d and angle:%f",
                  firingPower, currAngle);
 
         if (isMissingShot) {
-          angle += getRandomValue(0, 1) * (-1) * getRandomValue(2, 5);
-          angle += getRandomValue(0, 1) * (-1) * getRandomValue(2, 5);
+          angle += getRandomValue(2, 5);
+          firingPower += getRandomValue(2, 5);
 
           if (angle < 0) {
             angle = 0;
@@ -331,6 +336,8 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
           return 0;
         }
       }
+      // decucting next best option after moving
+      return 1;
     } else {
       if (smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap) != 0) {
         if (smoothMove(app, SDL_FALSE, SDL_TRUE, heightMap) != 0) {
@@ -339,6 +346,8 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
           return 0;
         }
       }
+      // decucting next best option after moving
+      return 1;
     }
   }
   return 0;
