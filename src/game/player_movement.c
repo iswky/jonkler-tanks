@@ -602,6 +602,7 @@ int playerMove(void* data) {
       app->currWeapon = -1;
       saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                        app->currPlayer == firstPlayer, mapSeed);
+      *recalcBulletPath = SDL_TRUE;
     }
   }
 
