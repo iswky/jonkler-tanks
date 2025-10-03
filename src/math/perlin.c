@@ -1,8 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "log/log.h"
-
 #define PERLIN_SIZE 256
 
 int perm[PERLIN_SIZE * 2];
@@ -64,16 +62,13 @@ void generateHeightmap(int* heightmap, unsigned seed, int WIDTH, int HEIGHT) {
 
   int octaves1 = baseOctaves + (WIDTH > 512 ? 2 : 0);
   int octaves2 = rareOctaves + (WIDTH > 512 ? 1 : 0);
-  log_warn("//height arr gen start");
   for (int x = 0; x < WIDTH; x++) {
     float baseNoise = perlin1d_octaves(x * scale1, octaves1, persistence1);
     float rareNoise = perlin1d_octaves(x * scale2, octaves2, persistence2);
-    rareNoise = rareNoise * 1600;
+    rareNoise = pow(fabs(rareNoise), 4) * (rareNoise > 0 ? 1 : -1);
 
     float heightValue = baseNoise + rareNoise;
     heightmap[x] = HEIGHT - (int)((heightValue + 1) * 0.7 * HEIGHT * 0.7);
 
-    log_info("height[%d] = %d", x, HEIGHT - heightmap[x]);
   }
-  log_warn("\\height arr gen end");
 }

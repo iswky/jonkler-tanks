@@ -25,6 +25,7 @@ void SDL_Main() {
       .scalingFactorY = 1.0,
       .isMouseTriggered = SDL_FALSE,
       .buttonPosTriggered = b_NONE,
+      .rendererState = RENDER_NONE,
       .settings =
           (settingsStruct){
               .isFullscreen = SDL_FALSE,

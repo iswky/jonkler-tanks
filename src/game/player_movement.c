@@ -395,6 +395,7 @@ int playerMove(void* data) {
     int* heightMap;
     RenderObject* projectile;
     RenderObject* explosion;
+    RenderObject* bulletPath;
     SDL_bool* regenMap;
     unsigned mapSeed;
   };
@@ -470,7 +471,7 @@ int playerMove(void* data) {
         while (app->keyStateArr[SDL_SCANCODE_UP]) {
           SDL_Delay(30);
           // if angle is already maxed
-          if (fabs((app->currPlayer->gunAngle - 120.0)) < 1e-9) {
+          if (fabs((app->currPlayer->gunAngle - 60.0)) < 1e-9) {
             break;
           }
           recalcPlayerGunAngle(app->currPlayer, 1);
@@ -514,8 +515,8 @@ int playerMove(void* data) {
         while (app->keyStateArr[SDL_SCANCODE_W]) {
           SDL_Delay(30);
           // if angle is already maxed
-          if (app->currPlayer->firingPower >= 100) {
-            app->currPlayer->firingPower = 100;
+          if (app->currPlayer->firingPower >= 99) {
+            app->currPlayer->firingPower = 99;
             break;
           }
           app->currPlayer->firingPower++;

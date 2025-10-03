@@ -3,6 +3,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL_render.h>
+#include <SDL_timer.h>
 #include <log/log.h>
 
 #include "../math/math.h"
@@ -24,6 +26,8 @@
  *      a. SDL_Rect* rect, int maxInputChars, int charTypes, TTF_Font* font
  *  6) if flags & GIF:
  *      a. const char* pathToFolder, SDL_Point* pos, int framesCnt
+ *  7) if flags & EMPTY (create texture for rendering):
+ *      a. int w, int h 
  */
 RenderObject* createRenderObject(SDL_Renderer* render,
                                  enum RenderObjectMode flags, int zPos,
@@ -34,9 +38,9 @@ RenderObject* createRenderObject(SDL_Renderer* render,
   RenderObject* renderObj = (RenderObject*)malloc(sizeof(RenderObject));
 
   if (renderObj == NULL) {
-    log_error("error while allocating mem for RenderObject");
+    log_fatal("error while allocating mem for RenderObject");
 
-    return NULL;
+    exit(-1);
   }
 
   memset(renderObj, 0x00, sizeof(RenderObject));
@@ -205,6 +209,14 @@ RenderObject* createRenderObject(SDL_Renderer* render,
     renderObj->data.texture.maxFrames = framesCnt;
     renderObj->data.texture.framesWaitCoeff = framesWaitCoeff;
     renderObj->data.texture.singleShot = singleShot;
+  } else if (flags & EMPTY) {
+    int w = va_arg(args, int);
+    int h = va_arg(args, int);
+
+    renderObj->data.texture.texture = SDL_CreateTexture(
+        render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+    renderObj->data.texture.constRect.w = w;
+    renderObj->data.texture.constRect.h = h;
   }
 
   va_end(args);
@@ -340,6 +352,15 @@ void drawThickRect(SDL_Renderer* renderer, SDL_Rect rect, int thickness) {
 // render textures objects with/without scaling
 void renderTextures(App* app, RenderObject* objectsArr[], int objectsArrSize,
                     int isScaling) {
+  // if (app->rendererState == RENDER_PENDING_BLOCK) {
+  //   app->rendererState = RENDER_BLOCKED;
+  // }
+
+  // if (app->rendererState == RENDER_BLOCKED) {
+  //   return;
+  // }
+
+  //app->rendererState = RENDER_RUNNING;
   // scale objects
   if (isScaling) {
     scaleObjects(app, objectsArr, objectsArrSize);
@@ -591,6 +612,7 @@ void renderTextures(App* app, RenderObject* objectsArr[], int objectsArrSize,
     app->isMouseTriggered = SDL_FALSE;
     app->buttonPosTriggered = b_NONE;
   }
+  //app->rendererState = RENDER_FINISHED;
 }
 
 // draw fiiled triangle using 3 points (vertexes)
@@ -606,6 +628,49 @@ void drawFilledTriangle(SDL_Renderer* renderer, const SDL_Point* p1,
   SDL_RenderGeometry(renderer, NULL, vertexes, 3, NULL, 0);
 }
 
+void renderBulletPath(App* app, RenderObject* bulletPath) {
+  // blocking rendering while rendering path on texture
+  if (app->rendererState != RENDER_NONE &&
+      app->rendererState != RENDER_BLOCKED) {
+    app->rendererState = RENDER_PENDING_BLOCK;
+    while (app->rendererState != RENDER_BLOCKED) {
+      SDL_Delay(1);
+    }
+  }
+
+  SDL_SetRenderTarget(app->renderer, bulletPath->data.texture.texture);
+  SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 0);
+  SDL_RenderClear(app->renderer);
+
+  // calculating starting point for the path (aka gun basis)
+  SDL_Point gunEdgeCoord = getPixelScreenPosition(
+      (SDL_Point){app->currPlayer->tankObj->data.texture.constRect.x,
+                  app->currPlayer->tankObj->data.texture.constRect.y},
+      (SDL_Point){5, 27}, 180 - app->currPlayer->tankObj->data.texture.angle,
+      (SDL_Point){24, 7});
+
+  printf("%d %d\n", gunEdgeCoord.x, gunEdgeCoord.y);
+
+  // that angle is clockwise
+  double currGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
+
+  // calculating angle specifically for a current player
+  // if currPlayer is a second player
+  if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
+      SDL_FLIP_HORIZONTAL) {
+    currGunAngle += 180 - app->currPlayer->tankGunObj->data.texture.angleAlt;
+  } else {
+    //  if currPlayer is a first player
+    currGunAngle += app->currPlayer->tankGunObj->data.texture.angleAlt;
+  }
+
+  // normalizing just to be sure its in [0; 2pi) and now its counterclockwise
+  currGunAngle = 360 - normalizeAngle(currGunAngle);
+
+  // enable rendering back
+  SDL_SetRenderTarget(app->renderer, NULL);
+  app->rendererState = RENDER_RUNNING;
+}
 // clearing sdl_textures* arr
 void freeTexturesArr(SDL_Texture** arr, int size) {
   for (int i = 0; i != size; ++i) {

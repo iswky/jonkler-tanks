@@ -6,6 +6,7 @@
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL_render.h>
 #include <log/log.h>
 #include <math.h>
 #include <stdio.h>
@@ -280,6 +281,8 @@ void preGameMain(App* app) {
     SDL_Delay(16);
   }
 
+  app->rendererState = RENDER_NONE;
+
   memcpy(temp, seedInput->data.textInputLine.savedText,
          seedInput->data.textInputLine.maxInputChars);
   SDL_DestroyTexture(seedInput->data.textInputLine.textTexture);
@@ -463,6 +466,8 @@ void playMain(App* app, unsigned SEED) {
       &(SDL_Point){0, 0}, &(SDL_Color){255, 255, 255, 255});
   projectile->disableRendering = SDL_TRUE;
 
+  RenderObject* bulletPath =
+      createRenderObject(app->renderer, EMPTY, 0, b_NONE, 200, 200);
   firstPlayer.tankObj = Player1Tank;
   firstPlayer.tankGunObj = Player1Gun;
   secondPlayer.tankObj = Player2Tank;
@@ -539,6 +544,7 @@ void playMain(App* app, unsigned SEED) {
     int* heightMap;
     RenderObject* projectile;
     RenderObject* explosion;
+    RenderObject* bulletPath;
     SDL_bool* regenMap;
     unsigned mapSeed;
   };
@@ -550,6 +556,7 @@ void playMain(App* app, unsigned SEED) {
       .heightMap = heightMap,
       .projectile = projectile,
       .explosion = explosionObj,
+      .bulletPath = bulletPath,
       .regenMap = &regenMap,
       .mapSeed = mapSeed,
   };
@@ -558,6 +565,7 @@ void playMain(App* app, unsigned SEED) {
   recalcPlayerPos(app, &secondPlayer, heightMap, 0, 8);
   recalcPlayerGunAngle(&firstPlayer, 0);
   recalcPlayerGunAngle(&secondPlayer, 0);
+  renderBulletPath(app, bulletPath);
 
   // setting init or loaded angles for the gun
   Player1Gun->data.texture.angleAlt = -firstPlayer.gunAngle;
@@ -576,7 +584,7 @@ void playMain(App* app, unsigned SEED) {
   int oldScorePlayer2 = secondPlayer.score;
   int oldWeapon = app->currWeapon;
 
-  sprintf(temp, "Moves left: %d Gun angle: %3d Firing power: %3d ",
+  sprintf(temp, "Moves left: %d Gun angle: %02d Firing power: %02d ",
           oldMovesLeft, (int)oldAngle, oldFiringPower);
 
   if (app->currWeapon == -1) {
@@ -642,11 +650,20 @@ void playMain(App* app, unsigned SEED) {
       secondPlayer.tankGunObj,
       secondPlayer.tankObj,
       explosionObj,
+      bulletPath,
   };
 
   while (app->currState == PLAY) {
     if (app->currWeapon == -1) {
       app->currWeapon = getAllowedNumber(app);
+    }
+
+    if (app->rendererState == RENDER_PENDING_BLOCK) {
+      app->rendererState = RENDER_BLOCKED;
+      continue;
+    }
+    if (app->rendererState == RENDER_BLOCKED) {
+      continue;
     }
 
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
@@ -707,7 +724,7 @@ void playMain(App* app, unsigned SEED) {
       oldX = app->currPlayer->x;
       oldWeapon = app->currWeapon;
 
-      sprintf(temp, "Moves left: %d Gun angle: %3d Firing power: %3d ",
+      sprintf(temp, "Moves left: %d Gun angle: %02d Firing power: %02d ",
               oldMovesLeft, (int)oldAngle, oldFiringPower);
 
       if (app->currWeapon == -1) {
@@ -781,6 +798,8 @@ void playMain(App* app, unsigned SEED) {
     SDL_Delay(16);
   }
 
+  app->rendererState = RENDER_NONE;
+
   SDL_WaitThread(playerMoveThread, NULL);
 
   freeRenderObject(Player1Tank);
@@ -795,6 +814,7 @@ void playMain(App* app, unsigned SEED) {
   freeRenderObject(explosionObj);
   freeRenderObject(playerScore1);
   freeRenderObject(playerScore2);
+  freeRenderObject(bulletPath);
 
   TTF_CloseFont(smallFont);
   SDL_DestroyTexture(gameMap);

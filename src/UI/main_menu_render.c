@@ -41,6 +41,8 @@ void mainMenu(App* app) {
     SDL_Delay(16);
   }
 
+  app->rendererState = RENDER_NONE;
+
   if (app->currState == EXIT) {
     freeRenderObject(logoObject);
     SDL_Cleanup(app);
@@ -134,6 +136,8 @@ void menuRenderLoop(App* app, RenderObject* logo) {
 
     SDL_Delay(16);
   }
+
+  app->rendererState = RENDER_NONE;
 
   // closing font
   TTF_CloseFont(menuButtonsFont);

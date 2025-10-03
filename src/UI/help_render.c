@@ -222,6 +222,8 @@ void helpMain(App* app) {
     SDL_Delay(16);
   }
 
+  app->rendererState = RENDER_NONE;
+
   freeRenderObject(returnArrowObj);
   SDL_DestroyTexture(textTexture);
 
