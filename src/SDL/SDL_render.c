@@ -3,6 +3,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL_pixels.h>
+#include <SDL_rect.h>
 #include <SDL_render.h>
 #include <SDL_timer.h>
 #include <log/log.h>
@@ -217,6 +219,9 @@ RenderObject* createRenderObject(SDL_Renderer* render,
         render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
     renderObj->data.texture.constRect.w = w;
     renderObj->data.texture.constRect.h = h;
+    renderObj->data.texture.triggeredTexture = renderObj->data.texture.texture;
+    SDL_SetTextureBlendMode(renderObj->data.texture.texture,
+                            SDL_BLENDMODE_BLEND);
   }
 
   va_end(args);
@@ -629,27 +634,42 @@ void drawFilledTriangle(SDL_Renderer* renderer, const SDL_Point* p1,
 }
 
 void renderBulletPath(App* app, RenderObject* bulletPath) {
-  // blocking rendering while rendering path on texture
-  if (app->rendererState != RENDER_NONE &&
-      app->rendererState != RENDER_BLOCKED) {
-    app->rendererState = RENDER_PENDING_BLOCK;
-    while (app->rendererState != RENDER_BLOCKED) {
-      SDL_Delay(1);
-    }
-  }
-
   SDL_SetRenderTarget(app->renderer, bulletPath->data.texture.texture);
   SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 0);
   SDL_RenderClear(app->renderer);
 
   // calculating starting point for the path (aka gun basis)
-  SDL_Point gunEdgeCoord = getPixelScreenPosition(
-      (SDL_Point){app->currPlayer->tankObj->data.texture.constRect.x,
-                  app->currPlayer->tankObj->data.texture.constRect.y},
-      (SDL_Point){5, 27}, 180 - app->currPlayer->tankObj->data.texture.angle,
-      (SDL_Point){24, 7});
+  SDL_Point gunEdgeCoord;
 
-  printf("%d %d\n", gunEdgeCoord.x, gunEdgeCoord.y);
+  // for 2nd player
+  if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
+      SDL_FLIP_HORIZONTAL) {
+    gunEdgeCoord = getPixelScreenPosition(
+        (SDL_Point){
+            app->currPlayer->tankObj->data.texture.scaleRect.x,
+            app->currPlayer->tankObj->data.texture.scaleRect.y,
+        },
+        (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
+        app->currPlayer->tankObj->data.texture.angle,
+        (SDL_Point){16 * app->scalingFactorX, 7 * app->scalingFactorY});
+    bulletPath->data.texture.constRect.x =
+        gunEdgeCoord.x - bulletPath->data.texture.constRect.w;
+    bulletPath->data.texture.constRect.y =
+        gunEdgeCoord.y - bulletPath->data.texture.constRect.h / 1.5f;
+  } else {
+    // for 1st player
+    gunEdgeCoord = getPixelScreenPosition(
+        (SDL_Point){
+            app->currPlayer->tankObj->data.texture.scaleRect.x,
+            app->currPlayer->tankObj->data.texture.scaleRect.y,
+        },
+        (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
+        app->currPlayer->tankObj->data.texture.angle,
+        (SDL_Point){27 * app->scalingFactorX, 7 * app->scalingFactorY});
+    bulletPath->data.texture.constRect.x = gunEdgeCoord.x;
+    bulletPath->data.texture.constRect.y =
+        gunEdgeCoord.y - bulletPath->data.texture.constRect.h / 1.5f;
+  }
 
   // that angle is clockwise
   double currGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
@@ -667,9 +687,53 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
   // normalizing just to be sure its in [0; 2pi) and now its counterclockwise
   currGunAngle = 360 - normalizeAngle(currGunAngle);
 
+  double currGunCos = cos(DEGTORAD(currGunAngle));
+  double currGunSin = sin(DEGTORAD(currGunAngle));
+
+  // fixing curr pos, now it points at the end of the gun
+  gunEdgeCoord.x += 20 * currGunCos;
+  gunEdgeCoord.y -= 20 * currGunSin;
+
+  double dt = 1. / 500;
+  SDL_FPoint relativePos = {0.f, 0.f};
+
+  // finding init vel for a spec. weapon
+  double currVel = 0.0;
+  switch (app->currWeapon) {
+    // small bullet
+    case 0:
+      currVel = app->currPlayer->firingPower * 2;
+      break;
+    // BIG BULLET
+    case 1:
+      currVel = app->currPlayer->firingPower * 1.75;
+      break;
+    // small boom
+    case 2:
+      currVel = app->currPlayer->firingPower * 1.25;
+      break;
+    // BIG BOOM
+    case 3:
+      currVel = app->currPlayer->firingPower * 1;
+      break;
+    default:
+      currVel = app->currPlayer->firingPower;
+      break;
+  }
+
+  SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 255);
+  printf("cock dead ass nigga angle:%lf with vel: %lf\n", currGunAngle,
+         currVel);
+  for (double currTime = 0.0; currTime <= 1.5; currTime += dt) {
+    getPositionAtSpecTime(&relativePos, currVel, currGunAngle, currTime);
+    int currX = relativePos.x + 20 * currGunCos;
+    int currY = -relativePos.y + bulletPath->data.texture.constRect.h / 1.5 -
+                20 * currGunSin;
+    SDL_RenderDrawPoint(app->renderer, currX, currY);
+  }
+
   // enable rendering back
   SDL_SetRenderTarget(app->renderer, NULL);
-  app->rendererState = RENDER_RUNNING;
 }
 // clearing sdl_textures* arr
 void freeTexturesArr(SDL_Texture** arr, int size) {

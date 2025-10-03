@@ -317,8 +317,6 @@ void leaderboardMain(App* app, const char* name) {
     SDL_Delay(16);
   }
 
-  app->rendererState = RENDER_NONE;
-
   freeRenderObject(leaderboardLabel);
   freeRenderObject(placeLabel);
   freeRenderObject(nameLabel);
@@ -436,8 +434,6 @@ void leaderboardAddMain(App* app) {
 
     SDL_Delay(16);
   }
-
-  app->rendererState = RENDER_NONE;
 
   if (placeInTable != -1) {
     strcpy(temp, nameInput->data.textInputLine.savedText);

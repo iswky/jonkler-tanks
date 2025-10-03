@@ -289,8 +289,6 @@ void settingsMain(App* app) {
     SDL_Delay(16);
   }
 
-  app->rendererState = RENDER_NONE;
-
   // clear bttns if exit
   freeRenderObject(soundTextObj);
   freeRenderObject(settingsTextObj);

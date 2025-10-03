@@ -281,8 +281,6 @@ void preGameMain(App* app) {
     SDL_Delay(16);
   }
 
-  app->rendererState = RENDER_NONE;
-
   memcpy(temp, seedInput->data.textInputLine.savedText,
          seedInput->data.textInputLine.maxInputChars);
   SDL_DestroyTexture(seedInput->data.textInputLine.textTexture);
@@ -468,6 +466,7 @@ void playMain(App* app, unsigned SEED) {
 
   RenderObject* bulletPath =
       createRenderObject(app->renderer, EMPTY, 0, b_NONE, 200, 200);
+
   firstPlayer.tankObj = Player1Tank;
   firstPlayer.tankGunObj = Player1Gun;
   secondPlayer.tankObj = Player2Tank;
@@ -536,6 +535,7 @@ void playMain(App* app, unsigned SEED) {
   }
 
   SDL_bool regenMap = SDL_FALSE;
+  SDL_bool recalcBulletPath = SDL_TRUE;
 
   struct paramsStruct {
     App* app;
@@ -544,8 +544,8 @@ void playMain(App* app, unsigned SEED) {
     int* heightMap;
     RenderObject* projectile;
     RenderObject* explosion;
-    RenderObject* bulletPath;
     SDL_bool* regenMap;
+    SDL_bool* recalcBulletPath;
     unsigned mapSeed;
   };
 
@@ -556,8 +556,8 @@ void playMain(App* app, unsigned SEED) {
       .heightMap = heightMap,
       .projectile = projectile,
       .explosion = explosionObj,
-      .bulletPath = bulletPath,
       .regenMap = &regenMap,
+      .recalcBulletPath = &recalcBulletPath,
       .mapSeed = mapSeed,
   };
 
@@ -658,19 +658,12 @@ void playMain(App* app, unsigned SEED) {
       app->currWeapon = getAllowedNumber(app);
     }
 
-    if (app->rendererState == RENDER_PENDING_BLOCK) {
-      app->rendererState = RENDER_BLOCKED;
-      continue;
-    }
-    if (app->rendererState == RENDER_BLOCKED) {
-      continue;
-    }
-
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);
 
     // rendering map
     if (regenMap) {
+      SDL_DestroyTexture(gameMap);
       gameMap = saveRenderMapToTexture(app->renderer, app->screenWidth,
                                        app->screenHeight, heightMap, basedMap);
       regenMap = SDL_FALSE;
@@ -707,8 +700,11 @@ void playMain(App* app, unsigned SEED) {
       arrow->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
     }
 
-    renderTextures(app, objectsArr, sizeof(objectsArr) / sizeof(*objectsArr),
-                   SDL_TRUE);
+    // recalc bullet path if needed
+    if (recalcBulletPath) {
+      renderBulletPath(app, bulletPath);
+      recalcBulletPath = SDL_FALSE;
+    }
 
     // redrawing info texture
     if (oldAngle != app->currPlayer->gunAngle ||
@@ -757,10 +753,12 @@ void playMain(App* app, unsigned SEED) {
 
       if (app->currPlayer == &firstPlayer) {
         currentPlayerInfo->data.texture.constRect.x = 10;
+        bulletPath->data.texture.flipFlag = SDL_FLIP_NONE;
       } else {
         currentPlayerInfo->data.texture.constRect.x =
             app->screenWidth / app->scalingFactorX -
             currentPlayerInfo->data.texture.constRect.w - 10;
+        bulletPath->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
       }
     }
 
@@ -794,11 +792,12 @@ void playMain(App* app, unsigned SEED) {
                        &playerScore2->data.texture.constRect.h);
     }
 
+    renderTextures(app, objectsArr, sizeof(objectsArr) / sizeof(*objectsArr),
+                   SDL_TRUE);
+
     SDL_RenderPresent(app->renderer);
     SDL_Delay(16);
   }
-
-  app->rendererState = RENDER_NONE;
 
   SDL_WaitThread(playerMoveThread, NULL);
 

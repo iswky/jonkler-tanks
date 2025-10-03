@@ -25,7 +25,6 @@ void SDL_Main() {
       .scalingFactorY = 1.0,
       .isMouseTriggered = SDL_FALSE,
       .buttonPosTriggered = b_NONE,
-      .rendererState = RENDER_NONE,
       .settings =
           (settingsStruct){
               .isFullscreen = SDL_FALSE,
@@ -54,7 +53,7 @@ void SDL_Main() {
   startMusic(&mainGameWindow);
 
   // loading cursor
-  initCursor(&mainGameWindow);
+  //initCursor(&mainGameWindow);
 
   // creating thread that will loop while SDL_QUIT event is not polled
   mainGameWindow.eventPollThread =

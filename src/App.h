@@ -21,14 +21,6 @@ enum State {
   LEADERBOARD,
 };
 
-enum RendererState {
-  RENDER_NONE = -1,
-  RENDER_BLOCKED = 0,
-  RENDER_PENDING_BLOCK,
-  RENDER_RUNNING,
-  RENDER_FINISHED,
-};
-
 enum PlayerType {
   // real player
   MONKE = 0,
@@ -182,7 +174,6 @@ typedef struct App {
   SDL_KeyCode curPressedKey;
 
   enum State currState;
-  enum RendererState rendererState;
 
   int screenWidth;
   int screenHeight;

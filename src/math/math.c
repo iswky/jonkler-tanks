@@ -109,7 +109,7 @@ int calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
 
   const double G = 9.81;
 
-  double dt = 1. / 500;
+  double dt = 1. / 60;
   double currTime = 0.0;
 
   int currX = (int)initPos->x;

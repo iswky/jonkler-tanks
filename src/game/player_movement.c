@@ -6,6 +6,7 @@
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL_rect.h>
 #include <log/log.h>
 #include <math.h>
 
@@ -59,12 +60,26 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
   currGunAngle = 360 - normalizeAngle(currGunAngle);
 
   // thats an init pos of a curr player tank
-  SDL_Point tempPos = getPixelScreenPosition(
-      (SDL_Point){app->currPlayer->tankObj->data.texture.scaleRect.x,
-                  app->currPlayer->tankObj->data.texture.scaleRect.y},
-      (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
-      app->currPlayer->tankObj->data.texture.angle,
-      (SDL_Point){24 * app->scalingFactorX, 7 * app->scalingFactorY});
+  SDL_Point tempPos;
+  if (app->currPlayer == firstPlayer) {
+    tempPos = getPixelScreenPosition(
+        (SDL_Point){
+            app->currPlayer->tankObj->data.texture.scaleRect.x,
+            app->currPlayer->tankObj->data.texture.scaleRect.y,
+        },
+        (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
+        app->currPlayer->tankObj->data.texture.angle,
+        (SDL_Point){27 * app->scalingFactorX, 7 * app->scalingFactorY});
+  } else {
+    tempPos = getPixelScreenPosition(
+        (SDL_Point){
+            app->currPlayer->tankObj->data.texture.scaleRect.x,
+            app->currPlayer->tankObj->data.texture.scaleRect.y,
+        },
+        (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
+        app->currPlayer->tankObj->data.texture.angle,
+        (SDL_Point){16 * app->scalingFactorX, 7 * app->scalingFactorY});
+  }
 
   SDL_FPoint initPos = {
       .x = tempPos.x,
@@ -85,8 +100,8 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
   initPos.y /= app->scalingFactorY;
 
   // initpos now points to the edge of the tank gun
-  initPos.x += 25 * cos(DEGTORAD(currGunAngle));
-  initPos.y -= 25 * sin(DEGTORAD(currGunAngle));
+  initPos.x += 20 * cos(DEGTORAD(currGunAngle));
+  initPos.y -= 20 * sin(DEGTORAD(currGunAngle));
 
   // printf("initpos: x: %lf y: %lf, angle: %lf\n", initPos.x, initPos.y, currGunAngle);
   //
@@ -95,7 +110,7 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
   projectile->disableRendering = SDL_FALSE;
 
   // select the time interval for recalculations
-  const double dt = 1 / 10.0;
+  const double dt = 1. / 10;
   double currTime = 0.0;
 
   double vel;
@@ -395,8 +410,8 @@ int playerMove(void* data) {
     int* heightMap;
     RenderObject* projectile;
     RenderObject* explosion;
-    RenderObject* bulletPath;
     SDL_bool* regenMap;
+    SDL_bool* recalcBulletPath;
     unsigned mapSeed;
   };
   struct paramsStruct* params = (struct paramsStruct*)data;
@@ -408,6 +423,7 @@ int playerMove(void* data) {
   RenderObject* projectile = params->projectile;
   RenderObject* explosion = params->explosion;
   SDL_bool* regenMap = params->regenMap;
+  SDL_bool* recalcBulletPath = params->recalcBulletPath;
   unsigned mapSeed = params->mapSeed;
 
   while (app->currState == PLAY) {
@@ -450,6 +466,7 @@ int playerMove(void* data) {
         smoothMove(app, app->currPlayer == firstPlayer, SDL_TRUE, heightMap);
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
+        *recalcBulletPath = SDL_TRUE;
         // leaving animation
         app->currPlayer->inAnimation = SDL_FALSE;
       }
@@ -462,6 +479,7 @@ int playerMove(void* data) {
         smoothMove(app, app->currPlayer == firstPlayer, SDL_FALSE, heightMap);
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
+        *recalcBulletPath = SDL_TRUE;
         // leaving animation
         app->currPlayer->inAnimation = SDL_FALSE;
       }
@@ -475,6 +493,7 @@ int playerMove(void* data) {
             break;
           }
           recalcPlayerGunAngle(app->currPlayer, 1);
+          *recalcBulletPath = SDL_TRUE;
         }
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
@@ -490,6 +509,7 @@ int playerMove(void* data) {
             break;
           }
           recalcPlayerGunAngle(app->currPlayer, -1);
+          *recalcBulletPath = SDL_TRUE;
         }
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
@@ -505,6 +525,7 @@ int playerMove(void* data) {
             break;
           }
           app->currPlayer->firingPower--;
+          *recalcBulletPath = SDL_TRUE;
         }
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
@@ -520,6 +541,7 @@ int playerMove(void* data) {
             break;
           }
           app->currPlayer->firingPower++;
+          *recalcBulletPath = SDL_TRUE;
         }
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
