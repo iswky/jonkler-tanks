@@ -307,7 +307,7 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
 
         // hit near to enemy, so shot in [leftTankCorner - explRadius; rightTankCorner + explRadius];
         if (currX <= center + explosionRadius +
-                         enemyPlayer->tankObj->data.texture.constRect.w / 2 ||
+                         enemyPlayer->tankObj->data.texture.constRect.w / 2 &&
             currX >= center - explosionRadius -
                          enemyPlayer->tankObj->data.texture.constRect.w / 2) {
           // hitting after center (after right tank corner)
