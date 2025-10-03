@@ -481,7 +481,7 @@ void playMain(App* app, unsigned SEED) {
 
     firstPlayer.movesLeft = 4;
     firstPlayer.gunAngle = 0.0;
-    firstPlayer.firingPower = 1;
+    firstPlayer.firingPower = 30;
     firstPlayer.tankAngle = anglePlayer1;
     firstPlayer.inAnimation = SDL_FALSE;
     firstPlayer.x = 30;
@@ -505,7 +505,7 @@ void playMain(App* app, unsigned SEED) {
 
     secondPlayer.movesLeft = 4;
     secondPlayer.gunAngle = 0.0;
-    secondPlayer.firingPower = 1;
+    secondPlayer.firingPower = 30;
     secondPlayer.tankAngle = anglePlayer2;
     secondPlayer.inAnimation = SDL_FALSE;
     secondPlayer.type = MONKE;

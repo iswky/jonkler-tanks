@@ -489,7 +489,7 @@ int playerMove(void* data) {
         while (app->keyStateArr[SDL_SCANCODE_UP]) {
           SDL_Delay(30);
           // if angle is already maxed
-          if (fabs((app->currPlayer->gunAngle - 60.0)) < 1e-9) {
+          if (fabs((app->currPlayer->gunAngle - 120.0)) < 1e-9) {
             break;
           }
           recalcPlayerGunAngle(app->currPlayer, 1);

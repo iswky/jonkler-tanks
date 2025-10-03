@@ -239,8 +239,8 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
 
         if (newAngle < 0) {
           newAngle = 0;
-        } else if (newAngle > 60) {
-          newAngle = 60;
+        } else if (newAngle > 120) {
+          newAngle = 120;
         }
         if (newPower < 1) {
           newPower = 1;
@@ -271,7 +271,7 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
 
   SDL_bool isFinded = SDL_FALSE;
 
-  for (int angle = 0; angle <= 60; ++angle) {
+  for (int angle = 0; angle <= 120; ++angle) {
     double currAngle = app->currPlayer->tankGunObj->data.texture.angle;
 
     // calculating angle specifically for a current player
@@ -308,8 +308,8 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
 
           if (angle < 0) {
             angle = 0;
-          } else if (angle > 180) {
-            angle = 180;
+          } else if (angle > 120) {
+            angle = 120;
           }
           if (firingPower < 1) {
             firingPower = 1;
