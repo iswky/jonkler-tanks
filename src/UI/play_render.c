@@ -465,7 +465,7 @@ void playMain(App* app, unsigned SEED) {
   projectile->disableRendering = SDL_TRUE;
 
   RenderObject* bulletPath =
-      createRenderObject(app->renderer, EMPTY, 0, b_NONE, 200, 200);
+      createRenderObject(app->renderer, EMPTY, 0, b_NONE, 333, 333);
 
   firstPlayer.tankObj = Player1Tank;
   firstPlayer.tankGunObj = Player1Gun;
@@ -753,12 +753,10 @@ void playMain(App* app, unsigned SEED) {
 
       if (app->currPlayer == &firstPlayer) {
         currentPlayerInfo->data.texture.constRect.x = 10;
-        bulletPath->data.texture.flipFlag = SDL_FLIP_NONE;
       } else {
         currentPlayerInfo->data.texture.constRect.x =
             app->screenWidth / app->scalingFactorX -
             currentPlayerInfo->data.texture.constRect.w - 10;
-        bulletPath->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
       }
     }
 

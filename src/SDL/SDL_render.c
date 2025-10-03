@@ -722,14 +722,21 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
   }
 
   SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 255);
-  printf("cock dead ass nigga angle:%lf with vel: %lf\n", currGunAngle,
-         currVel);
   for (double currTime = 0.0; currTime <= 1.5; currTime += dt) {
     getPositionAtSpecTime(&relativePos, currVel, currGunAngle, currTime);
-    int currX = relativePos.x + 20 * currGunCos;
-    int currY = -relativePos.y + bulletPath->data.texture.constRect.h / 1.5 -
-                20 * currGunSin;
-    SDL_RenderDrawPoint(app->renderer, currX, currY);
+    if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
+        SDL_FLIP_HORIZONTAL) {
+      int currX = relativePos.x + 15 * currGunCos +
+                  bulletPath->data.texture.constRect.w;
+      int currY = -relativePos.y + bulletPath->data.texture.constRect.h / 1.5 -
+                  18 * currGunSin;
+      SDL_RenderDrawPoint(app->renderer, currX, currY);
+    } else {
+      int currX = relativePos.x + 20 * currGunCos;
+      int currY = -relativePos.y + bulletPath->data.texture.constRect.h / 1.5 -
+                  18 * currGunSin;
+      SDL_RenderDrawPoint(app->renderer, currX, currY);
+    }
   }
 
   // enable rendering back

@@ -15,7 +15,8 @@
 
 void botMain(App* app, Player* player1, Player* player2, int* heightMap,
              RenderObject* projectile, RenderObject* explosion,
-             SDL_bool* regenMap, enum PlayerType playerType) {
+             SDL_bool* regenMap, SDL_bool* recalcBulletPath,
+             enum PlayerType playerType) {
   double initGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
 
   // calculating angle specifically for a current player
@@ -31,20 +32,20 @@ void botMain(App* app, Player* player1, Player* player2, int* heightMap,
   switch (playerType) {
     case EASY:
       while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, 44, initGunAngle,
-                            playerType) &&
+                            explosion, regenMap, recalcBulletPath, 44,
+                            initGunAngle, playerType) &&
              app->currState == PLAY);
       break;
     case NORMAL:
       while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, 77, initGunAngle,
-                            playerType) &&
+                            explosion, regenMap, recalcBulletPath, 77,
+                            initGunAngle, playerType) &&
              app->currState == PLAY);
       break;
     case HARD:
       while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, 90, initGunAngle,
-                            playerType) &&
+                            explosion, regenMap, recalcBulletPath, 90,
+                            initGunAngle, playerType) &&
              app->currState == PLAY);
       break;
     default:
@@ -56,7 +57,8 @@ void botMain(App* app, Player* player1, Player* player2, int* heightMap,
 // this func decide what option is the best
 int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
                    int* heightMap, RenderObject* projectile,
-                   RenderObject* explosion, SDL_bool* regenMap, int hitChance,
+                   RenderObject* explosion, SDL_bool* regenMap,
+                   SDL_bool* recalcBulletPath, int hitChance,
                    double initGunAngle, enum PlayerType playerType) {
   Player* enemy;
   if (app->currPlayer == firstPlayer) {
@@ -202,8 +204,10 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
         newPower = 100;
       }
 
-      smoothChangeAngle(app->currPlayer, newAngle, &app->currState);
-      smoothChangePower(app->currPlayer, newPower, &app->currState);
+      smoothChangeAngle(app->currPlayer, newAngle, &app->currState,
+                        recalcBulletPath);
+      smoothChangePower(app->currPlayer, newPower, &app->currState,
+                        recalcBulletPath);
     }
 
     SDL_Delay(200);
@@ -245,8 +249,10 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
           newPower = 100;
         }
 
-        smoothChangeAngle(app->currPlayer, newAngle, &app->currState);
-        smoothChangePower(app->currPlayer, newPower, &app->currState);
+        smoothChangeAngle(app->currPlayer, newAngle, &app->currState,
+                          recalcBulletPath);
+        smoothChangePower(app->currPlayer, newPower, &app->currState,
+                          recalcBulletPath);
       }
       log_info("[bot] SHOOT!");
 
@@ -312,8 +318,10 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
           }
         }
 
-        smoothChangeAngle(app->currPlayer, angle, &app->currState);
-        smoothChangePower(app->currPlayer, firingPower, &app->currState);
+        smoothChangeAngle(app->currPlayer, angle, &app->currState,
+                          recalcBulletPath);
+        smoothChangePower(app->currPlayer, firingPower, &app->currState,
+                          recalcBulletPath);
         SDL_Delay(200);
         shoot(app, firstPlayer, secondPlayer, projectile, explosion, heightMap,
               regenMap);

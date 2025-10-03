@@ -22,8 +22,12 @@ int calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
                     const SDL_Point* collison2, const SDL_Point* collision3,
                     const int collision1R, const int collision2R,
                     const int collision3R, RenderObject* projectile);
-void smoothChangeAngle(Player* player, int endAngle, enum State* currState);
-void smoothChangePower(Player* player, int endPower, enum State* currState);
+
+void smoothChangeAngle(Player* player, int endAngle, enum State* currState,
+                       SDL_bool* recalcBulletPath);
+void smoothChangePower(Player* player, int endPower, enum State* currState,
+                       SDL_bool* recalcBulletPath);
+
 int smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
                int* heightMap);
 

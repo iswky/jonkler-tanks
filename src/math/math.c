@@ -161,30 +161,36 @@ int getAllowedNumber(App* app) {
   return value;
 }
 
-void smoothChangeAngle(Player* player, int endAngle, enum State* currState) {
+void smoothChangeAngle(Player* player, int endAngle, enum State* currState,
+                       SDL_bool* recalcBulletPath) {
   if ((int)player->gunAngle > endAngle) {
     for (int i = player->gunAngle; i > endAngle && *currState == PLAY; --i) {
       recalcPlayerGunAngle(player, -1);
+      *recalcBulletPath = SDL_TRUE;
       SDL_Delay(16);
     }
   } else {
     for (int i = player->gunAngle; i < endAngle && *currState == PLAY; ++i) {
       recalcPlayerGunAngle(player, 1);
+      *recalcBulletPath = SDL_TRUE;
       SDL_Delay(16);
     }
   }
 }
 
-void smoothChangePower(Player* player, int endPower, enum State* currState) {
+void smoothChangePower(Player* player, int endPower, enum State* currState,
+                       SDL_bool* recalcBulletPath) {
   if ((int)player->firingPower > endPower) {
     for (int i = player->firingPower; i > endPower && *currState == PLAY; --i) {
       player->firingPower--;
       SDL_Delay(16);
+      *recalcBulletPath = SDL_TRUE;
     }
   } else {
     for (int i = player->firingPower; i < endPower && *currState == PLAY; ++i) {
       player->firingPower++;
       SDL_Delay(16);
+      *recalcBulletPath = SDL_TRUE;
     }
   }
 }

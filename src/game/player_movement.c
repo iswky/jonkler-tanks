@@ -570,6 +570,7 @@ int playerMove(void* data) {
                          app->currPlayer == firstPlayer, mapSeed);
 
         log_info("players swapped");
+        *recalcBulletPath = SDL_TRUE;
         SDL_Delay(200);
       }
     }
@@ -583,7 +584,7 @@ int playerMove(void* data) {
       log_info("currweapon - %d", app->currWeapon);
 
       botMain(app, firstPlayer, secondPlayer, heightMap, projectile, explosion,
-              regenMap, app->currPlayer->type);
+              regenMap, recalcBulletPath, app->currPlayer->type);
 
       app->currPlayer->inAnimation = SDL_FALSE;
 
