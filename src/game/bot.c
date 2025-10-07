@@ -32,7 +32,7 @@ void botMain(App* app, Player* player1, Player* player2, int* heightMap,
   switch (playerType) {
     case EASY:
       while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, recalcBulletPath, 44,
+                            explosion, regenMap, recalcBulletPath, 55,
                             initGunAngle, playerType) &&
              app->currState == PLAY);
       break;
@@ -178,6 +178,9 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
   int initVel = app->currPlayer->firingPower * velMultiplicator;
   int rnnndmTest = getRandomValue(0, 100);
   SDL_bool isMissingShot = rnnndmTest > hitChance;
+  if (isMissingShot) {
+    log_info("[bot] MISSING CURRENT SHOT!!");
+  }
 
   int hitPos =
       calcHitPosition(&currPos, initVel, initGunAngle, heightMap, app,
