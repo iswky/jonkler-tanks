@@ -341,7 +341,7 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
   } else {
     if (app->currPlayer == firstPlayer) {
       if (smoothMove(app, SDL_TRUE, SDL_TRUE, heightMap) != 0) {
-        if (smoothMove(app, SDL_TRUE, SDL_FALSE, heightMap) != 0) {
+        if (smoothMove(app, SDL_TRUE, SDL_TRUE, heightMap) != 0) {
           shoot(app, firstPlayer, secondPlayer, projectile, explosion,
                 heightMap, regenMap);
           return 0;
@@ -351,7 +351,7 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
       return 1;
     } else {
       if (smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap) != 0) {
-        if (smoothMove(app, SDL_FALSE, SDL_TRUE, heightMap) != 0) {
+        if (smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap) != 0) {
           shoot(app, firstPlayer, secondPlayer, projectile, explosion,
                 heightMap, regenMap);
           return 0;

@@ -755,8 +755,10 @@ void freeTexturesArr(SDL_Texture** arr, int size) {
 
 // free render object
 void freeRenderObject(RenderObject* object) {
-  SDL_DestroyTexture(object->data.texture.texture);
-  SDL_DestroyTexture(object->data.texture.triggeredTexture);
+  if (object) {
+    SDL_DestroyTexture(object->data.texture.texture);
+    SDL_DestroyTexture(object->data.texture.triggeredTexture);
 
-  free(object);
+    free(object);
+  }
 }
