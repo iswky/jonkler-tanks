@@ -646,31 +646,54 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
       SDL_FLIP_HORIZONTAL) {
     gunEdgeCoord = getPixelScreenPosition(
         (SDL_Point){
-            app->currPlayer->tankObj->data.texture.scaleRect.x,
-            app->currPlayer->tankObj->data.texture.scaleRect.y,
+            app->currPlayer->tankObj->data.texture.constRect.x *
+                app->scalingFactorX,
+            app->currPlayer->tankObj->data.texture.constRect.y *
+                app->scalingFactorY,
         },
         (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
         app->currPlayer->tankObj->data.texture.angle,
         (SDL_Point){16 * app->scalingFactorX, 7 * app->scalingFactorY});
+
     bulletPath->data.texture.constRect.x =
-        gunEdgeCoord.x - bulletPath->data.texture.constRect.w;
+        gunEdgeCoord.x / app->scalingFactorX -
+        bulletPath->data.texture.constRect.w;
     bulletPath->data.texture.constRect.y =
-        gunEdgeCoord.y - bulletPath->data.texture.constRect.h / 1.5f;
+        gunEdgeCoord.y / app->scalingFactorY -
+        bulletPath->data.texture.constRect.h / 1.5f;
+
+    gunEdgeCoord = getPixelScreenPosition(
+        (SDL_Point){gunEdgeCoord.x, gunEdgeCoord.y}, (SDL_Point){0, 0},
+        app->currPlayer->tankGunObj->data.texture.angle + 180 -
+            app->currPlayer->tankGunObj->data.texture.angleAlt,
+        (SDL_Point){20 * app->scalingFactorX, 5 * app->scalingFactorY});
+
   } else {
     // for 1st player
     gunEdgeCoord = getPixelScreenPosition(
         (SDL_Point){
-            app->currPlayer->tankObj->data.texture.scaleRect.x,
-            app->currPlayer->tankObj->data.texture.scaleRect.y,
+            app->currPlayer->tankObj->data.texture.constRect.x *
+                app->scalingFactorX,
+            app->currPlayer->tankObj->data.texture.constRect.y *
+                app->scalingFactorY,
         },
         (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
         app->currPlayer->tankObj->data.texture.angle,
         (SDL_Point){27 * app->scalingFactorX, 7 * app->scalingFactorY});
-    bulletPath->data.texture.constRect.x = gunEdgeCoord.x;
+
+    bulletPath->data.texture.constRect.x = gunEdgeCoord.x / app->scalingFactorX;
     bulletPath->data.texture.constRect.y =
-        gunEdgeCoord.y - bulletPath->data.texture.constRect.h / 1.5f;
+        gunEdgeCoord.y / app->scalingFactorY -
+        bulletPath->data.texture.constRect.h / 1.5f;
+
+    gunEdgeCoord = getPixelScreenPosition(
+        (SDL_Point){gunEdgeCoord.x, gunEdgeCoord.y}, (SDL_Point){0, 0},
+        app->currPlayer->tankGunObj->data.texture.angle +
+            app->currPlayer->tankGunObj->data.texture.angleAlt,
+        (SDL_Point){20 * app->scalingFactorX, 5 * app->scalingFactorY});
   }
 
+  // log_fatal("%lf", app->currPlayer->tankGunObj->data.texture.)
   // that angle is clockwise
   double currGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
 
@@ -689,10 +712,6 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
 
   double currGunCos = cos(DEGTORAD(currGunAngle));
   double currGunSin = sin(DEGTORAD(currGunAngle));
-
-  // fixing curr pos, now it points at the end of the gun
-  gunEdgeCoord.x += 20 * currGunCos;
-  gunEdgeCoord.y -= 20 * currGunSin;
 
   double dt = 1. / 500;
   SDL_FPoint relativePos = {0.f, 0.f};
