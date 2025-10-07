@@ -7,6 +7,18 @@
 #include <log/log.h>
 #include <stdio.h>
 
+void clearSave(App* app) {
+  char temp[256];
+
+  sprintf(temp, "%sdata/autosave", app->basePath);
+  FILE* file = fopen(temp, "w");
+  if (file == NULL) {
+    log_error("error while creating saves/autosave file");
+    return;
+  }
+  fclose(file);
+}
+
 void saveCurrentState(App* app, Player* firstPlayer, Player* secondPlayer,
                       int* heightMap, int isFirstTarget, unsigned seed) {
   char temp[256];

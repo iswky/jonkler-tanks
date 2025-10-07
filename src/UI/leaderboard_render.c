@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include "../SDL/SDL_render.h"
+#include "../game/autosave.h"
 
 void renderPlayer(App* app, int y, PlayerScore currPlayer,
                   const char* placeText, TTF_Font* font, unsigned char r,
@@ -326,6 +327,8 @@ void leaderboardMain(App* app, const char* name) {
 }
 
 void leaderboardAddMain(App* app) {
+  clearSave(app);
+
   char temp[256];
 
   sprintf(temp, "%smedia/fonts/PixeloidSans.ttf", app->basePath);
@@ -353,21 +356,25 @@ void leaderboardAddMain(App* app) {
                                         wonLabel->data.texture.constRect.w) /
                                        2;
   wonLabel->data.texture.constRect.y = 60;
+  RenderObject* scoreLabel;
+
+  // if player won
   if (app->winner != 3) {
     sprintf(temp, "SCORE: %d",
             app->winnerScore == -1337 ? 0 : app->winnerScore);
+    scoreLabel = createRenderObject(app->renderer, TEXT, 0, b_NONE, temp,
+                                    mainFont, &(SDL_Point){0, 0},
+                                    &(SDL_Color){128, 128, 128, 255});
+    scoreLabel->data.texture.constRect.x =
+        (app->screenWidth / app->scalingFactorX -
+         scoreLabel->data.texture.constRect.w) /
+        2;
+    scoreLabel->data.texture.constRect.y = 150;
   } else {
-    // if robocop won =>
+    // if robocop won
     memset(temp, 0x00, sizeof(temp) / sizeof(*temp));
+    scoreLabel = NULL;
   }
-  RenderObject* scoreLabel =
-      createRenderObject(app->renderer, TEXT, 0, b_NONE, temp, mainFont,
-                         &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255});
-  scoreLabel->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX -
-       scoreLabel->data.texture.constRect.w) /
-      2;
-  scoreLabel->data.texture.constRect.y = 150;
 
   RenderObject* enterNameLabel = NULL;
 
@@ -378,7 +385,7 @@ void leaderboardAddMain(App* app) {
   int placeInTable = findPlaceInLeaderboard(app->winnerScore);
 
   // if player in the top 10 in the leaderboard
-  if (placeInTable != -1) {
+  if (placeInTable != -1 && app->winner != 3) {
     enterNameLabel = createRenderObject(
         app->renderer, TEXT, 0, b_NONE, "Enter ur name:", smallFont,
         &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255});
@@ -435,7 +442,7 @@ void leaderboardAddMain(App* app) {
     SDL_Delay(16);
   }
 
-  if (placeInTable != -1) {
+  if (placeInTable != -1 && app->winner != 3) {
     strcpy(temp, nameInput->data.textInputLine.savedText);
     freeRenderObject(enterNameLabel);
     SDL_DestroyTexture(nameInput->data.textInputLine.textTexture);
