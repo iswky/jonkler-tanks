@@ -147,7 +147,7 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
     // small bullet
     case 0:
       velMultiplicator = 2;
-      explosionRadius = 0;
+      explosionRadius = projectile->data.texture.constRect.w;
       isHittableNearby = SDL_FALSE;
       break;
     // BIG BULLET

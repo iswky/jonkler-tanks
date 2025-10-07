@@ -6,7 +6,6 @@
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL_render.h>
 #include <log/log.h>
 #include <math.h>
 #include <stdio.h>
