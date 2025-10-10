@@ -478,7 +478,7 @@ void playMain(App* app, unsigned SEED) {
   if (!wasLoaded) {
     log_info("using default settings for players!");
 
-    firstPlayer.movesLeft = 4;
+    firstPlayer.movesLeft = 9;
     firstPlayer.gunAngle = 0.0;
     firstPlayer.firingPower = 30;
     firstPlayer.tankAngle = anglePlayer1;
@@ -502,7 +502,7 @@ void playMain(App* app, unsigned SEED) {
         break;
     }
 
-    secondPlayer.movesLeft = 4;
+    secondPlayer.movesLeft = 9;
     secondPlayer.gunAngle = 0.0;
     secondPlayer.firingPower = 30;
     secondPlayer.tankAngle = anglePlayer2;

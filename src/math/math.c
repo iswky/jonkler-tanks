@@ -107,7 +107,7 @@ int calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
   double vx = initVel * cos(angleRad);
   double vy = initVel * sin(angleRad);
 
-  const double G = 9.81 * 2;
+  const double G = 9.81;
 
   double dt = 1. / 60;
   double currTime = 0.0;
@@ -271,7 +271,7 @@ void getPositionAtSpecTime(SDL_FPoint* pos, double initVel, double angle,
   double vx = initVel * cos(angleRad);
   double vy = initVel * sin(angleRad);
 
-  const double G = 9.81 * 2;
+  const double G = 9.81;
 
   pos->x = vx * currTime;
   pos->y = vy * currTime - 0.5 * G * currTime * currTime;

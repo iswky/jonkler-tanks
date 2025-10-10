@@ -338,28 +338,15 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
   if (app->currPlayer->movesLeft == 0) {
     shoot(app, firstPlayer, secondPlayer, projectile, explosion, heightMap,
           regenMap);
+    return 0;
   } else {
     if (app->currPlayer == firstPlayer) {
-      if (smoothMove(app, SDL_TRUE, SDL_TRUE, heightMap) != 0) {
-        if (smoothMove(app, SDL_TRUE, SDL_TRUE, heightMap) != 0) {
-          shoot(app, firstPlayer, secondPlayer, projectile, explosion,
-                heightMap, regenMap);
-          return 0;
-        }
-      }
-      // decucting next best option after moving
+      smoothMove(app, SDL_TRUE, SDL_TRUE, heightMap);
       return 1;
     } else {
-      if (smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap) != 0) {
-        if (smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap) != 0) {
-          shoot(app, firstPlayer, secondPlayer, projectile, explosion,
-                heightMap, regenMap);
-          return 0;
-        }
-      }
-      // decucting next best option after moving
+      smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap);
       return 1;
     }
   }
-  return 0;
+  return 1;
 }
