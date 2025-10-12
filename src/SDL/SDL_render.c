@@ -555,7 +555,7 @@ void renderTextures(App* app, RenderObject* objectsArr[], int objectsArrSize,
                        NULL, &currRenderObject.data.texture.scaleRect,
                        currRenderObject.data.texture.angle +
                            currRenderObject.data.texture.angleAlt,
-                       &(SDL_Point){0, 2}, SDL_FLIP_NONE);
+                       &(SDL_Point){0, 1}, SDL_FLIP_NONE);
     }
     // right tank
     else if (currRenderObject.buttonName == 2001) {
@@ -573,7 +573,7 @@ void renderTextures(App* app, RenderObject* objectsArr[], int objectsArrSize,
                        NULL, &currRenderObject.data.texture.scaleRect,
                        currRenderObject.data.texture.angle + 180 -
                            currRenderObject.data.texture.angleAlt,
-                       &(SDL_Point){0, 0}, SDL_FLIP_NONE);
+                       &(SDL_Point){0, 1}, SDL_FLIP_NONE);
     }
     // difficulty buttons
     else if (currRenderObject.buttonName < 2200) {
@@ -640,6 +640,7 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
 
   // calculating starting point for the path (aka gun basis)
   SDL_Point gunEdgeCoord;
+  SDL_Color currColor = {0, 0, 0, 255};
 
   // for 2nd player
   if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
@@ -651,9 +652,9 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
             app->currPlayer->tankObj->data.texture.constRect.y *
                 app->scalingFactorY,
         },
-        (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
+        (SDL_Point){8 * app->scalingFactorX, 27 * app->scalingFactorY},
         app->currPlayer->tankObj->data.texture.angle,
-        (SDL_Point){16 * app->scalingFactorX, 7 * app->scalingFactorY});
+        (SDL_Point){24 * app->scalingFactorX, 8 * app->scalingFactorY});
 
     bulletPath->data.texture.constRect.x =
         gunEdgeCoord.x / app->scalingFactorX -
@@ -662,12 +663,7 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
         gunEdgeCoord.y / app->scalingFactorY -
         bulletPath->data.texture.constRect.h / 1.5f;
 
-    gunEdgeCoord = getPixelScreenPosition(
-        (SDL_Point){gunEdgeCoord.x, gunEdgeCoord.y}, (SDL_Point){0, 0},
-        app->currPlayer->tankGunObj->data.texture.angle + 180 -
-            app->currPlayer->tankGunObj->data.texture.angleAlt,
-        (SDL_Point){20 * app->scalingFactorX, 5 * app->scalingFactorY});
-
+    currColor = (SDL_Color){255, 50, 0, 255};
   } else {
     // for 1st player
     gunEdgeCoord = getPixelScreenPosition(
@@ -679,21 +675,14 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
         },
         (SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
         app->currPlayer->tankObj->data.texture.angle,
-        (SDL_Point){27 * app->scalingFactorX, 7 * app->scalingFactorY});
+        (SDL_Point){24 * app->scalingFactorX, 8 * app->scalingFactorY});
 
     bulletPath->data.texture.constRect.x = gunEdgeCoord.x / app->scalingFactorX;
     bulletPath->data.texture.constRect.y =
         gunEdgeCoord.y / app->scalingFactorY -
         bulletPath->data.texture.constRect.h / 1.5f;
-
-    gunEdgeCoord = getPixelScreenPosition(
-        (SDL_Point){gunEdgeCoord.x, gunEdgeCoord.y}, (SDL_Point){0, 0},
-        app->currPlayer->tankGunObj->data.texture.angle +
-            app->currPlayer->tankGunObj->data.texture.angleAlt,
-        (SDL_Point){20 * app->scalingFactorX, 5 * app->scalingFactorY});
   }
 
-  // log_fatal("%lf", app->currPlayer->tankGunObj->data.texture.)
   // that angle is clockwise
   double currGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
 
@@ -740,7 +729,8 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
       break;
   }
 
-  SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 255);
+  SDL_SetRenderDrawColor(app->renderer, currColor.r, currColor.g, currColor.b,
+                         currColor.a);
   for (double currTime = 0.0; currTime <= 1.5; currTime += dt) {
     getPositionAtSpecTime(&relativePos, currVel, currGunAngle, currTime);
     if (app->currPlayer->tankGunObj->data.texture.flipFlag ==

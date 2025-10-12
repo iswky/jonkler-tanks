@@ -565,7 +565,6 @@ void playMain(App* app, unsigned SEED) {
   recalcPlayerPos(app, &secondPlayer, heightMap, 0, 8);
   recalcPlayerGunAngle(&firstPlayer, 0);
   recalcPlayerGunAngle(&secondPlayer, 0);
-  renderBulletPath(app, bulletPath);
 
   // setting init or loaded angles for the gun
   Player1Gun->data.texture.angleAlt = -firstPlayer.gunAngle;
