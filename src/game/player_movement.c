@@ -220,6 +220,10 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
 
     int currX = initPos.x + relativePos.x;
     int currY = initPos.y - relativePos.y;
+    // offset for left tank
+    if (app->currPlayer == firstPlayer) {
+      currY -= 10;
+    }
 
     // calculating angle between the old projectile pos and the new 1
     double currAngle =

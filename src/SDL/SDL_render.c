@@ -555,7 +555,7 @@ void renderTextures(App* app, RenderObject* objectsArr[], int objectsArrSize,
                        NULL, &currRenderObject.data.texture.scaleRect,
                        currRenderObject.data.texture.angle +
                            currRenderObject.data.texture.angleAlt,
-                       &(SDL_Point){0, 1}, SDL_FLIP_NONE);
+                       &(SDL_Point){0, 2}, SDL_FLIP_NONE);
     }
     // right tank
     else if (currRenderObject.buttonName == 2001) {
@@ -573,7 +573,7 @@ void renderTextures(App* app, RenderObject* objectsArr[], int objectsArrSize,
                        NULL, &currRenderObject.data.texture.scaleRect,
                        currRenderObject.data.texture.angle + 180 -
                            currRenderObject.data.texture.angleAlt,
-                       &(SDL_Point){0, 1}, SDL_FLIP_NONE);
+                       &(SDL_Point){0, 0}, SDL_FLIP_NONE);
     }
     // difficulty buttons
     else if (currRenderObject.buttonName < 2200) {
