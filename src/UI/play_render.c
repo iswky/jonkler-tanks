@@ -344,6 +344,7 @@ void playMain(App* app, unsigned SEED) {
     mapSeed = SEED;
     log_info("setting gen map seed to fixed: %u", mapSeed);
   }
+
   int x1;
   int x2;
 
@@ -564,7 +565,6 @@ void playMain(App* app, unsigned SEED) {
   recalcPlayerPos(app, &secondPlayer, heightMap, 0, 8);
   recalcPlayerGunAngle(&firstPlayer, 0);
   recalcPlayerGunAngle(&secondPlayer, 0);
-  renderBulletPath(app, bulletPath);
 
   // setting init or loaded angles for the gun
   Player1Gun->data.texture.angleAlt = -firstPlayer.gunAngle;
@@ -575,7 +575,8 @@ void playMain(App* app, unsigned SEED) {
       SDL_CreateThread(playerMove, NULL, (void*)&playerMove_Params);
 
   // old values for optimized update
-  double oldAngle = app->currPlayer->gunAngle;
+  //just to be sure we rendering pointing arrow correctly
+  double oldAngle = app->currPlayer->gunAngle - 1;
   int oldMovesLeft = app->currPlayer->movesLeft;
   int oldFiringPower = app->currPlayer->firingPower;
   int oldX = app->currPlayer->x;
@@ -653,7 +654,7 @@ void playMain(App* app, unsigned SEED) {
   };
 
   while (app->currState == PLAY) {
-    if (app->currWeapon == -1) {
+    while (app->currWeapon == -1) {
       app->currWeapon = getAllowedNumber(app);
     }
 
@@ -678,27 +679,6 @@ void playMain(App* app, unsigned SEED) {
                     app->screenWidth, app->screenHeight});
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
 
-    if (app->currPlayer == &firstPlayer) {
-      // moving arrow to "follow" firstPlayer
-      arrow->data.texture.constRect.y =
-          Player1Tank->data.texture.constRect.y -
-          Player1Tank->data.texture.constRect.w *
-              fabs(sin(DEGTORAD(Player1Tank->data.texture.angle))) -
-          80;
-      arrow->data.texture.constRect.x =
-          Player1Tank->data.texture.constRect.x - 15;
-      arrow->data.texture.flipFlag = SDL_FLIP_NONE;
-    } else if (app->currPlayer == &secondPlayer) {
-      // moving arrow to "follow" secondPlayer
-      arrow->data.texture.constRect.y =
-          Player2Tank->data.texture.constRect.y -
-          Player2Tank->data.texture.constRect.w *
-              fabs(sin(DEGTORAD(Player2Tank->data.texture.angle))) -
-          80;
-      arrow->data.texture.constRect.x = Player2Tank->data.texture.constRect.x;
-      arrow->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
-    }
-
     // recalc bullet path if needed
     if (recalcBulletPath) {
       renderBulletPath(app, bulletPath);
@@ -722,7 +702,7 @@ void playMain(App* app, unsigned SEED) {
       sprintf(temp, "Moves left: %d Gun angle: %02d Firing power: %02d ",
               oldMovesLeft, (int)oldAngle, oldFiringPower);
 
-      if (app->currWeapon == -1) {
+      while (app->currWeapon == -1) {
         app->currWeapon = getAllowedNumber(app);
       }
 
@@ -752,10 +732,29 @@ void playMain(App* app, unsigned SEED) {
 
       if (app->currPlayer == &firstPlayer) {
         currentPlayerInfo->data.texture.constRect.x = 10;
+
+        // moving arrow to "follow" firstPlayer
+        arrow->data.texture.constRect.y =
+            Player1Tank->data.texture.constRect.y -
+            Player1Tank->data.texture.constRect.w *
+                fabs(sin(DEGTORAD(Player1Tank->data.texture.angle))) -
+            80;
+        arrow->data.texture.constRect.x =
+            Player1Tank->data.texture.constRect.x - 15;
+        arrow->data.texture.flipFlag = SDL_FLIP_NONE;
       } else {
         currentPlayerInfo->data.texture.constRect.x =
             app->screenWidth / app->scalingFactorX -
             currentPlayerInfo->data.texture.constRect.w - 10;
+
+        // moving arrow to "follow" secondPlayer
+        arrow->data.texture.constRect.y =
+            Player2Tank->data.texture.constRect.y -
+            Player2Tank->data.texture.constRect.w *
+                fabs(sin(DEGTORAD(Player2Tank->data.texture.angle))) -
+            80;
+        arrow->data.texture.constRect.x = Player2Tank->data.texture.constRect.x;
+        arrow->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
       }
     }
 
