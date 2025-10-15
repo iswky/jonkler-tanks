@@ -34,8 +34,9 @@ int getCenteredXForText(App* app, const char* text, TTF_Font* font) {
 }
 
 int getLeftAlignedX(App* app, int width, int offset) {
+  (void)app;
   (void)width;
-  return offset * app->scalingFactorX;
+  return offset;
 }
 
 int getRightAlignedX(App* app, int width, int offset) {
