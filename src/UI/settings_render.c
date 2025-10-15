@@ -40,11 +40,31 @@ void settingsMain(App* app) {
   RenderObject* weaponsTextObj = createLeftAlignedText(
       app, "WEAPONS", mainFont, rightSectionX, 100, COLOR_WHITE);
 
+  // Center headers within their halves
+  int wTmp, hTmp;
+  int leftCenterX = app->screenWidth / app->scalingFactorX / 4;
+  int rightCenterX = app->screenWidth / app->scalingFactorX * 3 / 4;
+
+  SDL_QueryTexture(videoTextObj->data.texture.texture, NULL, NULL, &wTmp,
+                   &hTmp);
+  videoTextObj->data.texture.constRect.x = leftCenterX - wTmp / 2;
+
+  SDL_QueryTexture(soundTextObj->data.texture.texture, NULL, NULL, &wTmp,
+                   &hTmp);
+  soundTextObj->data.texture.constRect.x = leftCenterX - wTmp / 2;
+
+  SDL_QueryTexture(weaponsTextObj->data.texture.texture, NULL, NULL, &wTmp,
+                   &hTmp);
+  weaponsTextObj->data.texture.constRect.x = rightCenterX - wTmp / 2;
+
   // volume label
   int volumeY = soundTextObj->data.texture.constRect.y +
                 soundTextObj->data.texture.constRect.h + 10;
   RenderObject* volumeTextObj = createLeftAlignedText(
       app, "Volume:", mainFont, leftSectionX, volumeY, COLOR_GRAY);
+  SDL_QueryTexture(volumeTextObj->data.texture.texture, NULL, NULL, &wTmp,
+                   &hTmp);
+  volumeTextObj->data.texture.constRect.x = leftCenterX - wTmp / 2;
 
   // back button
   RenderObject* returnArrowObj = createBackButton(
@@ -58,10 +78,9 @@ void settingsMain(App* app) {
                        volumeTextObj->data.texture.constRect.h + 20,
                   .w = 300,
                   .h = 50});
-
+  // Center slider within left half
   volumeSliderObj->data.texture.constRect.x =
-      app->screenWidth / app->scalingFactorX / 4 -
-      volumeSliderObj->data.texture.constRect.w / 2.;
+      leftCenterX - volumeSliderObj->data.texture.constRect.w / 2;
 
   // volume increment/decrement triangles
   RenderObject* volumeDecrTriangleObj = createRenderObject(
@@ -151,9 +170,10 @@ void settingsMain(App* app) {
       app->renderer, TEXT, 1, b_NONE, "Fullscreen", mainFont,
       &(SDL_Point){30, 20}, &(SDL_Color){128, 128, 128, 255});
 
+  SDL_QueryTexture(fullscreenTextObj->data.texture.texture, NULL, NULL, &wTmp,
+                   &hTmp);
   fullscreenTextObj->data.texture.constRect.x =
-      app->screenWidth / app->scalingFactorX / 4 -
-      fullscreenTextObj->data.texture.constRect.w / 2. - checkboxRect.w / 2.;
+      leftCenterX - wTmp / 2 - checkboxRect.w / 2;
   fullscreenTextObj->data.texture.constRect.y =
       videoTextObj->data.texture.constRect.y +
       videoTextObj->data.texture.constRect.h + 10;
