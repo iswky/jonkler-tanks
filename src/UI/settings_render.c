@@ -9,76 +9,47 @@
 
 #include "../SDL/SDL_render.h"
 #include "../game/settings.h"
+#include "ui_helpers.h"
 
 void settingsMain(App* app) {
-  char temp[256];
-
   Mix_VolumeMusic(app->settings.currentVolume);  // set volume
 
-  // font
-  sprintf(temp, "%smedia/fonts/PixeloidSans-Bold.ttf", app->basePath);
-  TTF_Font* mainFont = loadFont(temp, 40);
-  TTF_Font* titleFont = loadFont(temp, 50);
+  // load fonts
+  TTF_Font* mainFont = loadMainFont(app, 40);
+  TTF_Font* titleFont = loadMainFont(app, 50);
   if (!mainFont || !titleFont) {
     log_error("error loading fonts");
-
     return;
   }
 
-  // settings label
+  // create title
   RenderObject* settingsTextObj =
-      createRenderObject(app->renderer, TEXT, 1, b_NONE, "SETTINGS", titleFont,
-                         &(SDL_Point){0, 20}, &(SDL_Color){255, 255, 255, 255});
-  settingsTextObj->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX -
-       settingsTextObj->data.texture.constRect.w) /
-      2;
+      createCenteredText(app, "SETTINGS", titleFont, 20, COLOR_WHITE);
 
-  // video label
-  RenderObject* videoTextObj = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "VIDEO", mainFont, &(SDL_Point){0, 100},
-      &(SDL_Color){255, 255, 255, 255});
-  videoTextObj->data.texture.constRect.x =
-      app->screenWidth / app->scalingFactorX / 4 -
-      videoTextObj->data.texture.constRect.w / 2.;
+  // create section labels
+  int leftSectionX =
+      getCenteredX(app, app->screenWidth / app->scalingFactorX / 2);
+  int rightSectionX =
+      getCenteredX(app, app->screenWidth / app->scalingFactorX / 2) +
+      app->screenWidth / app->scalingFactorX / 2;
 
-  // sound label
-  RenderObject* soundTextObj = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "SOUND", mainFont,
-      &(SDL_Point){0, app->screenHeight / app->scalingFactorY / 3 + 10},
-      &(SDL_Color){255, 255, 255, 255});
-  soundTextObj->data.texture.constRect.x =
-      app->screenWidth / app->scalingFactorX / 4 -
-      soundTextObj->data.texture.constRect.w / 2.;
+  RenderObject* videoTextObj = createLeftAlignedText(
+      app, "VIDEO", mainFont, leftSectionX, 100, COLOR_WHITE);
+  RenderObject* soundTextObj = createLeftAlignedText(
+      app, "SOUND", mainFont, leftSectionX,
+      app->screenHeight / app->scalingFactorY / 3 + 10, COLOR_WHITE);
+  RenderObject* weaponsTextObj = createLeftAlignedText(
+      app, "WEAPONS", mainFont, rightSectionX, 100, COLOR_WHITE);
 
   // volume label
-  RenderObject* volumeTextObj =
-      createRenderObject(app->renderer, TEXT, 1, b_NONE, "Volume:", mainFont,
-                         &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255});
-  volumeTextObj->data.texture.constRect.x =
-      app->screenWidth / app->scalingFactorX / 4 -
-      volumeTextObj->data.texture.constRect.w / 2.;
-  volumeTextObj->data.texture.constRect.y =
-      soundTextObj->data.texture.constRect.y +
-      soundTextObj->data.texture.constRect.h + 10;
+  int volumeY = soundTextObj->data.texture.constRect.y +
+                soundTextObj->data.texture.constRect.h + 10;
+  RenderObject* volumeTextObj = createLeftAlignedText(
+      app, "Volume:", mainFont, leftSectionX, volumeY, COLOR_GRAY);
 
-  // weapon label
-  RenderObject* weaponsTextObj = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "WEAPONS", mainFont, &(SDL_Point){0, 100},
-      &(SDL_Color){255, 255, 255, 255});
-  weaponsTextObj->data.texture.constRect.x =
-      app->screenWidth / app->scalingFactorX / 4 * 3 -
-      weaponsTextObj->data.texture.constRect.w / 2.;
-  // return arrow
-  RenderObject* returnArrowObj = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_SETTINGS_BACK, "<",
-      titleFont, &(SDL_Point){20, 1}, &(SDL_Color){255, 255, 255, 255},
-      &(SDL_Color){230, 25, 25, 255});
-  returnArrowObj->data.texture.constRect.y =
-      settingsTextObj->data.texture.constRect.y +
-      (settingsTextObj->data.texture.constRect.h -
-       returnArrowObj->data.texture.constRect.h) /
-          2;
+  // back button
+  RenderObject* returnArrowObj = createBackButton(
+      app, titleFont, settingsTextObj->data.texture.constRect.y);
 
   // volume slider
   RenderObject* volumeSliderObj = createRenderObject(

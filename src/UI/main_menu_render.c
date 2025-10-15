@@ -11,6 +11,7 @@
 #include "../SDL/SDL_render.h"
 #include "../game/animations.h"
 #include "../math/physics.h"
+#include "ui_helpers.h"
 
 void mainMenu(App* app) {
   RenderObject* logoObject = createRenderObject(
@@ -64,53 +65,34 @@ void mainMenu(App* app) {
 
 void menuRenderLoop(App* app, RenderObject* logo) {
   // loading main font
-  char temp[256];
-  sprintf(temp, "%smedia/fonts/PixeloidSans-Bold.ttf", app->basePath);
-  TTF_Font* menuButtonsFont = loadFont(temp, 80);
+  TTF_Font* menuButtonsFont = loadMainFont(app, 80);
 
+  // create icon buttons
+  int iconY = 6 + ((!app->settings.isFullscreen) ? 24 : 0);
   RenderObject* infoButtonObj = createRenderObject(
       app->renderer, TEXTURE | CAN_BE_TRIGGERED, 1, b_HELP,
       "media/imgs/helpIco.png",
-      &(SDL_Point){app->screenWidth / app->scalingFactorX - 55,
-                   6 + ((!app->settings.isFullscreen) ? 24 : 0)});
+      &(SDL_Point){app->screenWidth / app->scalingFactorX - 55, iconY});
 
   RenderObject* leaderboardObj = createRenderObject(
       app->renderer, TEXTURE | CAN_BE_TRIGGERED, 1, b_LEADERBOARDS,
       "media/imgs/trophy.png",
-      &(SDL_Point){app->screenWidth / app->scalingFactorX - 55,
-                   6 + ((!app->settings.isFullscreen) ? 24 : 0) + 60});
-  // play button
-  RenderObject* playTextObj = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_PLAY, "PLAY",
-      menuButtonsFont, &(SDL_Point){500, 404}, &(SDL_Color){0, 255, 159, 200},
-      &(SDL_Color){230, 25, 25, 255});
-  playTextObj->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX -
-       playTextObj->data.texture.constRect.w) /
-      2;
+      &(SDL_Point){app->screenWidth / app->scalingFactorX - 55, iconY + 60});
 
-  // settings button
-  RenderObject* settingsTextObj = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_SETTINGS, "SETTINGS",
-      menuButtonsFont,
-      &(SDL_Point){500, 404 + playTextObj->data.texture.constRect.h},
-      &(SDL_Color){128, 128, 128, 255}, &(SDL_Color){230, 25, 25, 255});
-  settingsTextObj->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX -
-       settingsTextObj->data.texture.constRect.w) /
-      2;
+  // create menu buttons
+  RenderObject* playTextObj = createCenteredButton(
+      app, "PLAY", menuButtonsFont, 404, COLOR_GRAY, COLOR_RED, b_PLAY);
 
-  // quit button
-  RenderObject* quitTextObj = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_QUIT, "QUIT",
-      menuButtonsFont,
-      &(SDL_Point){500, 404 + playTextObj->data.texture.constRect.h +
-                            settingsTextObj->data.texture.constRect.h},
-      &(SDL_Color){128, 128, 128, 255}, &(SDL_Color){230, 25, 25, 255});
-  quitTextObj->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX -
-       quitTextObj->data.texture.constRect.w) /
-      2;
+  // calculate position for settings button
+  int settingsY = 404 + playTextObj->data.texture.constRect.h;
+  RenderObject* settingsTextObj =
+      createCenteredButton(app, "SETTINGS", menuButtonsFont, settingsY,
+                           COLOR_GRAY, COLOR_RED, b_SETTINGS);
+
+  // calculate position for quit button
+  int quitY = settingsY + settingsTextObj->data.texture.constRect.h;
+  RenderObject* quitTextObj = createCenteredButton(
+      app, "QUIT", menuButtonsFont, quitY, COLOR_GRAY, COLOR_RED, b_QUIT);
   // creting objects arr
   RenderObject* objectsArr[] = {leaderboardObj,  infoButtonObj, playTextObj,
                                 settingsTextObj, quitTextObj,   logo};

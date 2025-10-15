@@ -8,36 +8,19 @@
 #include <stdio.h>
 
 #include "../SDL/SDL_render.h"
+#include "ui_helpers.h"
 
 void helpMain(App* app) {
-  // loading main font
-  char temp[256];
+  // load fonts
+  TTF_Font* titleFont = loadMainFont(app, 60);
+  TTF_Font* rulesFont = loadMainFont(app, 20);
+  TTF_Font* aboutFont = loadMainFont(app, 20);
 
-  sprintf(temp, "%smedia/fonts/PixeloidSans-Bold.ttf", app->basePath);
-
-  TTF_Font* titleFont = loadFont(temp, 60);
-  TTF_Font* rulesFont = loadFont(temp, 20);
-  TTF_Font* aboutFont = loadFont(temp, 20);
-
-  // rules label
-  RenderObject* rulesTextObj = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "RULES", titleFont,
-      &(SDL_Point){0, 24 + 5}, &(SDL_Color){255, 255, 255, 255});
-  rulesTextObj->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX -
-       rulesTextObj->data.texture.constRect.w) /
-      2;
-
-  // back arrow
-  RenderObject* returnArrowObj = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_SETTINGS_BACK, "<",
-      titleFont, &(SDL_Point){20, 1}, &(SDL_Color){255, 255, 255, 255},
-      &(SDL_Color){230, 25, 25, 255});
-  returnArrowObj->data.texture.constRect.y =
-      rulesTextObj->data.texture.constRect.y +
-      (rulesTextObj->data.texture.constRect.h -
-       returnArrowObj->data.texture.constRect.h) /
-          2;
+  // create title and back button
+  RenderObject* rulesTextObj =
+      createCenteredText(app, "RULES", titleFont, 24 + 5, COLOR_WHITE);
+  RenderObject* returnArrowObj =
+      createBackButton(app, titleFont, rulesTextObj->data.texture.constRect.y);
 
   // rules text
   RenderObject* rulesTextObj_1 = createRenderObject(
