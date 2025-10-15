@@ -201,25 +201,23 @@ void leaderboardMain(App* app, const char* name) {
 
   RenderObject* placeLabel = createLeftAlignedText(app, "PLACE", smallFont,
                                                    leftColX, 150, COLOR_WHITE);
-  // Recalculate X to match row positioning
+  // Recalculate X to match row positioning using logical (unscaled) coords
   int tmpW, tmpH;
   SDL_QueryTexture(placeLabel->data.texture.texture, NULL, NULL, &tmpW, &tmpH);
   placeLabel->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX / 2 - tmpW) / 2 *
-      app->scalingFactorX;
+      (app->screenWidth / app->scalingFactorX / 2 - tmpW) / 2;
   placeLabel->data.texture.scaleRect.x = placeLabel->data.texture.constRect.x;
   RenderObject* nameLabel = createLeftAlignedText(app, "NAME", smallFont,
                                                   centerColX, 150, COLOR_WHITE);
   SDL_QueryTexture(nameLabel->data.texture.texture, NULL, NULL, &tmpW, &tmpH);
   nameLabel->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX - tmpW) / 2 * app->scalingFactorX;
+      (app->screenWidth / app->scalingFactorX - tmpW) / 2;
   nameLabel->data.texture.scaleRect.x = nameLabel->data.texture.constRect.x;
   RenderObject* scoreLabel = createLeftAlignedText(app, "SCORE", smallFont,
                                                    rightColX, 150, COLOR_WHITE);
   SDL_QueryTexture(scoreLabel->data.texture.texture, NULL, NULL, &tmpW, &tmpH);
   scoreLabel->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX * 3 / 2 - tmpW) / 2 *
-      app->scalingFactorX;
+      (app->screenWidth / app->scalingFactorX * 3 / 2 - tmpW) / 2;
   scoreLabel->data.texture.scaleRect.x = scoreLabel->data.texture.constRect.x;
 
   PlayerScore leaderboardArray[10] = {0};
