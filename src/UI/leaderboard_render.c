@@ -193,17 +193,34 @@ void leaderboardMain(App* app, const char* name) {
 
   // creating column headers
   int leftColX = getCenteredX(app, app->screenWidth / app->scalingFactorX / 2);
-  int centerColX = getCenteredX(app, app->screenWidth / app->scalingFactorX);
+  int centerColX =
+      app->screenWidth / app->scalingFactorX / 2 - 20 * app->scalingFactorX;
   int rightColX =
       getCenteredX(app, app->screenWidth / app->scalingFactorX / 2) +
       app->screenWidth / app->scalingFactorX / 2;
 
   RenderObject* placeLabel = createLeftAlignedText(app, "PLACE", smallFont,
                                                    leftColX, 150, COLOR_WHITE);
+  // Recalculate X to match row positioning
+  int tmpW, tmpH;
+  SDL_QueryTexture(placeLabel->data.texture.texture, NULL, NULL, &tmpW, &tmpH);
+  placeLabel->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX / 2 - tmpW) / 2 *
+      app->scalingFactorX;
+  placeLabel->data.texture.scaleRect.x = placeLabel->data.texture.constRect.x;
   RenderObject* nameLabel = createLeftAlignedText(app, "NAME", smallFont,
                                                   centerColX, 150, COLOR_WHITE);
+  SDL_QueryTexture(nameLabel->data.texture.texture, NULL, NULL, &tmpW, &tmpH);
+  nameLabel->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX - tmpW) / 2 * app->scalingFactorX;
+  nameLabel->data.texture.scaleRect.x = nameLabel->data.texture.constRect.x;
   RenderObject* scoreLabel = createLeftAlignedText(app, "SCORE", smallFont,
                                                    rightColX, 150, COLOR_WHITE);
+  SDL_QueryTexture(scoreLabel->data.texture.texture, NULL, NULL, &tmpW, &tmpH);
+  scoreLabel->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX * 3 / 2 - tmpW) / 2 *
+      app->scalingFactorX;
+  scoreLabel->data.texture.scaleRect.x = scoreLabel->data.texture.constRect.x;
 
   PlayerScore leaderboardArray[10] = {0};
   loadLeaderboardToArray(leaderboardArray);

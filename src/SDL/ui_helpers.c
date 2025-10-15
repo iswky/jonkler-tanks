@@ -1,6 +1,6 @@
-#include "ui_helpers.h"
-
 #include <string.h>
+
+#include "ui_helpers.h"
 
 // color constants
 const SDL_Color COLOR_WHITE = {255, 255, 255, 255};
@@ -33,7 +33,10 @@ int getCenteredXForText(App* app, const char* text, TTF_Font* font) {
   return getCenteredX(app, w);
 }
 
-int getLeftAlignedX(App* app, int width, int offset) { return offset; }
+int getLeftAlignedX(App* app, int width, int offset) {
+  (void)width;
+  return offset * app->scalingFactorX;
+}
 
 int getRightAlignedX(App* app, int width, int offset) {
   return app->screenWidth / app->scalingFactorX - width - offset;
