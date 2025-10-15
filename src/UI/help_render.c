@@ -1,5 +1,3 @@
-#include "help_render.h"
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
@@ -8,7 +6,8 @@
 #include <stdio.h>
 
 #include "../SDL/SDL_render.h"
-#include "ui_helpers.h"
+#include "../SDL/ui_helpers.h"
+#include "help_render.h"
 
 void helpMain(App* app) {
   // load fonts

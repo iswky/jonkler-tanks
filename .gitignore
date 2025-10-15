@@ -5,3 +5,4 @@ JonklerTanks
 build
 data
 .cache
+llvm*

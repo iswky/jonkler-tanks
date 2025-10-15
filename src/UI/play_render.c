@@ -1,5 +1,3 @@
-#include "play_render.h"
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
@@ -12,11 +10,12 @@
 #include <time.h>
 
 #include "../SDL/SDL_render.h"
+#include "../SDL/ui_helpers.h"
 #include "../game/autosave.h"
 #include "../game/gen_map.h"
 #include "../game/player_movement.h"
 #include "../math/math.h"
-#include "ui_helpers.h"
+#include "play_render.h"
 
 // saving current render state to a texture, so it will be faster to output
 // after
