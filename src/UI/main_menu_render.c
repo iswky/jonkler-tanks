@@ -5,12 +5,12 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 #include <stdio.h>
 
 #include "../SDL/SDL_render.h"
 #include "../game/animations.h"
 #include "../math/physics.h"
+#include "log/log.h"
 
 void mainMenu(App* app) {
   RenderObject* logoObject = createRenderObject(

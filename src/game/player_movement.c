@@ -6,13 +6,12 @@
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL_rect.h>
-#include <log/log.h>
 #include <math.h>
 
 #include "../math/math.h"
 #include "autosave.h"
 #include "bot.h"
+#include "log/log.h"
 
 // function fires a shot from currPlayer and detects any hits to enemyPlayer
 void shoot(App* app, Player* firstPlayer, Player* secondPlayer,

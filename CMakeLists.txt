@@ -1,29 +1,31 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.12)
 project(JonklerTanks C)
 
-find_package(PkgConfig REQUIRED)
+option(DEBUG "Enable Debug mode" ON)
 
-# ---------- SOURCE & HEADER FiLES -----------------
+# ------------------ vcpkg toolchain ------------------
+if(DEFINED ENV{VCPKG_ROOT})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        CACHE STRING "Vcpkg toolchain file")
+endif()
+
+# ------------------ Source files ---------------------
 file(GLOB_RECURSE SRC_FILES "${CMAKE_SOURCE_DIR}/src/*.c")
 
-include_directories(${CMAKE_SOURCE_DIR}/third_party)
-add_executable(${PROJECT_NAME} 
-               ${SRC_FILES}
-               ${CMAKE_SOURCE_DIR}/third_party/log/log.c
+add_executable(${PROJECT_NAME}
+    ${SRC_FILES}
+    ${CMAKE_SOURCE_DIR}/third_party/log/log.c
 )
 
-# -----------------------------------------
-
-
-# ----------- DIFF OPTS --------------------
-option(DEBUG "Enable dEbUg mode" ON)
-
-# for more prettier output in logs and enable all warnings
-target_compile_options(JonklerTanks PRIVATE 
-                       -fmacro-prefix-map=${CMAKE_SOURCE_DIR}=.
-                       -Wall -Wextra
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )
 
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/third_party
+)
+
+# ------------------ Compile options ------------------
 if(DEBUG)
     target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
 endif()
@@ -32,42 +34,30 @@ if(UNIX AND NOT APPLE)
     target_compile_definitions(${PROJECT_NAME} PRIVATE LOG_USE_COLOR)
 endif()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
-)
-
-set(SDL_THREAD ON)
-
-# ---------------------------------------
-
-# ----------- EXTERNAL LiBRARiES ----------
-find_package(Threads)
-
-pkg_check_modules(SDL2 REQUIRED sdl2)
-pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
-pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
-# -----------------------------------------
-
-target_link_libraries(${PROJECT_NAME} PRIVATE 
-    ${SDL2_LIBRARIES}
-    ${SDL2_IMAGE_LIBRARIES}
-    ${SDL2_TTF_LIBRARIES}
-    ${SDL2_MIXER_LIBRARIES}
-    Threads::Threads
-    m # math
-)
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${SDL2_INCLUDE_DIRS}
-    ${SDL2_IMAGE_INCLUDE_DIRS}
-    ${SDL2_TTF_INCLUDE_DIRS}
-    ${SDL2_MIXER_INCLUDE_DIRS}
-)
-
 target_compile_options(${PROJECT_NAME} PRIVATE
-    ${SDL2_CFLAGS_OTHER}
-    ${SDL2_IMAGE_CFLAGS_OTHER}
-    ${SDL2_TTF_CFLAGS_OTHER}
-    ${SDL2_MIXER_CFLAGS_OTHER}
+    -fmacro-prefix-map=${CMAKE_SOURCE_DIR}=.
+    -Wall -Wextra
 )
+
+# ----------------------------------------------------
+find_package(Threads REQUIRED)
+
+# ------------------ SDL2 stuff -----------------------
+find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2_image CONFIG REQUIRED)
+find_package(SDL2_ttf CONFIG REQUIRED)
+find_package(SDL2_mixer CONFIG REQUIRED)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
+    $<IF:$<TARGET_EXISTS:SDL2::SDL2main>,SDL2::SDL2main,>
+    $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>
+    $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static>
+    $<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>,SDL2_mixer::SDL2_mixer,SDL2_mixer::SDL2_mixer-static>
+    Threads::Threads
+)
+
+# adding math lib for linux systems
+if(UNIX AND NOT APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE m)
+endif()

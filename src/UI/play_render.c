@@ -6,7 +6,6 @@
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -16,6 +15,7 @@
 #include "../game/gen_map.h"
 #include "../game/player_movement.h"
 #include "../math/math.h"
+#include "log/log.h"
 
 // saving current render state to a texture, so it will be faster to output
 // after

@@ -6,11 +6,11 @@
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 #include <stdio.h>
 
 #include "../SDL/SDL_render.h"
 #include "../game/autosave.h"
+#include "log/log.h"
 
 void renderPlayer(App* app, int y, PlayerScore currPlayer,
                   const char* placeText, TTF_Font* font, unsigned char r,

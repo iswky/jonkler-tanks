@@ -4,9 +4,9 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 
 #include "SDL_render.h"
+#include "log/log.h"
 
 // function for thread that replace cursor32.png with cursor32Triggered.png
 int threadCursorTrigger(void* arg) {

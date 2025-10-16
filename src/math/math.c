@@ -6,11 +6,11 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 #include <math.h>
 #include <stdio.h>
 
 #include "../game/player_movement.h"
+#include "log/log.h"
 
 // check if (x, y) in a triangle with vertexes p1, p2, p3
 SDL_bool isInTriangle(const int x, const int y, SDL_Point p1, SDL_Point p2,

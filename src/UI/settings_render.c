@@ -5,10 +5,10 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 
 #include "../SDL/SDL_render.h"
 #include "../game/settings.h"
+#include "log/log.h"
 
 void settingsMain(App* app) {
   char temp[256];

@@ -1,8 +1,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
-#include <log/log.h>
 #include <stddef.h>
 #include <stdio.h>
+
+#include "log/log.h"
 
 void playMusic() {
   // is music playing now
