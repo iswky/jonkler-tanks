@@ -8,10 +8,12 @@ Welcome to **Jonkler Tanks**!
    1.2 [Linux](#linux)  
 2. [Dependencies](#dependencies)  
    2.1 [Linux](#linux-1)  
-      - [Using Distro Package Manager](#using-distro-package-manager)  
-      - [Using vcpkg](#using-vcpkg)  
+   - 2.1.1 [Using Distro Package Manager](#using-distro-package-manager)  
+   - 2.1.2 [Using vcpkg](#using-vcpkg)  
+
    2.2 [Windows](#windows)  
-      - [Using vcpkg](#using-vcpkg-1)  
+      - 2.2.1 [Using vcpkg](#using-vcpkg-1)  
+
 
 ---
 
