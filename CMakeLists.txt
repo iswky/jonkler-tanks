@@ -3,12 +3,6 @@ project(JonklerTanks C)
 
 option(DEBUG "Enable Debug mode" ON)
 
-# ------------------ vcpkg toolchain ------------------
-if(DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-        CACHE STRING "Vcpkg toolchain file")
-endif()
-
 # ------------------ Source files ---------------------
 file(GLOB_RECURSE SRC_FILES "${CMAKE_SOURCE_DIR}/src/*.c")
 
