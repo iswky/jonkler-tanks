@@ -1,38 +1,92 @@
-### TODO list:
-#### from main reqs
-- [x] Main menu
-- [x] About menu
-- [x] help menu
-- [x] saving game after any action
-- [x] score board
-- [x] bots
-	- [x] difficulties for bots
-#### yeah i like these 1s
-- [x] map generating with perlin 1d noise
-	- [x] mb do some small improvements for map generating cuz of strange differences in resolutions 
-	- [x] main things
-- [ ] create a sound effects (like for everything)
-- [x] create renderer 
-	- [x]  z-pos sorting (dont need that)
-	- [x] custom struct for easier rendering
-- [x] debug info'es
-- [x] add info bar at the bottom of the screen
-#### funny stuff
-- [ ] clash royale emotes
+# Jonkler Tanks
 
+Welcome to **Jonkler Tanks**!
 
+## 📁 Table of Contents
+1. [Building](#building)  
+   1.1 [Cloning the Repository](#cloning-the-repository)  
+   1.2 [Linux](#linux)  
+2. [Dependencies](#dependencies)  
+   2.1 [Linux](#linux-1)  
+      - [Using Distro Package Manager](#using-distro-package-manager)  
+      - [Using vcpkg](#using-vcpkg)  
+   2.2 [Windows](#windows)  
+      - [Using vcpkg](#using-vcpkg-1)  
 
-## dependencies
-### 1. Building tools
-`cmake make gcc`
-### 2. SDL libs
-`sdl2 sdl2_image sdl2_mixer sdl2_ttf` 
-## building
+---
+
+## Building
+
+### Cloning the Repository
+```bash
+git clone https://github.com/tap-jf/jonkler-tanks --depth 1
 ```
+
+### Linux
+```bash
+cd jonkler-tanks
 mkdir build && cd build
-cmake ..
+cmake .. -DCMAKE_TOOLCHAIN_FILE=[ABSOLUTE PATH TO VCPKG]scripts/buildsystems/vcpkg.cmake
 make -j4
 ```
 
-## running
-Just run the 'JonklerTanks' executable
+---
+
+## Dependencies
+
+### Linux
+
+#### Using Distro Package Manager
+
+**Arch / Manjaro:**
+```bash
+sudo pacman -S sdl2-compat sdl2_mixer sdl2_ttf sdl2_image gcc cmake make
+```
+
+**Ubuntu / Debian:**
+```bash
+sudo apt-get update
+sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev gcc cmake make
+```
+
+**Fedora:**
+```bash
+sudo dnf install SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel mpg123-devel gcc cmake make
+```
+
+#### Using vcpkg
+
+**Install vcpkg:**
+```bash
+git clone https://github.com/microsoft/vcpkg --depth 1
+cd vcpkg
+./bootstrap-vcpkg.sh -disableMetrics
+```
+
+**Install SDL:**
+```bash
+./vcpkg install sdl2 sdl2-image sdl2-mixer[mpg123] sdl2-ttf
+```
+
+---
+
+### Windows
+
+#### Using vcpkg
+
+**Install vcpkg:**
+```bash
+git clone https://github.com/microsoft/vcpkg --depth 1
+cd vcpkg
+.\bootstrap-vcpkg.bat -disableMetrics
+```
+
+**Install SDL:**
+```bash
+./vcpkg install sdl2 sdl2-image sdl2-mixer[mpg123] sdl2-ttf
+```
+
+**FIX:** Arch systemd build error
+```bash
+sudo pacman -S base-devel meson ninja python python-jinja util-linux util-linux-libs acl libpwquality libseccomp tpm2-tss
+```
