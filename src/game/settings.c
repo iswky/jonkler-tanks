@@ -5,10 +5,11 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#include "log/log.h"
 
 void saveSettings(App* app) {
   char temp[256];

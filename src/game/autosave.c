@@ -4,8 +4,9 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 #include <stdio.h>
+
+#include "log/log.h"
 
 void clearSave(App* app) {
   char temp[256];

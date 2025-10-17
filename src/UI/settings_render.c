@@ -1,14 +1,16 @@
+#include "settings_render.h"
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 
 #include "../SDL/SDL_render.h"
+#include "../SDL/event_handlers.h"
 #include "../SDL/ui_helpers.h"
 #include "../game/settings.h"
-#include "settings_render.h"
+#include "log/log.h"
 
 void settingsMain(App* app) {
   Mix_VolumeMusic(app->settings.currentVolume);  // set volume
@@ -230,6 +232,7 @@ void settingsMain(App* app) {
   int prevVolume = app->settings.currentVolume;
 
   while (app->currState == SETTINGS) {
+    threadEventPoll(app);
     // new texture if volume changed
     if (app->settings.currentVolume != prevVolume) {
       Mix_VolumeMusic(app->settings.currentVolume);

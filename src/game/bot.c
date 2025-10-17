@@ -6,11 +6,10 @@
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL_stdinc.h>
-#include <log/log.h>
 #include <math.h>
 
 #include "../math/math.h"
+#include "log/log.h"
 #include "player_movement.h"
 
 void botMain(App* app, Player* player1, Player* player2, int* heightMap,

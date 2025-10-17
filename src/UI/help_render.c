@@ -1,13 +1,14 @@
+#include "help_render.h"
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <stdio.h>
 
 #include "../SDL/SDL_render.h"
+#include "../SDL/event_handlers.h"
 #include "../SDL/ui_helpers.h"
-#include "help_render.h"
 
 void helpMain(App* app) {
   // load fonts
@@ -190,6 +191,7 @@ void helpMain(App* app) {
 
   objectsArr[0] = returnArrowObj;
   while (app->currState == HELP) {
+    threadEventPoll(app);
     // filling up the background with black color and clearing render
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);
