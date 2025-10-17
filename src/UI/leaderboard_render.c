@@ -1,3 +1,5 @@
+#include "leaderboard_render.h"
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
@@ -9,7 +11,6 @@
 
 #include "../SDL/SDL_render.h"
 #include "../SDL/ui_helpers.h"
-#include "leaderboard_render.h"
 
 void renderPlayer(App* app, int y, PlayerScore currPlayer,
                   const char* placeText, TTF_Font* font, unsigned char r,

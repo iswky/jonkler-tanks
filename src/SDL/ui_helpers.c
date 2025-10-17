@@ -1,6 +1,6 @@
-#include <string.h>
-
 #include "ui_helpers.h"
+
+#include <string.h>
 
 // color constants
 const SDL_Color COLOR_WHITE = {255, 255, 255, 255};
