@@ -5,7 +5,6 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <stdio.h>
 
 #include "../SDL/SDL_render.h"
 #include "../SDL/ui_helpers.h"
