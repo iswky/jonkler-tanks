@@ -12,6 +12,7 @@
 #include <time.h>
 
 #include "../SDL/SDL_render.h"
+#include "../SDL/event_handlers.h"
 #include "../game/autosave.h"
 #include "../game/gen_map.h"
 #include "../game/player_movement.h"
@@ -246,6 +247,7 @@ void preGameMain(App* app) {
       seedInput,      loadTextButton, startTextButton};
 
   while (app->currState == PREGAME_SETTING) {
+    threadEventPoll(app);
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);
 
@@ -654,6 +656,7 @@ void playMain(App* app, unsigned SEED) {
   };
 
   while (app->currState == PLAY) {
+    threadEventPoll(app);
     while (app->currWeapon == -1) {
       app->currWeapon = getAllowedNumber(app);
     }

@@ -7,6 +7,7 @@
 #include <SDL2/SDL_ttf.h>
 
 #include "../SDL/SDL_render.h"
+#include "../SDL/event_handlers.h"
 #include "../SDL/ui_helpers.h"
 
 void helpMain(App* app) {
@@ -190,6 +191,7 @@ void helpMain(App* app) {
 
   objectsArr[0] = returnArrowObj;
   while (app->currState == HELP) {
+    threadEventPoll(app);
     // filling up the background with black color and clearing render
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);

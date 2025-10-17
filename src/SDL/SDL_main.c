@@ -56,8 +56,8 @@ void SDL_Main() {
   //initCursor(&mainGameWindow);
 
   // creating thread that will loop while SDL_QUIT event is not polled
-  mainGameWindow.eventPollThread =
-      SDL_CreateThread(threadEventPoll, "eventPoll", &mainGameWindow);
+  //mainGameWindow.eventPollThread =
+  //SDL_CreateThread(threadEventPoll, "eventPoll", &mainGameWindow);
   // changing cursor when triggered
   mainGameWindow.cursorTriggerThread =
       SDL_CreateThread(threadCursorTrigger, "cursorTrigger", &mainGameWindow);
