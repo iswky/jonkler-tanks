@@ -1,7 +1,7 @@
 #ifndef UI_HELPERS_H
 #define UI_HELPERS_H
 
-#include "../SDL/SDL_render.h"
+#include "../App.h"
 
 // font loading
 TTF_Font* loadMainFont(App* app, int size);
