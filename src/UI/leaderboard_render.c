@@ -11,6 +11,7 @@
 #include "../SDL/SDL_render.h"
 #include "../SDL/event_handlers.h"
 #include "../SDL/ui_helpers.h"
+#include "log/log.h"
 
 void renderPlayer(App* app, int y, PlayerScore currPlayer,
                   const char* placeText, TTF_Font* font, unsigned char r,
