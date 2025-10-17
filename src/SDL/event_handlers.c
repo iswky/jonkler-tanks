@@ -81,9 +81,6 @@ int threadEventPoll(void* arg) {
       }
     }
   }
-
-  log_info("success deleted SDL_Quit event check thread");
-
   return 0;
 }
 
