@@ -123,7 +123,6 @@ void loadAllSounds(App* app) {
 
 // clean up SDL, img and other sh.t
 void SDL_Cleanup(App* app) {
-  SDL_WaitThread(app->eventPollThread, NULL);
   SDL_WaitThread(app->cursorTriggerThread, NULL);
 
   SDL_FreeCursor(app->cursor);
