@@ -30,7 +30,7 @@ endif()
 
 target_compile_options(${PROJECT_NAME} PRIVATE
     -fmacro-prefix-map=${CMAKE_SOURCE_DIR}=.
-    -Wall -Wextra
+    -Wall
 )
 
 # ----------------------------------------------------

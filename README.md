@@ -5,7 +5,8 @@ Welcome to **Jonkler Tanks**! This guide explains how to set up, build, and cont
 ## 📁 Table of Contents
 1. [Building](#1-building)
    - 1.1. [Cloning the Repository](#11-cloning-the-repository)
-   - 1.2. [Linux Build Instructions](#12-linux-build-instructions)
+   - 1.2.1. [Linux Build Instructions](#121-linux-build-instructions)
+   - 1.2.2. [Windows Build Instructions](#122-linux-build-instructions)
 2. [Dependencies](#2-dependencies)
    - 2.1. [Linux Dependencies](#21-linux-dependencies)
       - 2.1.1. [Using Distro Package Manager](#211-using-distro-package-manager)
@@ -17,7 +18,7 @@ Welcome to **Jonkler Tanks**! This guide explains how to set up, build, and cont
 ---
 
 ## 1. Building
-
+Before doin' this install [Dependencies](#2-dependencies) 
 ### 1.1. Cloning the Repository
 To start, clone the repository with this command:
 
@@ -25,7 +26,7 @@ To start, clone the repository with this command:
 git clone https://github.com/tap-jf/jonkler-tanks --depth 1
 ```
 
-### 1.2. Linux Build Instructions
+### 1.2.1. Linux Build Instructions
 Follow these steps to build the project on Linux:
 
 1. Go to the project directory:
@@ -44,7 +45,22 @@ Follow these steps to build the project on Linux:
    ```bash
    make -j4
    ```
+### 1.2.2 Windows Build Instructions
+Follow these steps to build the project on Windows 10/11:
 
+1. Go to the project directory:
+   ```bash
+   cd jonkler-tanks
+   ```
+2. Create a build directory and enter it:
+   ```bash
+   mkdir build && cd build
+   ```
+3. Run CMake with the vcpkg toolchain and generate files for VS22:
+   ```bash
+   cmake .. -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=[ABSOLUTE PATH TO VCPKG]/scripts/buildsystems/vcpkg.cmake
+   ```
+4. Open ".sln" file in Visual Studio and build
 ---
 
 ## 2. Dependencies
