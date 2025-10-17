@@ -3,10 +3,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 
 #include "../math/math.h"
 #include "event_handlers.h"
+#include "log/log.h"
 
 /*  This function creates renderObject with different internals and accepts different amount of args
  *  1) if flags & TEXT it will accept args in this order:

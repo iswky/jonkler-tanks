@@ -12,6 +12,7 @@
 #include "../SDL/ui_helpers.h"
 #include "../game/animations.h"
 #include "../math/physics.h"
+#include "log/log.h"
 
 void mainMenu(App* app) {
   RenderObject* logoObject = createRenderObject(

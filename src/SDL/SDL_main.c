@@ -6,7 +6,6 @@
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 
 #include "../UI/help_render.h"
 #include "../UI/leaderboard_render.h"
@@ -14,6 +13,7 @@
 #include "../UI/settings_render.h"
 #include "../game/settings.h"
 #include "event_handlers.h"
+#include "log/log.h"
 #include "play_music.h"
 
 void SDL_Main() {

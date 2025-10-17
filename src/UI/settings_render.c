@@ -5,12 +5,12 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-#include <log/log.h>
 
 #include "../SDL/SDL_render.h"
 #include "../SDL/event_handlers.h"
 #include "../SDL/ui_helpers.h"
 #include "../game/settings.h"
+#include "log/log.h"
 
 void settingsMain(App* app) {
   Mix_VolumeMusic(app->settings.currentVolume);  // set volume
