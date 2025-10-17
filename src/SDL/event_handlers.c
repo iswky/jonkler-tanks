@@ -25,72 +25,62 @@ int threadCursorTrigger(void* arg) {
 // function for thread that handle different events every 16ms (60 fps)
 int threadEventPoll(void* arg) {
   App* app = arg;
-
-  log_info("success creating SDL_Quit event check thread!");
-
-  while (app->currState != EXIT) {
-    SDL_Event currEvent;
-    while (SDL_PollEvent(&currEvent)) {
-      switch (currEvent.type) {
-        // is it closing the app?
-        case SDL_QUIT: {
+  SDL_Event currEvent;
+  while (SDL_PollEvent(&currEvent)) {
+    switch (currEvent.type) {
+      // is it closing the app?
+      case SDL_QUIT: {
+        log_info(
+            "thread success detected SDL_QUIT like "
+            "event. Setting STATUS TO EXIT");
+        app->currState = EXIT;
+        break;
+      }
+      // has window been resized?
+      case SDL_WINDOWEVENT: {
+        if (currEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
           log_info(
-              "thread success detected SDL_QUIT like "
-              "event. Setting STATUS TO EXIT");
-          app->currState = EXIT;
-          break;
-        }
-        // has window been resized?
-        case SDL_WINDOWEVENT: {
-          if (currEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
-            log_info(
-                "hread success detected RESIZE like "
-                "event. Fixing textures sizes");
+              "hread success detected RESIZE like "
+              "event. Fixing textures sizes");
 
-            SDL_GetWindowSize(app->window, &app->screenWidth,
-                              &app->screenHeight);
-            app->scalingFactorX = app->screenWidth / 1024.0;
-            app->scalingFactorY = app->screenHeight / 768.0;
-            log_info("curr scaling X:%lf (%d), Y:%lf (%d)", app->scalingFactorX,
-                     app->screenWidth, app->scalingFactorY, app->screenHeight);
-          }
-          break;
+          SDL_GetWindowSize(app->window, &app->screenWidth, &app->screenHeight);
+          app->scalingFactorX = app->screenWidth / 1024.0;
+          app->scalingFactorY = app->screenHeight / 768.0;
+          log_info("curr scaling X:%lf (%d), Y:%lf (%d)", app->scalingFactorX,
+                   app->screenWidth, app->scalingFactorY, app->screenHeight);
         }
-        // is some key down?
-        case SDL_KEYDOWN: {
-          keyPressHandler(app, currEvent);
-          break;
+        break;
+      }
+      // is some key down?
+      case SDL_KEYDOWN: {
+        keyPressHandler(app, currEvent);
+        break;
+      }
+      // is LMB pressed?
+      case SDL_MOUSEBUTTONDOWN: {
+        if (currEvent.button.button == SDL_BUTTON_LEFT) {
+          app->isMouseDragging = SDL_TRUE;
         }
-        // is LMB pressed?
-        case SDL_MOUSEBUTTONDOWN: {
-          if (currEvent.button.button == SDL_BUTTON_LEFT) {
-            app->isMouseDragging = SDL_TRUE;
-          }
-          break;
-        }
+        break;
+      }
 
-        // is LMB released?
-        case SDL_MOUSEBUTTONUP: {
-          if (currEvent.button.button == SDL_BUTTON_LEFT) {
-            app->isMouseDragging = SDL_FALSE;
-            int x, y;
-            SDL_GetMouseState(&x, &y);
-            log_info(
-                "detected mouse click (lbm_up) in (%d, "
-                "%d)",
-                x, y);
+      // is LMB released?
+      case SDL_MOUSEBUTTONUP: {
+        if (currEvent.button.button == SDL_BUTTON_LEFT) {
+          app->isMouseDragging = SDL_FALSE;
+          int x, y;
+          SDL_GetMouseState(&x, &y);
+          log_info(
+              "detected mouse click (lbm_up) in (%d, "
+              "%d)",
+              x, y);
 
-            LMBReleaseHandle(app);
-          }
-          break;
+          LMBReleaseHandle(app);
         }
+        break;
       }
     }
-    SDL_Delay(16);
   }
-
-  log_info("success deleted SDL_Quit event check thread");
-
   return 0;
 }
 
