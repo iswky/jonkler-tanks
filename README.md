@@ -14,6 +14,7 @@ Welcome to **Jonkler Tanks**! This guide explains how to set up, build, and cont
    - 2.2. [Windows Dependencies](#22-windows-dependencies)
       - 2.2.1. [Using vcpkg](#221-using-vcpkg-windows)
 3. [Contribution](#3-contribution)
+4. [Adding a bot](#4-adding-your-own-bot)
 
 ---
 
@@ -147,3 +148,7 @@ Here's how you can contribute:
      git push origin feature/your-feature-name
      ```
    - Open a pull request on the main repository, explaining your changes and linking any relevant issues.
+
+## 4. Adding your own bot
+
+Do u wanna add ur own bot? Follow this guide --> [**guide**](https://github.com/tap-jf/jonkler-tanks/blob/dev/botHowTo.md)
