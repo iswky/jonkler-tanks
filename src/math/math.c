@@ -1,7 +1,6 @@
 #define _USE_MATH_DEFINES
 
 #include "math.h"
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
@@ -13,26 +12,26 @@
 #include "log/log.h"
 
 #ifdef _WIN32
-#include <wincrypt.h>
 #include <windows.h>
+#include <wincrypt.h>
 #endif
 
 // check if (x, y) in a triangle with vertexes p1, p2, p3
 SDL_bool isInTriangle(const int32_t x, const int32_t y, SDL_Point p1,
                       SDL_Point p2, SDL_Point p3) {
-  /* 
-     * 
-     * calculating (x2 - x1) * (y - y1) - (y2 - y1) * (x0 - x1)
-     * for each pairs of a points and (x, y)
-     *       
-     *       p2        p2
-     *      / |        | \
-     *     /  |        |  \
-     *    p1  |   or   |  p1
-     *     \  |        |  /
-     *      \ |        | /
-     *       p3        p3
-     */
+  /*
+   *
+   * calculating (x2 - x1) * (y - y1) - (y2 - y1) * (x0 - x1)
+   * for each pairs of a points and (x, y)
+   *
+   *       p2        p2
+   *      / |        | \
+   *     /  |        |  \
+   *    p1  |   or   |  p1
+   *     \  |        |  /
+   *      \ |        | /
+   *       p3        p3
+   */
   int32_t D1, D2, D3;
 
   D1 = (p2.x - p1.x) * (y - p1.y) - (p2.y - p1.y) * (x - p1.x);
@@ -323,5 +322,5 @@ void getPositionAtSpecTime(SDL_FPoint* pos, double initVel, double angle,
   pos->x = vx * currTime;
   pos->y = vy * currTime - 0.5 * G * currTime * currTime;
 
-  //printf("currTime: %lf, vy:%lf\n", currTime, vy - G * currTime);
+  // printf("currTime: %lf, vy:%lf\n", currTime, vy - G * currTime);
 }
