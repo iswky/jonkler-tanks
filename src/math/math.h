@@ -15,6 +15,12 @@ double normalizeAngle(double angleDeg);
 int32_t getRandomValue(int32_t min, int32_t max);
 int32_t getAllowedNumber(App* app);
 
+#if defined(__unix__)
+int32_t getRandomDWORD_unix();
+#elif defined(_WIN32)
+int32_t getRandomDWORD_win();
+#endif
+
 void getPositionAtSpecTime(SDL_FPoint* pos, double initVel, double angle,
                            double currTime);
 int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
