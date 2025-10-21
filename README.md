@@ -40,7 +40,7 @@ Follow these steps to build the project on Linux:
    ```
 3. Run CMake with the vcpkg toolchain:
    ```bash
-   cmake .. -DCMAKE_TOOLCHAIN_FILE=[ABSOLUTE PATH TO VCPKG]/scripts/buildsystems/vcpkg.cmake
+   cmake ..
    ```
 4. Build the project:
    ```bash
@@ -95,10 +95,30 @@ Alternatively, use vcpkg to manage dependencies.
    git clone https://github.com/microsoft/vcpkg --depth 1
    cd vcpkg
    ./bootstrap-vcpkg.sh -disableMetrics
+   ./vcpkg integrate install
    ```
+   Set up env variable for vcpkg
+   ```bash
+   echo "export VCPKG_ROOT=$(pwd)" >> ~/.bashrc
+   source ~/.bashrc
+   ```
+   Add vcpkg in path var (**Optional**)
+   ```bash
+   echo 'export PATH='$(pwd)':$PATH' >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
 2. Install SDL dependencies:
+
+   **Install globally**
    ```bash
    ./vcpkg install sdl2 sdl2-image sdl2-mixer[mpg123] sdl2-ttf
+   ```
+   **OR install locally**
+   
+   (**If vcpkg was added in PATH** (*run in jonkler-tanks dir*))
+   ```bash
+   vcpkg install
    ```
 3. **Fix for Arch systemd build error** (if encountered):
    ```bash
@@ -115,6 +135,7 @@ To manage dependencies on Windows, use vcpkg.
    git clone https://github.com/microsoft/vcpkg --depth 1
    cd vcpkg
    .\bootstrap-vcpkg.bat -disableMetrics
+   .\vcpkg integrate install
    ```
 2. Install SDL dependencies:
    ```bash

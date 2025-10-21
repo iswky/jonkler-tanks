@@ -1,0 +1,13 @@
+{
+  "name": "JONKLER TANKS",
+  "version-string": "1.3.3.7",
+  "dependencies": [
+    "sdl2",
+    "sdl2-image",
+    {
+      "name": "sdl2-mixer",
+      "features": ["mpg123"]
+    },
+    "sdl2-ttf"
+  ]
+}
