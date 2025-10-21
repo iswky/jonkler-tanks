@@ -32,26 +32,29 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-        echo "vcpkg-dir=${{ runner.temp }}/vcpkg" >> "$GITHUB_OUTPUT"
+        echo "vcpkg-dir=${{ github.workspace }}/vcpkg" >> "$GITHUB_OUTPUT"
 
     - name: Setup CMake
       uses: lukka/get-cmake@latest
 
+    # Установка vcpkg (HEAD из master)
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgDirectory: ${{ steps.strings.outputs.vcpkg-dir }}
-        doSetup: true
-        vcpkgTriplet: ${{ matrix.os == 'windows-latest' && 'x64-windows' || 'x64-linux' }}
+        runVcpkgInstall: false  # CMake установит пакеты через vcpkg.json
+        vcpkgJsonGlob: '**/vcpkg.json'
 
+    # Кэширование vcpkg (без commit ID, только vcpkg.json)
     - name: Cache vcpkg
       uses: actions/cache@v4
       with:
         path: ${{ steps.strings.outputs.vcpkg-dir }}
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+        key: ${{ runner.os }}-vcpkg-latest-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
-          ${{ runner.os }}-vcpkg-
+          ${{ runner.os }}-vcpkg-latest-
 
+    # Binary caching для ускорения
     - name: Export GitHub Actions cache env vars
       uses: actions/github-script@v7
       with:
@@ -65,12 +68,13 @@ jobs:
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.vcpkg-dir }}/scripts/buildsystems/vcpkg.cmake
+        -DVCPKG_TARGET_TRIPLET=${{ matrix.os == 'windows-latest' && 'x64-windows' || 'x64-linux' }}
         -S ${{ github.workspace }}
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
     - name: Test
-      run: ctest --build-config ${{ matrix.build_type }}
+      run: ctest --build-config ${{ matrix.build_type }} -V
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       if: matrix.build_type == 'Release'
