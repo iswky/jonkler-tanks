@@ -33,24 +33,32 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "vcpkg-dir=${{ github.workspace }}/vcpkg" >> "$GITHUB_OUTPUT"
+
     - name: Install build tools (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-        build-essential \
-        make \
-        gcc \
-        clang \
-        autoconf \
-        automake \
-        libtool \
-        pkg-config \
-        m4 \
-        gettext \
-        texinfo \
-        ninja-build \
-        libltdl-dev
+          build-essential \
+          make \
+          gcc \
+          clang \
+          autoconf \
+          automake \
+          libtool \
+          pkg-config \
+          m4 \
+          gettext \
+          texinfo \
+          ninja-build \
+          libltdl-dev
+
+    - name: Setup MSVC Environment (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        echo "VCPKG_VISUAL_STUDIO_PATH=C:\Program Files\Microsoft Visual Studio\2022\Enterprise" >> %GITHUB_ENV%
 
     - name: Setup CMake
       uses: lukka/get-cmake@latest
@@ -62,9 +70,7 @@ jobs:
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgDirectory: ${{ steps.strings.outputs.vcpkg-dir }}
-        runVcpkgInstall: false
         vcpkgJsonGlob: '**/vcpkg.json'
-        
 
     - name: Cache vcpkg
       uses: actions/cache@v4
@@ -82,15 +88,16 @@ jobs:
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
     - name: Configure CMake
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -G Ninja
-        -DCMAKE_MAKE_PROGRAM=ninja
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.vcpkg-dir }}/scripts/buildsystems/vcpkg.cmake
-        -DVCPKG_TARGET_TRIPLET=${{ matrix.os == 'windows-latest' && 'x64-windows' || 'x64-linux' }}
-        -S ${{ github.workspace }}
+      shell: bash
+      run: |
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+          -G Ninja \
+          -DCMAKE_MAKE_PROGRAM=ninja \
+          ${{ matrix.os == 'windows-latest' && '' || '-DCMAKE_C_COMPILER=${{ matrix.c_compiler }}' }} \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.vcpkg-dir }}/scripts/buildsystems/vcpkg.cmake \
+          -DVCPKG_TARGET_TRIPLET=${{ matrix.os == 'windows-latest' && 'x64-windows' || 'x64-linux' }} \
+          -S ${{ github.workspace }}
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
