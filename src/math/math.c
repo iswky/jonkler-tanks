@@ -13,7 +13,7 @@
 #include "log/log.h"
 
 #ifdef _WIN32
-#include <bcrypt.h>
+#include <wincrypt.h>
 #include <windows.h>
 #endif
 
@@ -117,7 +117,24 @@ int32_t getRandomDWORD_unix() {
 #endif
 
 #if defined(_WIN32)
-int32_t getRandomDWORD_win() {}
+int32_t getRandomDWORD_win() {
+  HCRYPTPROV hProv;
+  uint32_t randomValue = 0;
+
+  if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL,
+                           CRYPT_VERIFYCONTEXT)) {
+    log_fatal("Can't get crypt context");
+    exit(-1);
+  }
+
+  if (!CryptGenRandom(hProv, sizeof(randomValue), (BYTE*)&randomValue)) {
+    log_fatal("Can't generate random bytes");
+    CryptReleaseContext(hProv, 0);
+    exit(-1);
+  }
+  CryptReleaseContext(hProv, 0);
+  return randomValue;
+}
 #endif
 
 // function return x coord of a possible hit
