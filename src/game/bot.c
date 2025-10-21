@@ -12,7 +12,7 @@
 #include "log/log.h"
 #include "player_movement.h"
 
-void botMain(App* app, Player* player1, Player* player2, int* heightMap,
+void botMain(App* app, Player* player1, Player* player2, int32_t* heightMap,
              RenderObject* projectile, RenderObject* explosion,
              SDL_bool* regenMap, SDL_bool* recalcBulletPath,
              enum PlayerType playerType) {
@@ -54,11 +54,11 @@ void botMain(App* app, Player* player1, Player* player2, int* heightMap,
 }
 
 // this func decide what option is the best
-int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
-                   int* heightMap, RenderObject* projectile,
-                   RenderObject* explosion, SDL_bool* regenMap,
-                   SDL_bool* recalcBulletPath, int hitChance,
-                   double initGunAngle, enum PlayerType playerType) {
+int32_t calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
+                       int32_t* heightMap, RenderObject* projectile,
+                       RenderObject* explosion, SDL_bool* regenMap,
+                       SDL_bool* recalcBulletPath, int32_t hitChance,
+                       double initGunAngle, enum PlayerType playerType) {
   Player* enemy;
   if (app->currPlayer == firstPlayer) {
     enemy = secondPlayer;
@@ -68,7 +68,7 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
 
   // getting collison for an enemy player
   SDL_Point collisionP1, collisionP2, collisionP3;
-  int collisionP1R, collisionP2R, collisionP3R;
+  int32_t collisionP1R, collisionP2R, collisionP3R;
   // getting player collisions centers
   // left player collision
   if (app->currPlayer == secondPlayer) {
@@ -140,7 +140,7 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
   };
 
   double velMultiplicator;
-  int explosionRadius;
+  int32_t explosionRadius;
   SDL_bool isHittableNearby;
   switch (app->currWeapon) {
     // small bullet
@@ -174,14 +174,14 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
       break;
   }
 
-  int initVel = app->currPlayer->firingPower * velMultiplicator;
-  int rnnndmTest = getRandomValue(0, 100);
+  int32_t initVel = app->currPlayer->firingPower * velMultiplicator;
+  int32_t rnnndmTest = getRandomValue(0, 100);
   SDL_bool isMissingShot = rnnndmTest > hitChance;
   if (isMissingShot) {
     log_info("[bot] MISSING CURRENT SHOT!!");
   }
 
-  int hitPos =
+  int32_t hitPos =
       calcHitPosition(&currPos, initVel, initGunAngle, heightMap, app,
                       &collisionP1, &collisionP2, &collisionP3, collisionP1R,
                       collisionP2R, collisionP3R, projectile);
@@ -191,8 +191,8 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
     log_info("[bot] bot found a move(collision hit) to shoot at %d", -hitPos);
 
     if (isMissingShot) {
-      int newAngle = app->currPlayer->gunAngle + getRandomValue(7, 10);
-      int newPower = app->currPlayer->firingPower + getRandomValue(7, 10);
+      int32_t newAngle = app->currPlayer->gunAngle + getRandomValue(7, 10);
+      int32_t newPower = app->currPlayer->firingPower + getRandomValue(7, 10);
 
       if (newAngle < 0) {
         newAngle = 0;
@@ -222,10 +222,10 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
   }
 
   // hit will be counted if its in [leftCorner; rightCorner] with a really small error (its nearly to zero)
-  int leftCorner =
+  int32_t leftCorner =
       enemy->tankObj->data.texture.constRect.x * app->scalingFactorX -
       explosionRadius;
-  int rightCorner =
+  int32_t rightCorner =
       enemy->tankObj->data.texture.constRect.x * app->scalingFactorX +
       enemy->tankObj->data.texture.constRect.w * app->scalingFactorX *
           cos(DEGTORAD(enemy->tankAngle)) +
@@ -236,8 +236,8 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
 
     if (playerType == NORMAL || playerType == EASY) {
       if (isMissingShot) {
-        int newAngle = app->currPlayer->gunAngle + getRandomValue(4, 7);
-        int newPower = app->currPlayer->firingPower + getRandomValue(4, 7);
+        int32_t newAngle = app->currPlayer->gunAngle + getRandomValue(4, 7);
+        int32_t newPower = app->currPlayer->firingPower + getRandomValue(4, 7);
 
         if (newAngle < 0) {
           newAngle = 0;
@@ -273,7 +273,7 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
 
   SDL_bool isFinded = SDL_FALSE;
 
-  for (int angle = 0; angle <= 120; ++angle) {
+  for (int32_t angle = 0; angle <= 120; ++angle) {
     double currAngle = app->currPlayer->tankGunObj->data.texture.angle;
 
     // calculating angle specifically for a current player
@@ -288,11 +288,11 @@ int calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
     // normalizing just to be sure its in [0;2pi) and now its counterclockwise
     currAngle = 360 - normalizeAngle(currAngle);
 
-    for (int firingPower = 0; firingPower <= 99; ++firingPower) {
-      int hitPos = calcHitPosition(&currPos, firingPower * velMultiplicator,
-                                   currAngle, heightMap, app, &collisionP1,
-                                   &collisionP2, &collisionP3, collisionP1R,
-                                   collisionP2R, collisionP3R, projectile);
+    for (int32_t firingPower = 0; firingPower <= 99; ++firingPower) {
+      int32_t hitPos = calcHitPosition(&currPos, firingPower * velMultiplicator,
+                                       currAngle, heightMap, app, &collisionP1,
+                                       &collisionP2, &collisionP3, collisionP1R,
+                                       collisionP2R, collisionP3R, projectile);
       // collision hit
       if (hitPos < -1) {
         if (!isFinded) {

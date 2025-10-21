@@ -3,7 +3,7 @@
 
 #include "../App.h"
 
-int SDL_Initialise(App*);
+int32_t SDL_Initialise(App*);
 void SDL_Cleanup(App*);
 void SDL_Main();
 void mainGameLoop(App* app);

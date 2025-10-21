@@ -3,23 +3,23 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-void drawRGBLine(App* app, int y, unsigned offset, int isBackward) {
+void drawRGBLine(App* app, int32_t y, uint32_t offset, int32_t isBackward) {
   if (!isBackward) {
-    for (int x = 0; x < app->screenWidth; x += app->scalingFactorX) {
+    for (int32_t x = 0; x < app->screenWidth; x += app->scalingFactorX) {
       // ??
-      int r = (sin((x + offset) * 0.02) + 1) * 127;
-      int g = (sin((x + offset) * 0.02 + 2) + 1) * 127;
-      int b = (sin((x + offset) * 0.02 + 4) + 1) * 127;
+      int32_t r = (sin((x + offset) * 0.02) + 1) * 127;
+      int32_t g = (sin((x + offset) * 0.02 + 2) + 1) * 127;
+      int32_t b = (sin((x + offset) * 0.02 + 4) + 1) * 127;
 
       SDL_SetRenderDrawColor(app->renderer, r, g, b, 255);
       SDL_RenderDrawLine(app->renderer, x, y, x, y + 10);
     }
   } else {
-    for (int x = 0; x < app->screenWidth; x += app->scalingFactorX) {
+    for (int32_t x = 0; x < app->screenWidth; x += app->scalingFactorX) {
       // ??
-      int r = (sin((app->screenWidth - x + offset) * 0.02) + 1) * 127;
-      int g = (sin((app->screenWidth - x + offset) * 0.02 + 2) + 1) * 127;
-      int b = (sin((app->screenWidth - x + offset) * 0.02 + 4) + 1) * 127;
+      int32_t r = (sin((app->screenWidth - x + offset) * 0.02) + 1) * 127;
+      int32_t g = (sin((app->screenWidth - x + offset) * 0.02 + 2) + 1) * 127;
+      int32_t b = (sin((app->screenWidth - x + offset) * 0.02 + 4) + 1) * 127;
 
       SDL_SetRenderDrawColor(app->renderer, r, g, b, 255);
       SDL_RenderDrawLine(app->renderer, x, y, x, y + 10);

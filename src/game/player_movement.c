@@ -15,8 +15,8 @@
 
 // function fires a shot from currPlayer and detects any hits to enemyPlayer
 void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
-           RenderObject* projectile, RenderObject* explosion, int* heightMap,
-           SDL_bool* regenMap) {
+           RenderObject* projectile, RenderObject* explosion,
+           int32_t* heightMap, SDL_bool* regenMap) {
   if (app->currState != PLAY) return;
 
   Mix_PlayChannel(-1, app->sounds[0], 0);
@@ -91,8 +91,8 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
   };
 
   SDL_Point savedPos = {
-      .x = (int)initPos.x,
-      .y = (int)initPos.y,
+      .x = (int32_t)initPos.x,
+      .y = (int32_t)initPos.y,
   };
 
   initPos.x /= app->scalingFactorX;
@@ -113,7 +113,7 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
   double currTime = 0.0;
 
   double vel;
-  int explosionRadius;
+  int32_t explosionRadius;
   SDL_bool isHittableNearby;
   double damageMultiplier;
   switch (app->currWeapon) {
@@ -158,7 +158,7 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
 
   // player collision center and radiuses
   SDL_Point collisionP1, collisionP2, collisionP3;
-  int collisionP1R, collisionP2R, collisionP3R;
+  int32_t collisionP1R, collisionP2R, collisionP3R;
   // getting player collisions centers
   if (app->currPlayer == secondPlayer) {
     collisionP1 = getPixelScreenPosition(
@@ -217,8 +217,8 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
     // getting coords with respect to the init pos
     getPositionAtSpecTime(&relativePos, vel, currGunAngle, currTime);
 
-    int currX = initPos.x + relativePos.x;
-    int currY = initPos.y - relativePos.y;
+    int32_t currX = initPos.x + relativePos.x;
+    int32_t currY = initPos.y - relativePos.y;
     // offset for left tank
     if (app->currPlayer == firstPlayer) {
       currY -= 10;
@@ -237,8 +237,9 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
         .y = currY,
     };
 
-    int currMapHeight =
-        app->screenHeight - heightMap[(int)round(currX * app->scalingFactorX)];
+    int32_t currMapHeight =
+        app->screenHeight -
+        heightMap[(int32_t)round(currX * app->scalingFactorX)];
 
     //printf("cmh:%d, (%d %d)\n", currMapHeight, currX, currY);
 
@@ -254,8 +255,8 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
       break;
     }
 
-    int currXScaled = currX * app->scalingFactorX;
-    int currYScaled = currY * app->scalingFactorY;
+    int32_t currXScaled = currX * app->scalingFactorX;
+    int32_t currYScaled = currY * app->scalingFactorY;
     // if we hit enemy straight
     if (isInCircle(currXScaled, currYScaled, &collisionP1, collisionP1R) ||
         isInCircle(currXScaled, currYScaled, &collisionP2, collisionP2R) ||
@@ -263,8 +264,8 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
       //     printf("COLLISION HIT!\n");
       //
 
-      int enemyCenter = enemyPlayer->tankObj->data.texture.constRect.x +
-                        enemyPlayer->tankObj->data.texture.constRect.w / 2.;
+      int32_t enemyCenter = enemyPlayer->tankObj->data.texture.constRect.x +
+                            enemyPlayer->tankObj->data.texture.constRect.w / 2.;
       // hitting father than center
       if (currX > enemyCenter) {
         app->currPlayer->score +=
@@ -305,8 +306,8 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
       //
 
       if (isHittableNearby) {
-        int center = enemyPlayer->tankObj->data.texture.constRect.x +
-                     enemyPlayer->tankObj->data.texture.constRect.w / 2;
+        int32_t center = enemyPlayer->tankObj->data.texture.constRect.x +
+                         enemyPlayer->tankObj->data.texture.constRect.w / 2;
 
         // hit near to enemy, so shot in [leftTankCorner - explRadius; rightTankCorner + explRadius];
         if (currX <= center + explosionRadius +
@@ -331,10 +332,10 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
           }
         }
 
-        int explosionCenter = currX * app->scalingFactorX;
+        int32_t explosionCenter = currX * app->scalingFactorX;
 
-        for (int i = 1; i <= explosionRadius; ++i) {
-          int delta = sqrt(explosionRadius * explosionRadius - i * i);
+        for (int32_t i = 1; i <= explosionRadius; ++i) {
+          int32_t delta = sqrt(explosionRadius * explosionRadius - i * i);
           if (explosionCenter - i >= 0) {
             heightMap[explosionCenter - i] -= delta;
           }
@@ -369,8 +370,8 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
   projectile->disableRendering = SDL_TRUE;
 }
 
-void recalcPlayerPos(App* app, Player* player, int* heightMap, int dx,
-                     int xOffset) {
+void recalcPlayerPos(App* app, Player* player, int32_t* heightMap, int32_t dx,
+                     int32_t xOffset) {
   RenderObject* tankObj = player->tankObj;
   RenderObject* gunObj = player->tankGunObj;
 
@@ -382,52 +383,52 @@ void recalcPlayerPos(App* app, Player* player, int* heightMap, int dx,
   tankObj->data.texture.constRect.x += dx;
   tankObj->data.texture.constRect.y =
       -27 + app->screenHeight / app->scalingFactorY -
-      heightMap[(int)((tankObj->data.texture.constRect.x + 5) *
-                      app->scalingFactorX)] /
+      heightMap[(int32_t)((tankObj->data.texture.constRect.x + 5) *
+                          app->scalingFactorX)] /
           app->scalingFactorY;
   tankObj->data.texture.angle = newAngle;
 
   gunObj->data.texture.constRect.x += dx;
   gunObj->data.texture.constRect.y =
       -27 + app->screenHeight / app->scalingFactorY -
-      heightMap[(int)((gunObj->data.texture.constRect.x + 5) *
-                      app->scalingFactorX)] /
+      heightMap[(int32_t)((gunObj->data.texture.constRect.x + 5) *
+                          app->scalingFactorX)] /
           app->scalingFactorY;
   gunObj->data.texture.angle = newAngle;
 
   player->tankAngle = newAngle;
 }
 
-void recalcPlayerGunAngle(Player* player, int dy) {
+void recalcPlayerGunAngle(Player* player, int32_t dy) {
   player->gunAngle += dy;
   player->tankGunObj->data.texture.angleAlt = -player->gunAngle;
 }
 
-int playerMove(void* data) {
+int32_t playerMove(void* data) {
   log_info("started player move thread! wazup o//");
 
   struct paramsStruct {
     App* app;
     Player* firstPlayer;
     Player* secondPlayer;
-    int* heightMap;
+    int32_t* heightMap;
     RenderObject* projectile;
     RenderObject* explosion;
     SDL_bool* regenMap;
     SDL_bool* recalcBulletPath;
-    unsigned mapSeed;
+    uint32_t mapSeed;
   };
   struct paramsStruct* params = (struct paramsStruct*)data;
 
   App* app = params->app;
   Player* firstPlayer = params->firstPlayer;
   Player* secondPlayer = params->secondPlayer;
-  int* heightMap = params->heightMap;
+  int32_t* heightMap = params->heightMap;
   RenderObject* projectile = params->projectile;
   RenderObject* explosion = params->explosion;
   SDL_bool* regenMap = params->regenMap;
   SDL_bool* recalcBulletPath = params->recalcBulletPath;
-  unsigned mapSeed = params->mapSeed;
+  uint32_t mapSeed = params->mapSeed;
 
   while (app->currState == PLAY) {
     SDL_Delay(16);

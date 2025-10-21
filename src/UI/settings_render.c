@@ -28,9 +28,9 @@ void settingsMain(App* app) {
       createCenteredText(app, "SETTINGS", titleFont, 20, COLOR_WHITE);
 
   // create section labels
-  int leftSectionX =
+  int32_t leftSectionX =
       getCenteredX(app, app->screenWidth / app->scalingFactorX / 2);
-  int rightSectionX =
+  int32_t rightSectionX =
       getCenteredX(app, app->screenWidth / app->scalingFactorX / 2) +
       app->screenWidth / app->scalingFactorX / 2;
 
@@ -43,9 +43,9 @@ void settingsMain(App* app) {
       app, "WEAPONS", mainFont, rightSectionX, 100, COLOR_WHITE);
 
   // Center headers within their halves
-  int wTmp, hTmp;
-  int leftCenterX = app->screenWidth / app->scalingFactorX / 4;
-  int rightCenterX = app->screenWidth / app->scalingFactorX * 3 / 4;
+  int32_t wTmp, hTmp;
+  int32_t leftCenterX = app->screenWidth / app->scalingFactorX / 4;
+  int32_t rightCenterX = app->screenWidth / app->scalingFactorX * 3 / 4;
 
   SDL_QueryTexture(videoTextObj->data.texture.texture, NULL, NULL, &wTmp,
                    &hTmp);
@@ -60,8 +60,8 @@ void settingsMain(App* app) {
   weaponsTextObj->data.texture.constRect.x = rightCenterX - wTmp / 2;
 
   // volume label
-  int volumeY = soundTextObj->data.texture.constRect.y +
-                soundTextObj->data.texture.constRect.h + 10;
+  int32_t volumeY = soundTextObj->data.texture.constRect.y +
+                    soundTextObj->data.texture.constRect.h + 10;
   RenderObject* volumeTextObj = createLeftAlignedText(
       app, "Volume:", mainFont, leftSectionX, volumeY, COLOR_GRAY);
   SDL_QueryTexture(volumeTextObj->data.texture.texture, NULL, NULL, &wTmp,
@@ -229,7 +229,7 @@ void settingsMain(App* app) {
       volumeIncrTriangleObj, volumeDecrTriangleObj, volumeTextObj,
       controlsText,          controls1Text,         controls2Text};
 
-  int prevVolume = app->settings.currentVolume;
+  int32_t prevVolume = app->settings.currentVolume;
 
   while (app->currState == SETTINGS) {
     threadEventPoll(app);

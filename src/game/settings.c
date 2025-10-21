@@ -24,10 +24,10 @@ void saveSettings(App* app) {
   }
 
   fprintf(file, "volume:%d\n", app->settings.currentVolume);
-  fprintf(file, "fullscreen:%d\n", (int)app->settings.isFullscreen);
+  fprintf(file, "fullscreen:%d\n", (int32_t)app->settings.isFullscreen);
   fprintf(file, "allowedWeapons:4\n");
-  for (int i = 0; i < 4; ++i) {
-    fprintf(file, "%d\n", (int)app->settings.weaponsAllowed[i]);
+  for (int32_t i = 0; i < 4; ++i) {
+    fprintf(file, "%d\n", (int32_t)app->settings.weaponsAllowed[i]);
   }
 
   fclose(file);
@@ -51,7 +51,7 @@ void readSettings(App* app) {
     return;
   }
 
-  int tempValue;
+  int32_t tempValue;
 
   if (fscanf(file, "volume:%d\n", &tempValue) < 1) {
     fclose(file);
@@ -82,8 +82,8 @@ void readSettings(App* app) {
     fclose(file);
     return;
   }
-  for (int i = 0; i < tempValue; ++i) {
-    int tempKey;
+  for (int32_t i = 0; i < tempValue; ++i) {
+    int32_t tempKey;
     if (fscanf(file, "%d\n", &tempKey) < 1) {
       fclose(file);
       return;

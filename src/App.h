@@ -77,7 +77,7 @@ enum Button {
 
 typedef struct settingsStruct {
   SDL_bool isFullscreen;
-  int currentVolume;
+  int32_t currentVolume;
   SDL_bool weaponsAllowed[4];
 } settingsStruct;
 
@@ -93,11 +93,11 @@ typedef struct RenderObject {
       SDL_RendererFlip flipFlag;
       SDL_Point* centerRot;
       SDL_Point* centerRot_Alt;
-      unsigned currFrame;
-      unsigned maxFrames;
-      int fixedHeight;
-      int fixedWidth;
-      int framesWaitCoeff;
+      uint32_t currFrame;
+      uint32_t maxFrames;
+      int32_t fixedHeight;
+      int32_t fixedWidth;
+      int32_t framesWaitCoeff;
       SDL_bool singleShot;
     } texture;
     struct {
@@ -109,7 +109,7 @@ typedef struct RenderObject {
     struct {
       SDL_Rect constRect;
       SDL_Rect scaleRect;
-      int maxInputChars;
+      int32_t maxInputChars;
       enum {
         LAITN = 1 << 0,
         NUMS = 1 << 1,
@@ -122,16 +122,16 @@ typedef struct RenderObject {
   } data;
   SDL_Color normalColor;
   SDL_Color triggeredColor;
-  int Zpos;
-  int canBeTriggered;
+  int32_t Zpos;
+  int32_t canBeTriggered;
   enum Button buttonName;
   SDL_bool disableRendering;
 } RenderObject;
 
 typedef struct Weapon {
   RenderObject* weaponObj;
-  int mass;
-  int explosivePower;
+  int32_t mass;
+  int32_t explosivePower;
   enum WeaponType {
     SMALL,
     BIG,
@@ -144,15 +144,15 @@ typedef struct Player {
   // tank vars
   RenderObject* tankObj;
   double tankAngle;
-  int x, y;
+  int32_t x, y;
 
   // gun vars
-  int firingPower;
+  int32_t firingPower;
   double gunAngle;
   RenderObject* tankGunObj;
-  int score;
+  int32_t score;
 
-  int movesLeft;
+  int32_t movesLeft;
 
   // flag will be set if this object is in animation
   SDL_bool inAnimation;
@@ -175,15 +175,15 @@ typedef struct App {
 
   enum State currState;
 
-  int screenWidth;
-  int screenHeight;
+  int32_t screenWidth;
+  int32_t screenHeight;
   double scalingFactorX;
   double scalingFactorY;
 
-  int xMouse;
-  int yMouse;
-  int isMouseDragging;
-  int isMouseTriggered;
+  int32_t xMouse;
+  int32_t yMouse;
+  int32_t isMouseDragging;
+  int32_t isMouseTriggered;
   enum Button currentTriggeredObject;
   enum Button buttonPosTriggered;
 
@@ -195,10 +195,10 @@ typedef struct App {
 
   enum Button p1Diff;
   enum Button p2Diff;
-  int currWeapon;
-  int winnerScore;
-  int winner;
-  int timesPlayed;
+  int32_t currWeapon;
+  int32_t winnerScore;
+  int32_t winner;
+  int32_t timesPlayed;
 } App;
 
 #endif

@@ -35,7 +35,7 @@ void mainMenu(App* app) {
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);
 
-    objectsArr[0]->data.texture.constRect.y = 33 - (int)height;
+    objectsArr[0]->data.texture.constRect.y = 33 - (int32_t)height;
 
     renderTextures(app, objectsArr, sizeof(objectsArr) / sizeof(*objectsArr),
                    SDL_TRUE);
@@ -70,7 +70,7 @@ void menuRenderLoop(App* app, RenderObject* logo) {
   TTF_Font* menuButtonsFont = loadMainFont(app, 80);
 
   // create icon buttons
-  int iconY = 6 + ((!app->settings.isFullscreen) ? 24 : 0);
+  int32_t iconY = 6 + ((!app->settings.isFullscreen) ? 24 : 0);
   RenderObject* infoButtonObj = createRenderObject(
       app->renderer, TEXTURE | CAN_BE_TRIGGERED, 1, b_HELP,
       "media/imgs/helpIco.png",
@@ -86,20 +86,20 @@ void menuRenderLoop(App* app, RenderObject* logo) {
       app, "PLAY", menuButtonsFont, 404, COLOR_GRAY, COLOR_RED, b_PLAY);
 
   // calculate position for settings button
-  int settingsY = 404 + playTextObj->data.texture.constRect.h;
+  int32_t settingsY = 404 + playTextObj->data.texture.constRect.h;
   RenderObject* settingsTextObj =
       createCenteredButton(app, "SETTINGS", menuButtonsFont, settingsY,
                            COLOR_GRAY, COLOR_RED, b_SETTINGS);
 
   // calculate position for quit button
-  int quitY = settingsY + settingsTextObj->data.texture.constRect.h;
+  int32_t quitY = settingsY + settingsTextObj->data.texture.constRect.h;
   RenderObject* quitTextObj = createCenteredButton(
       app, "QUIT", menuButtonsFont, quitY, COLOR_GRAY, COLOR_RED, b_QUIT);
   // creting objects arr
   RenderObject* objectsArr[] = {leaderboardObj,  infoButtonObj, playTextObj,
                                 settingsTextObj, quitTextObj,   logo};
 
-  unsigned rgbOffset = 0;
+  uint32_t rgbOffset = 0;
   while (app->currState == MENU) {
     threadEventPoll(app);
     // filling up the background with black color and clearing render
