@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-int simulateFall_1Step(double* height, double* velocity) {
+int32_t simulateFall_1Step(double* height, double* velocity) {
   // if it stopped
   if (*height <= 0.01 && fabs(*velocity) <= 1) {
     return -1;

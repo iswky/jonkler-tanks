@@ -69,7 +69,7 @@ void SDL_Main() {
 }
 
 // initialising all necessarily
-int SDL_Initialise(App* app) {
+int32_t SDL_Initialise(App* app) {
   // initialising all subsystems
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS)) {
     // if it fails
@@ -90,7 +90,7 @@ int SDL_Initialise(App* app) {
   }
 
   // initialising 'png' loader
-  int imgInitFlags = IMG_Init(IMG_INIT_PNG);
+  int32_t imgInitFlags = IMG_Init(IMG_INIT_PNG);
   if ((imgInitFlags & IMG_INIT_PNG) != IMG_INIT_PNG) {
     // if failed
     log_fatal("error while initialising IMG: %s", SDL_GetError());

@@ -9,7 +9,7 @@
 #include "log/log.h"
 
 // function for thread that replace cursor32.png with cursor32Triggered.png
-int threadCursorTrigger(void* arg) {
+int32_t threadCursorTrigger(void* arg) {
   App* app = arg;
   while (app->currState != EXIT) {
     if (app->isMouseTriggered) {
@@ -23,7 +23,7 @@ int threadCursorTrigger(void* arg) {
 }
 
 // function for thread that handle different events every 16ms (60 fps)
-int threadEventPoll(void* arg) {
+int32_t threadEventPoll(void* arg) {
   App* app = arg;
   SDL_Event currEvent;
   while (SDL_PollEvent(&currEvent)) {
@@ -68,7 +68,7 @@ int threadEventPoll(void* arg) {
       case SDL_MOUSEBUTTONUP: {
         if (currEvent.button.button == SDL_BUTTON_LEFT) {
           app->isMouseDragging = SDL_FALSE;
-          int x, y;
+          int32_t x, y;
           SDL_GetMouseState(&x, &y);
           log_info(
               "detected mouse click (lbm_up) in (%d, "
@@ -84,7 +84,7 @@ int threadEventPoll(void* arg) {
   return 0;
 }
 
-void proceedSlider(App* app, int sliderPosX) {
+void proceedSlider(App* app, int32_t sliderPosX) {
   switch (app->buttonPosTriggered) {
     case s_VOLUME:
       app->settings.currentVolume = sliderPosX;
@@ -327,7 +327,7 @@ void keyPressHandler(App* app, SDL_Event currEvent) {
   }
 }
 
-char filterPressedKey(SDL_Keycode key, int flags) {
+char filterPressedKey(SDL_Keycode key, int32_t flags) {
   // latin letters
   if ((flags & 1) && SDLK_a <= key && SDLK_z >= key) {
     return key;
@@ -356,7 +356,7 @@ void proceedTextInputLine(App* app, RenderObject* currObj) {
       return;
     }
 
-    int textLen = strlen(currObj->data.textInputLine.savedText);
+    int32_t textLen = strlen(currObj->data.textInputLine.savedText);
     // removing last elemets
     if (textLen >= 0 && currentPressedKey == SDLK_BACKSPACE) {
       if (textLen == 0) return;

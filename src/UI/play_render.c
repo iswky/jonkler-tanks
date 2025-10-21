@@ -20,8 +20,9 @@
 
 // saving current render state to a texture, so it will be faster to output
 // after
-SDL_Texture* saveRenderMapToTexture(SDL_Renderer* renderer, int width,
-                                    int height, int* heightMap, int* basedMap) {
+SDL_Texture* saveRenderMapToTexture(SDL_Renderer* renderer, int32_t width,
+                                    int32_t height, int32_t* heightMap,
+                                    int32_t* basedMap) {
   SDL_Texture* texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, width, height);
@@ -32,7 +33,7 @@ SDL_Texture* saveRenderMapToTexture(SDL_Renderer* renderer, int width,
   SDL_RenderClear(renderer);
 
   renderMap(renderer, heightMap, basedMap, width, height);
-  // for (int x = 0; x < width; x += 20 + getRandomValue(0, 30)) {
+  // for (int32_t x = 0; x < width; x += 20 + getRandomValue(0, 30)) {
   //   SDL_SetRenderDrawColor(renderer, 4, 137, 3, 255);
   //   SDL_RenderDrawLine(renderer, x, (height - heightMap[x]), x,
   //                      (height - heightMap[x]) - 15);
@@ -47,10 +48,10 @@ SDL_Texture* saveRenderMapToTexture(SDL_Renderer* renderer, int width,
   return texture;
 }
 
-void renderMap(SDL_Renderer* renderer, int* heightmap, int* basedMap, int width,
-               int height) {
-  for (int x = 0; x < width; x++) {
-    for (int y = heightmap[x]; y >= 0; y--) {
+void renderMap(SDL_Renderer* renderer, int32_t* heightmap, int32_t* basedMap,
+               int32_t width, int32_t height) {
+  for (int32_t x = 0; x < width; x++) {
+    for (int32_t y = heightmap[x]; y >= 0; y--) {
       if (y < basedMap[x] * 0.8) {
         SDL_SetRenderDrawColor(renderer, 1, 97, 1, 255);
         SDL_RenderDrawPoint(renderer, x, height - y);
@@ -311,7 +312,7 @@ void preGameMain(App* app) {
 
   if (app->currState == PLAY) {
     if (*temp != '\0') {
-      playMain(app, (unsigned)SDL_atoi(temp));
+      playMain(app, (uint32_t)SDL_atoi(temp));
       return;
     } else {
       playMain(app, 1000000000u);
@@ -323,12 +324,12 @@ void preGameMain(App* app) {
 }
 
 // main game loop
-void playMain(App* app, unsigned SEED) {
+void playMain(App* app, uint32_t SEED) {
   char temp[256];
   sprintf(temp, "%smedia/fonts/PixeloidSans.ttf", app->basePath);
   TTF_Font* smallFont = loadFont(temp, 30);
 
-  unsigned mapSeed;
+  uint32_t mapSeed;
   SDL_bool wasLoaded = SDL_FALSE;
 
   // if save was loaded
@@ -347,13 +348,13 @@ void playMain(App* app, unsigned SEED) {
     log_info("setting gen map seed to fixed: %u", mapSeed);
   }
 
-  int x1;
-  int x2;
+  int32_t x1;
+  int32_t x2;
 
   // default heightMap for saving map levels
-  int* heightMap = (int*)malloc(app->screenWidth * sizeof(int));
+  int32_t* heightMap = (int32_t*)malloc(app->screenWidth * sizeof(int32_t));
   // baseMap used for pretty color output even when smth is destroyed
-  int* basedMap = (int*)malloc(app->screenWidth * sizeof(int));
+  int32_t* basedMap = (int32_t*)malloc(app->screenWidth * sizeof(int32_t));
   if (!heightMap || !basedMap) exit(0);
   Player firstPlayer;
   Player secondPlayer;
@@ -384,7 +385,7 @@ void playMain(App* app, unsigned SEED) {
   } else {
     genHeightMap(heightMap, mapSeed, app->screenWidth, app->screenHeight);
     addSpawnPlates(heightMap, app->screenWidth, 70 * app->scalingFactorX);
-    memcpy(basedMap, heightMap, app->screenWidth * sizeof(int));
+    memcpy(basedMap, heightMap, app->screenWidth * sizeof(int32_t));
     x1 = 20;
     x2 = app->screenWidth / app->scalingFactorX - 44 - 20;
     app->timesPlayed = 0;
@@ -405,18 +406,20 @@ void playMain(App* app, unsigned SEED) {
   RenderObject* Player1Tank = createRenderObject(
       app->renderer, TEXTURE | EXTENDED, 1, b_NONE,
       "media/imgs/tank_betment.png",
-      &(SDL_Point){x1, -27 + app->screenHeight / app->scalingFactorY -
-                           heightMap[(int)((x1 + 5) * app->scalingFactorX)] /
-                               app->scalingFactorY},
+      &(SDL_Point){x1,
+                   -27 + app->screenHeight / app->scalingFactorY -
+                       heightMap[(int32_t)((x1 + 5) * app->scalingFactorX)] /
+                           app->scalingFactorY},
       360 - anglePlayer1, SDL_FLIP_NONE,
       &(SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY});
 
   RenderObject* Player1Gun = createRenderObject(
       app->renderer, TEXTURE | EXTENDED | DOUBLE_EXTENDED, 1, LEFT_GUN,
       "media/imgs/bet_dulo.png",
-      &(SDL_Point){x1, -27 + app->screenHeight / app->scalingFactorY -
-                           heightMap[(int)((x1 + 5) * app->scalingFactorX)] /
-                               app->scalingFactorY},
+      &(SDL_Point){x1,
+                   -27 + app->screenHeight / app->scalingFactorY -
+                       heightMap[(int32_t)((x1 + 5) * app->scalingFactorX)] /
+                           app->scalingFactorY},
       360 - anglePlayer1, 0.0, SDL_FLIP_NONE,
       &(SDL_Point){5 * app->scalingFactorX, 27 * app->scalingFactorY},
       &(SDL_Point){24 * app->scalingFactorX, 8 * app->scalingFactorY});
@@ -425,18 +428,20 @@ void playMain(App* app, unsigned SEED) {
   RenderObject* Player2Tank = createRenderObject(
       app->renderer, TEXTURE | EXTENDED, 1, b_NONE,
       "media/imgs/tank_jonkler.png",
-      &(SDL_Point){x2, -27 + app->screenHeight / app->scalingFactorY -
-                           heightMap[(int)((x2 + 8) * app->scalingFactorX)] /
-                               app->scalingFactorY},
+      &(SDL_Point){x2,
+                   -27 + app->screenHeight / app->scalingFactorY -
+                       heightMap[(int32_t)((x2 + 8) * app->scalingFactorX)] /
+                           app->scalingFactorY},
       360 - anglePlayer2, SDL_FLIP_HORIZONTAL,
       &(SDL_Point){8 * app->scalingFactorX, 27 * app->scalingFactorY});
 
   RenderObject* Player2Gun = createRenderObject(
       app->renderer, TEXTURE | EXTENDED | DOUBLE_EXTENDED, 1, RIGHT_GUN,
       "media/imgs/jonk_dulo.png",
-      &(SDL_Point){x2, -27 + app->screenHeight / app->scalingFactorY -
-                           heightMap[(int)((x2 + 8) * app->scalingFactorX)] /
-                               app->scalingFactorY},
+      &(SDL_Point){x2,
+                   -27 + app->screenHeight / app->scalingFactorY -
+                       heightMap[(int32_t)((x2 + 8) * app->scalingFactorX)] /
+                           app->scalingFactorY},
       360 - anglePlayer2, 0.0, SDL_FLIP_HORIZONTAL,
       &(SDL_Point){8 * app->scalingFactorX, 27 * app->scalingFactorY},
       &(SDL_Point){24 * app->scalingFactorX, 8 * app->scalingFactorY});
@@ -543,12 +548,12 @@ void playMain(App* app, unsigned SEED) {
     App* app;
     Player* firstPlayer;
     Player* secondPlayer;
-    int* heightMap;
+    int32_t* heightMap;
     RenderObject* projectile;
     RenderObject* explosion;
     SDL_bool* regenMap;
     SDL_bool* recalcBulletPath;
-    unsigned mapSeed;
+    uint32_t mapSeed;
   };
 
   struct paramsStruct playerMove_Params = {
@@ -579,15 +584,15 @@ void playMain(App* app, unsigned SEED) {
   // old values for optimized update
   //just to be sure we rendering pointing arrow correctly
   double oldAngle = app->currPlayer->gunAngle - 1;
-  int oldMovesLeft = app->currPlayer->movesLeft;
-  int oldFiringPower = app->currPlayer->firingPower;
-  int oldX = app->currPlayer->x;
-  int oldScorePlayer1 = firstPlayer.score;
-  int oldScorePlayer2 = secondPlayer.score;
-  int oldWeapon = app->currWeapon;
+  int32_t oldMovesLeft = app->currPlayer->movesLeft;
+  int32_t oldFiringPower = app->currPlayer->firingPower;
+  int32_t oldX = app->currPlayer->x;
+  int32_t oldScorePlayer1 = firstPlayer.score;
+  int32_t oldScorePlayer2 = secondPlayer.score;
+  int32_t oldWeapon = app->currWeapon;
 
   sprintf(temp, "Moves left: %d Gun angle: %02d Firing power: %02d ",
-          oldMovesLeft, (int)oldAngle, oldFiringPower);
+          oldMovesLeft, (int32_t)oldAngle, oldFiringPower);
 
   if (app->currWeapon == -1) {
     app->currWeapon = getAllowedNumber(app);
@@ -703,7 +708,7 @@ void playMain(App* app, unsigned SEED) {
       oldWeapon = app->currWeapon;
 
       sprintf(temp, "Moves left: %d Gun angle: %02d Firing power: %02d ",
-              oldMovesLeft, (int)oldAngle, oldFiringPower);
+              oldMovesLeft, (int32_t)oldAngle, oldFiringPower);
 
       while (app->currWeapon == -1) {
         app->currWeapon = getAllowedNumber(app);

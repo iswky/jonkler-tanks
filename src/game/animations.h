@@ -3,6 +3,6 @@
 
 #include "../App.h"
 
-void drawRGBLine(App* renderer, int y, unsigned offset, int isBackward);
+void drawRGBLine(App* renderer, int32_t y, uint32_t offset, int32_t isBackward);
 
 #endif

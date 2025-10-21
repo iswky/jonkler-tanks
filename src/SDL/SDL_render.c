@@ -21,14 +21,14 @@
  *  4) if flags & SLIDER it will accept args in this order:
  *      a. SDL_Rect* rect
  *  5) if flags & TEXT_INPUT it will accept args in this order:
- *      a. SDL_Rect* rect, int maxInputChars, int charTypes, TTF_Font* font
+ *      a. SDL_Rect* rect, int32_t maxInputChars, int32_t charTypes, TTF_Font* font
  *  6) if flags & GIF:
- *      a. const char* pathToFolder, SDL_Point* pos, int framesCnt
+ *      a. const char* pathToFolder, SDL_Point* pos, int32_t framesCnt
  *  7) if flags & EMPTY (create texture for rendering):
- *      a. int w, int h 
+ *      a. int32_t w, int32_t h 
  */
 RenderObject* createRenderObject(SDL_Renderer* render,
-                                 enum RenderObjectMode flags, int zPos,
+                                 enum RenderObjectMode flags, int32_t zPos,
                                  enum Button buttonName, ...) {
   va_list args;
   va_start(args, buttonName);
@@ -164,8 +164,8 @@ RenderObject* createRenderObject(SDL_Renderer* render,
 
   } else if (flags & TEXT_INPUT) {
     SDL_Rect textInputRect = *va_arg(args, SDL_Rect*);
-    int maxInputChars = va_arg(args, int);
-    int charTypes = va_arg(args, int);
+    int32_t maxInputChars = va_arg(args, int32_t);
+    int32_t charTypes = va_arg(args, int32_t);
     TTF_Font* font = va_arg(args, TTF_Font*);
 
     renderObj->data.textInputLine.constRect = textInputRect;
@@ -177,8 +177,8 @@ RenderObject* createRenderObject(SDL_Renderer* render,
   } else if (flags & GIF) {
     const char* path = va_arg(args, char*);
     SDL_Point* position = va_arg(args, SDL_Point*);
-    int framesCnt = va_arg(args, int);
-    int framesWaitCoeff = va_arg(args, int);
+    int32_t framesCnt = va_arg(args, int32_t);
+    int32_t framesWaitCoeff = va_arg(args, int32_t);
     SDL_bool singleShot = va_arg(args, SDL_bool);
 
     char temp[256];
@@ -208,8 +208,8 @@ RenderObject* createRenderObject(SDL_Renderer* render,
     renderObj->data.texture.framesWaitCoeff = framesWaitCoeff;
     renderObj->data.texture.singleShot = singleShot;
   } else if (flags & EMPTY) {
-    int w = va_arg(args, int);
-    int h = va_arg(args, int);
+    int32_t w = va_arg(args, int32_t);
+    int32_t h = va_arg(args, int32_t);
 
     renderObj->data.texture.texture = SDL_CreateTexture(
         render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
@@ -241,7 +241,7 @@ SDL_Texture* createImgTexture(SDL_Renderer* renderer, const char* str) {
 }
 
 // function returning TTF_Font* that contains loaded font from str with a size fo ptSize
-TTF_Font* loadFont(const char* str, int ptSize) {
+TTF_Font* loadFont(const char* str, int32_t ptSize) {
   // loading TTF file for a font
   TTF_Font* font = TTF_OpenFont(str, ptSize);
 
@@ -256,9 +256,8 @@ TTF_Font* loadFont(const char* str, int ptSize) {
 
 // function returning a SDL_Texture* that contains the text
 SDL_Texture* createTextTexture(SDL_Renderer* renderer, TTF_Font* font,
-                               const char* text, unsigned char r,
-                               unsigned char g, unsigned char b,
-                               unsigned char a) {
+                               const char* text, uint8_t r, uint8_t g,
+                               uint8_t b, uint8_t a) {
   SDL_Color textColor = {.r = r, .g = g, .b = b, .a = a};
 
   // creating surface from a text with a spec. font
@@ -287,8 +286,8 @@ SDL_Texture* createTextTexture(SDL_Renderer* renderer, TTF_Font* font,
 }
 
 // scale rects without any proportions
-void scaleObjects(App* app, RenderObject* objectsArr[], int objectArrSize) {
-  for (int i = 0; i != objectArrSize; ++i) {
+void scaleObjects(App* app, RenderObject* objectsArr[], int32_t objectArrSize) {
+  for (int32_t i = 0; i != objectArrSize; ++i) {
     if (objectsArr[i] == NULL) {
       continue;
     }
@@ -340,8 +339,8 @@ void scaleRectRatio(SDL_Rect* rect, const float ratio) {
 }
 
 // draw thick rects
-void drawThickRect(SDL_Renderer* renderer, SDL_Rect rect, int thickness) {
-  for (int i = 0; i < thickness; i++) {
+void drawThickRect(SDL_Renderer* renderer, SDL_Rect rect, int32_t thickness) {
+  for (int32_t i = 0; i < thickness; i++) {
     SDL_RenderDrawRect(renderer, &rect);
     rect.x++;
     rect.y++;
@@ -351,8 +350,8 @@ void drawThickRect(SDL_Renderer* renderer, SDL_Rect rect, int thickness) {
 }
 
 // render textures objects with/without scaling
-void renderTextures(App* app, RenderObject* objectsArr[], int objectsArrSize,
-                    int isScaling) {
+void renderTextures(App* app, RenderObject* objectsArr[],
+                    int32_t objectsArrSize, int32_t isScaling) {
   // if (app->rendererState == RENDER_PENDING_BLOCK) {
   //   app->rendererState = RENDER_BLOCKED;
   // }
@@ -370,14 +369,14 @@ void renderTextures(App* app, RenderObject* objectsArr[], int objectsArrSize,
   SDL_Rect temp;
 
   // getitng curr mouse position
-  int x, y;
+  int32_t x, y;
   SDL_GetMouseState(&x, &y);
 
   // mouse trigger state
-  int mouseShouldBeTriggered = SDL_FALSE;
+  int32_t mouseShouldBeTriggered = SDL_FALSE;
 
   // rendering objects
-  for (int i = 0; i != objectsArrSize; ++i) {
+  for (int32_t i = 0; i != objectsArrSize; ++i) {
     // skipping if this object shouldn't be rendered or it doesn't exist
     if (objectsArr[i] == NULL || objectsArr[i]->disableRendering) {
       continue;
@@ -402,9 +401,9 @@ void renderTextures(App* app, RenderObject* objectsArr[], int objectsArrSize,
       } else {
         // if its a gif object
         if (currRenderObject.data.texture.maxFrames != 0) {
-          int currFrame = (currRenderObject.data.texture.currFrame /
-                           currRenderObject.data.texture.framesWaitCoeff) %
-                          currRenderObject.data.texture.maxFrames;
+          int32_t currFrame = (currRenderObject.data.texture.currFrame /
+                               currRenderObject.data.texture.framesWaitCoeff) %
+                              currRenderObject.data.texture.maxFrames;
           SDL_Rect source = {
               .x = currFrame * currRenderObject.data.texture.fixedWidth,
               .y = 0,
@@ -461,7 +460,7 @@ void renderTextures(App* app, RenderObject* objectsArr[], int objectsArrSize,
     }
     // if it is a slider
     else if (currRenderObject.buttonName < 1500) {
-      int sliderPosX = 0;
+      int32_t sliderPosX = 0;
       // if user is dragging mouse in the ! external ! rect
       if (app->isMouseDragging &&
           SDL_PointInRect(&(SDL_Point){x, y},
@@ -731,15 +730,17 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
     getPositionAtSpecTime(&relativePos, currVel, currGunAngle, currTime);
     if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
         SDL_FLIP_HORIZONTAL) {
-      int currX = relativePos.x + 15 * currGunCos +
-                  bulletPath->data.texture.constRect.w;
-      int currY = -relativePos.y + bulletPath->data.texture.constRect.h / 1.5 -
-                  18 * currGunSin;
+      int32_t currX = relativePos.x + 15 * currGunCos +
+                      bulletPath->data.texture.constRect.w;
+      int32_t currY = -relativePos.y +
+                      bulletPath->data.texture.constRect.h / 1.5 -
+                      18 * currGunSin;
       SDL_RenderDrawPoint(app->renderer, currX, currY);
     } else {
-      int currX = relativePos.x + 20 * currGunCos;
-      int currY = -relativePos.y + bulletPath->data.texture.constRect.h / 1.5 -
-                  18 * currGunSin;
+      int32_t currX = relativePos.x + 20 * currGunCos;
+      int32_t currY = -relativePos.y +
+                      bulletPath->data.texture.constRect.h / 1.5 -
+                      18 * currGunSin;
       SDL_RenderDrawPoint(app->renderer, currX, currY);
     }
   }
@@ -748,8 +749,8 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
   SDL_SetRenderTarget(app->renderer, NULL);
 }
 // clearing sdl_textures* arr
-void freeTexturesArr(SDL_Texture** arr, int size) {
-  for (int i = 0; i != size; ++i) {
+void freeTexturesArr(SDL_Texture** arr, int32_t size) {
+  for (int32_t i = 0; i != size; ++i) {
     SDL_DestroyTexture(arr[i]);
     log_info("deleting texture located in %p", arr[i]);
   }

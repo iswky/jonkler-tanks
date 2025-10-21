@@ -21,7 +21,8 @@ void clearSave(App* app) {
 }
 
 void saveCurrentState(App* app, Player* firstPlayer, Player* secondPlayer,
-                      int* heightMap, int isFirstTarget, unsigned seed) {
+                      int32_t* heightMap, int32_t isFirstTarget,
+                      uint32_t seed) {
   char temp[256];
 
   sprintf(temp, "%sdata/autosave", app->basePath);
@@ -56,7 +57,7 @@ void saveCurrentState(App* app, Player* firstPlayer, Player* secondPlayer,
   fprintf(file, "t2gp:%d\n", secondPlayer->firingPower);
 
   fprintf(file, "hm:%d\n", app->screenWidth);
-  for (int i = 0; i < app->screenWidth; ++i) {
+  for (int32_t i = 0; i < app->screenWidth; ++i) {
     fprintf(file, "%d\n", heightMap[i]);
   }
 
@@ -65,8 +66,8 @@ void saveCurrentState(App* app, Player* firstPlayer, Player* secondPlayer,
 
 // func return 1 if save is broken or doesn't exist
 //      return 2 if save resolution doesn't match current
-int loadSavedState(App* app, Player* firstPlayer, Player* secondPlayer,
-                   int* heightMap, unsigned* seed) {
+int32_t loadSavedState(App* app, Player* firstPlayer, Player* secondPlayer,
+                       int32_t* heightMap, uint32_t* seed) {
   char strTemp[256];
 
   sprintf(strTemp, "%sdata/autosave", app->basePath);
@@ -84,7 +85,7 @@ int loadSavedState(App* app, Player* firstPlayer, Player* secondPlayer,
 
   if (!fscanf(file, "tp:%d\n", &app->timesPlayed)) return 1;
 
-  int w, h;
+  int32_t w, h;
   if (!fscanf(file, "w:%d\n", &w)) return 1;
   if (!fscanf(file, "h:%d\n", &h)) return 1;
   if (w != app->screenWidth || h != app->screenHeight) {
@@ -95,7 +96,7 @@ int loadSavedState(App* app, Player* firstPlayer, Player* secondPlayer,
 
   if (!fscanf(file, "seed:%u\n", seed)) return 1;
 
-  int temp;
+  int32_t temp;
   if (!fscanf(file, "tar:%d\n", &temp)) return 1;
   if (temp) {
     app->currPlayer = firstPlayer;
@@ -147,7 +148,7 @@ int loadSavedState(App* app, Player* firstPlayer, Player* secondPlayer,
     return 2;
   }
 
-  for (int i = 0; i < temp; ++i) {
+  for (int32_t i = 0; i < temp; ++i) {
     if (!fscanf(file, "%d\n", heightMap + i)) return 1;
   }
 

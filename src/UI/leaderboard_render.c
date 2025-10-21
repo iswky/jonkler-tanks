@@ -13,12 +13,12 @@
 #include "../SDL/ui_helpers.h"
 #include "log/log.h"
 
-void renderPlayer(App* app, int y, PlayerScore currPlayer,
-                  const char* placeText, TTF_Font* font, unsigned char r,
-                  unsigned char g, unsigned char b, unsigned char a) {
+void renderPlayer(App* app, int32_t y, PlayerScore currPlayer,
+                  const char* placeText, TTF_Font* font, uint8_t r, uint8_t g,
+                  uint8_t b, uint8_t a) {
   char temp[10];
-  int w, h;
-  int x;
+  int32_t w, h;
+  int32_t x;
 
   SDL_Texture* playerPlace =
       createTextTexture(app->renderer, font, placeText, r, g, b, a);
@@ -66,14 +66,14 @@ void loadLeaderboardToArray(PlayerScore* leaderboard) {
   FILE* file = fopen(temp, "r");
   if (file == NULL) {
     file = fopen(temp, "w");
-    for (int i = 0; i < 10; ++i) {
+    for (int32_t i = 0; i < 10; ++i) {
       fprintf(file, "0 EMPTY\n");
     }
     fclose(file);
     file = fopen(temp, "r");
   }
 
-  for (int i = 0; i < 10; ++i) {
+  for (int32_t i = 0; i < 10; ++i) {
     if (fscanf(file, "%d %15s", &leaderboard[i].score, leaderboard[i].name) <
         2) {
       break;
@@ -83,7 +83,7 @@ void loadLeaderboardToArray(PlayerScore* leaderboard) {
   fclose(file);
 }
 
-int findPlaceInLeaderboard(int score) {
+int32_t findPlaceInLeaderboard(int32_t score) {
   char temp[256];
 
   char* basePath = SDL_GetBasePath();
@@ -94,16 +94,16 @@ int findPlaceInLeaderboard(int score) {
   FILE* file = fopen(temp, "r");
   if (file == NULL) {
     file = fopen(temp, "w");
-    for (int i = 0; i < 10; ++i) {
+    for (int32_t i = 0; i < 10; ++i) {
       fprintf(file, "0 EMPTY\n");
     }
     fclose(file);
     file = fopen(temp, "r");
   }
   char name[16];
-  int currScore;
+  int32_t currScore;
 
-  for (int i = 0; i < 10; ++i) {
+  for (int32_t i = 0; i < 10; ++i) {
     // broken file or smth like that
     if (fscanf(file, "%d %15s\n", &currScore, name) < 2) {
       return -1;
@@ -118,7 +118,7 @@ int findPlaceInLeaderboard(int score) {
   return -1;
 }
 
-void addToLeaderBoard(const char* name, int score) {
+void addToLeaderBoard(const char* name, int32_t score) {
   char temp[256];
 
   char* basePath = SDL_GetBasePath();
@@ -134,7 +134,7 @@ void addToLeaderBoard(const char* name, int score) {
       log_error("error while reading leaderboard file!\n");
       return;
     }
-    for (int i = 0; i < 10; ++i) {
+    for (int32_t i = 0; i < 10; ++i) {
       fprintf(file, "0 EMPTY\n");
     }
     fclose(file);
@@ -144,7 +144,7 @@ void addToLeaderBoard(const char* name, int score) {
   PlayerScore leaderboard[10];
   memset(leaderboard, 0x00, sizeof(PlayerScore) * 10);
 
-  for (int i = 0; i < 10; ++i) {
+  for (int32_t i = 0; i < 10; ++i) {
     // reading an old leaderboard table
     if (fscanf(file, "%d %15s\n", &leaderboard[i].score, leaderboard[i].name) !=
         2) {
@@ -156,10 +156,10 @@ void addToLeaderBoard(const char* name, int score) {
 
   fclose(file);
 
-  int newScorePos = findPlaceInLeaderboard(score) - 1;
+  int32_t newScorePos = findPlaceInLeaderboard(score) - 1;
 
   if (newScorePos != -1) {
-    for (int i = 9; i > newScorePos; i--) {
+    for (int32_t i = 9; i > newScorePos; i--) {
       leaderboard[i] = leaderboard[i - 1];
     }
   }
@@ -173,7 +173,7 @@ void addToLeaderBoard(const char* name, int score) {
     return;
   }
 
-  for (int i = 0; i < 10; ++i) {
+  for (int32_t i = 0; i < 10; ++i) {
     fprintf(file, "%d %s\n", leaderboard[i].score, leaderboard[i].name);
   }
 
@@ -194,17 +194,18 @@ void leaderboardMain(App* app, const char* name) {
       createCenteredText(app, "LEADERBOARD", mainFont, 20, COLOR_WHITE);
 
   // creating column headers
-  int leftColX = getCenteredX(app, app->screenWidth / app->scalingFactorX / 2);
-  int centerColX =
+  int32_t leftColX =
+      getCenteredX(app, app->screenWidth / app->scalingFactorX / 2);
+  int32_t centerColX =
       app->screenWidth / app->scalingFactorX / 2 - 20 * app->scalingFactorX;
-  int rightColX =
+  int32_t rightColX =
       getCenteredX(app, app->screenWidth / app->scalingFactorX / 2) +
       app->screenWidth / app->scalingFactorX / 2;
 
   RenderObject* placeLabel = createLeftAlignedText(app, "PLACE", smallFont,
                                                    leftColX, 150, COLOR_WHITE);
   // Recalculate X to match row positioning using logical (unscaled) coords
-  int tmpW, tmpH;
+  int32_t tmpW, tmpH;
   SDL_QueryTexture(placeLabel->data.texture.texture, NULL, NULL, &tmpW, &tmpH);
   placeLabel->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX / 2 - tmpW) / 2;
@@ -352,7 +353,7 @@ void leaderboardAddMain(App* app) {
 
   RenderObject* placeLabel = NULL;
 
-  int placeInTable = findPlaceInLeaderboard(app->winnerScore);
+  int32_t placeInTable = findPlaceInLeaderboard(app->winnerScore);
 
   // if player in the top 10 in the leaderboard
   if (placeInTable != -1) {

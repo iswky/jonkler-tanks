@@ -1,5 +1,7 @@
 #define _USE_MATH_DEFINES
 
+#include "math.h"
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
@@ -8,11 +10,10 @@
 #include <stdio.h>
 
 #include "../game/player_movement.h"
-#include "math.h"
 
 // check if (x, y) in a triangle with vertexes p1, p2, p3
-SDL_bool isInTriangle(const int x, const int y, SDL_Point p1, SDL_Point p2,
-                      SDL_Point p3) {
+SDL_bool isInTriangle(const int32_t x, const int32_t y, SDL_Point p1,
+                      SDL_Point p2, SDL_Point p3) {
   /* 
      * 
      * calculating (x2 - x1) * (y - y1) - (y2 - y1) * (x0 - x1)
@@ -26,7 +27,7 @@ SDL_bool isInTriangle(const int x, const int y, SDL_Point p1, SDL_Point p2,
      *      \ |        | /
      *       p3        p3
      */
-  int D1, D2, D3;
+  int32_t D1, D2, D3;
 
   D1 = (p2.x - p1.x) * (y - p1.y) - (p2.y - p1.y) * (x - p1.x);
   D2 = (p3.x - p2.x) * (y - p2.y) - (p3.y - p2.y) * (x - p2.x);
@@ -35,14 +36,14 @@ SDL_bool isInTriangle(const int x, const int y, SDL_Point p1, SDL_Point p2,
   return (D1 >= 0 && D2 >= 0 && D3 >= 0) || (D1 <= 0 && D2 <= 0 && D3 <= 0);
 }
 
-SDL_bool isInCircle(const int x, const int y, const SDL_Point* center,
-                    const int radius) {
+SDL_bool isInCircle(const int32_t x, const int32_t y, const SDL_Point* center,
+                    const int32_t radius) {
   return ((center->x - x) * (center->x - x) +
           (center->y - y) * (center->y - y)) <= radius * radius;
 }
 
-double getAngle(int x, int* heightMap, int dx) {
-  int dy = heightMap[x + dx] - heightMap[x];
+double getAngle(int32_t x, int32_t* heightMap, int32_t dx) {
+  int32_t dy = heightMap[x + dx] - heightMap[x];
   return atan2(dy, dx) * 180.0 / M_PI;
 }
 
@@ -61,23 +62,23 @@ SDL_Point getPixelScreenPosition(SDL_Point drawPos, SDL_Point center,
   angleDeg = normalizeAngle(angleDeg);
   double angleRad = DEGTORAD(angleDeg);
 
-  int dx = target.x - center.x;
-  int dy = target.y - center.y;
+  int32_t dx = target.x - center.x;
+  int32_t dy = target.y - center.y;
 
   double rotatedX = dx * cos(angleRad) - dy * sin(angleRad);
   double rotatedY = dx * sin(angleRad) + dy * cos(angleRad);
 
   SDL_Point result;
-  result.x = (int)(drawPos.x + center.x + rotatedX + 0.5);
-  result.y = (int)(drawPos.y + center.y + rotatedY + 0.5);
+  result.x = (int32_t)(drawPos.x + center.x + rotatedX + 0.5);
+  result.y = (int32_t)(drawPos.y + center.y + rotatedY + 0.5);
 
   return result;
 }
 
 // func return a random(not really) value from a native linux file
 // if it cant do it, res will be (max + min) / 2
-int getRandomValue(int min, int max) {
-  int res;
+int32_t getRandomValue(int32_t min, int32_t max) {
+  int32_t res;
   FILE* randFile = fopen("/dev/urandom", "r");
   if (randFile == NULL) {
     return min + (max - min) / 2;
@@ -96,11 +97,13 @@ int getRandomValue(int min, int max) {
 
 // function return x coord of a possible hit
 // if (x < 0 && x != -1) than hit was in enemy collison
-int calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
-                    int* heightMap, const App* app, const SDL_Point* collision1,
-                    const SDL_Point* collision2, const SDL_Point* collision3,
-                    const int collision1R, const int collision2R,
-                    const int collision3R, RenderObject* projectile) {
+int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
+                        int32_t* heightMap, const App* app,
+                        const SDL_Point* collision1,
+                        const SDL_Point* collision2,
+                        const SDL_Point* collision3, const int32_t collision1R,
+                        const int32_t collision2R, const int32_t collision3R,
+                        RenderObject* projectile) {
   double angleRad = DEGTORAD(angle);
   double vx = initVel * cos(angleRad);
   double vy = initVel * sin(angleRad);
@@ -110,8 +113,8 @@ int calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
   double dt = 1. / 60;
   double currTime = 0.0;
 
-  int currX = (int)initPos->x;
-  int currY = (int)initPos->y;
+  int32_t currX = (int32_t)initPos->x;
+  int32_t currY = (int32_t)initPos->y;
 
   // while we dont hit the ground
   while (app->currState == PLAY) {
@@ -125,8 +128,8 @@ int calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
     currX = initPos->x + vx * currTime;
     currY = initPos->y - (vy * currTime - 0.5 * G * currTime * currTime);
 
-    int currXScaled = currX * app->scalingFactorX;
-    int currYScaled = currY * app->scalingFactorY;
+    int32_t currXScaled = currX * app->scalingFactorX;
+    int32_t currYScaled = currY * app->scalingFactorY;
 
     // if out of bounds
     if (currX < 0 || currXScaled > app->screenWidth) {
@@ -151,24 +154,26 @@ int calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
 }
 
 // func that generates number for a weapon
-int getAllowedNumber(App* app) {
-  int value = 0;
+int32_t getAllowedNumber(App* app) {
+  int32_t value = 0;
   do {
     value = getRandomValue(0, 3);
   } while (app->settings.weaponsAllowed[value] == SDL_FALSE);
   return value;
 }
 
-void smoothChangeAngle(Player* player, int endAngle, enum State* currState,
+void smoothChangeAngle(Player* player, int32_t endAngle, enum State* currState,
                        SDL_bool* recalcBulletPath) {
-  if ((int)player->gunAngle > endAngle) {
-    for (int i = player->gunAngle; i > endAngle && *currState == PLAY; --i) {
+  if ((int32_t)player->gunAngle > endAngle) {
+    for (int32_t i = player->gunAngle; i > endAngle && *currState == PLAY;
+         --i) {
       recalcPlayerGunAngle(player, -1);
       *recalcBulletPath = SDL_TRUE;
       SDL_Delay(16);
     }
   } else {
-    for (int i = player->gunAngle; i < endAngle && *currState == PLAY; ++i) {
+    for (int32_t i = player->gunAngle; i < endAngle && *currState == PLAY;
+         ++i) {
       recalcPlayerGunAngle(player, 1);
       *recalcBulletPath = SDL_TRUE;
       SDL_Delay(16);
@@ -176,16 +181,18 @@ void smoothChangeAngle(Player* player, int endAngle, enum State* currState,
   }
 }
 
-void smoothChangePower(Player* player, int endPower, enum State* currState,
+void smoothChangePower(Player* player, int32_t endPower, enum State* currState,
                        SDL_bool* recalcBulletPath) {
-  if ((int)player->firingPower > endPower) {
-    for (int i = player->firingPower; i > endPower && *currState == PLAY; --i) {
+  if ((int32_t)player->firingPower > endPower) {
+    for (int32_t i = player->firingPower; i > endPower && *currState == PLAY;
+         --i) {
       player->firingPower--;
       SDL_Delay(16);
       *recalcBulletPath = SDL_TRUE;
     }
   } else {
-    for (int i = player->firingPower; i < endPower && *currState == PLAY; ++i) {
+    for (int32_t i = player->firingPower; i < endPower && *currState == PLAY;
+         ++i) {
       player->firingPower++;
       SDL_Delay(16);
       *recalcBulletPath = SDL_TRUE;
@@ -193,10 +200,10 @@ void smoothChangePower(Player* player, int endPower, enum State* currState,
   }
 }
 
-int smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
-               int* heightMap) {
+int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
+                   int32_t* heightMap) {
   if (isRight) {
-    int i = 0;
+    int32_t i = 0;
     for (; i != 45; ++i) {
       // trying to move forward
       if ((app->currPlayer->tankObj->data.texture.constRect.x +
@@ -208,9 +215,9 @@ int smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
         }
         return 2;
       }
-      int currPos = app->currPlayer->tankObj->data.texture.constRect.x *
-                    app->scalingFactorX;
-      int currAngle =
+      int32_t currPos = app->currPlayer->tankObj->data.texture.constRect.x *
+                        app->scalingFactorX;
+      int32_t currAngle =
           RADTODEG(atan2(heightMap[currPos + 10] - heightMap[currPos], 10));
 
       if (currAngle > 60) {
@@ -229,7 +236,7 @@ int smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
       app->currPlayer->movesLeft--;
     }
   } else {
-    int i = 0;
+    int32_t i = 0;
     for (; i != 45; ++i) {
       // trying to move forward
       if (app->currPlayer->tankObj->data.texture.constRect.x <= 2) {
@@ -239,9 +246,9 @@ int smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
         return 2;
       }
 
-      int currPos = app->currPlayer->tankObj->data.texture.constRect.x *
-                    app->scalingFactorX;
-      int currAngle =
+      int32_t currPos = app->currPlayer->tankObj->data.texture.constRect.x *
+                        app->scalingFactorX;
+      int32_t currAngle =
           RADTODEG(atan2(heightMap[currPos + 10] - heightMap[currPos], 10));
 
       if (currAngle < -60) {

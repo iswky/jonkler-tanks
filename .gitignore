@@ -6,3 +6,4 @@ build
 data
 .cache
 llvm*
+vcpkg_installed
