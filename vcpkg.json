@@ -1,6 +1,7 @@
 {
-  "name": "JONKLER TANKS",
+  "name": "jonkler-tanks",
   "version-string": "1.3.3.7",
+  "builtin-baseline": "297d333d2f62f8053a3de776eb035965026b2b7e",
   "dependencies": [
     "sdl2",
     "sdl2-image",
