@@ -11,6 +11,18 @@
 
 #include "log/log.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+uint8_t createFolder(char* name, uint32_t mode) {
+#if defined(__unix__)
+  return mkdir(name, mode);
+#elif defined(_WIN32)
+  return mkdir(name);
+#endif
+}
+
 void saveSettings(App* app) {
   char temp[256];
 
@@ -37,7 +49,7 @@ void readSettings(App* app) {
   char temp[256];
 
   sprintf(temp, "%sdata", app->basePath);
-  if (mkdir(temp, 0755) == 0) {
+  if (createFolder(temp, 0755) == 0) {
     log_warn("data folder wasn't found and was created successfully! :)");
   }
 
