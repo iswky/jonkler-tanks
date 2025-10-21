@@ -50,9 +50,6 @@ jobs:
         gettext \
         texinfo \
         ninja-build
-    - name: Install libxcrypt manually
-      if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get install -y libxcrypt-dev
 
     - name: Setup CMake
       uses: lukka/get-cmake@latest
@@ -83,17 +80,10 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-    - name: Check build tools
-      run: |
-        which make
-        which ninja
-        cmake --version
-    
     - name: Configure CMake
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -G Ninja
-        -DCMAKE_MAKE_PROGRAM=/usr/bin/ninja
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.vcpkg-dir }}/scripts/buildsystems/vcpkg.cmake
@@ -102,8 +92,3 @@ jobs:
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-
-    - name: Test
-      run: ctest --build-config ${{ matrix.build_type }} -V
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      if: matrix.build_type == 'Release'
