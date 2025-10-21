@@ -35,7 +35,7 @@ jobs:
         echo "vcpkg-dir=${{ github.workspace }}/vcpkg" >> "$GITHUB_OUTPUT"
     - name: Install build tools (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get update && sudo apt-get install -y build-essential
+      run: sudo apt-get update && sudo apt-get install -y build-essential make gcc clang
 
     - name: Setup CMake
       uses: lukka/get-cmake@latest
@@ -44,7 +44,7 @@ jobs:
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgDirectory: ${{ steps.strings.outputs.vcpkg-dir }}
-        runVcpkgInstall: false  # CMake установит пакеты через vcpkg.json
+        runVcpkgInstall: false
         vcpkgJsonGlob: '**/vcpkg.json'
 
     - name: Cache vcpkg
