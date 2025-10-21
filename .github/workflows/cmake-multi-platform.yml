@@ -50,6 +50,9 @@ jobs:
         gettext \
         texinfo \
         ninja-build
+    - name: Install libxcrypt manually
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt-get install -y libxcrypt-dev
 
     - name: Setup CMake
       uses: lukka/get-cmake@latest
