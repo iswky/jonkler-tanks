@@ -48,7 +48,8 @@ jobs:
         pkg-config \
         m4 \
         gettext \
-        texinfo
+        texinfo \
+        ninja-build
 
     - name: Setup CMake
       uses: lukka/get-cmake@latest
