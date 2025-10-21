@@ -24,7 +24,7 @@ Before doin' this install [Dependencies](#2-dependencies)
 To start, clone the repository with this command:
 
 ```bash
-git clone https://github.com/tap-jf/jonkler-tanks --depth 1
+git clone https://github.com/tap-jf/jonkler-tanks
 ```
 
 ### 1.2.1. Linux Build Instructions
@@ -92,7 +92,7 @@ Alternatively, use vcpkg to manage dependencies.
 
 1. Install vcpkg:
    ```bash
-   git clone https://github.com/microsoft/vcpkg --depth 1
+   git clone https://github.com/microsoft/vcpkg
    cd vcpkg
    ./bootstrap-vcpkg.sh -disableMetrics
    ./vcpkg integrate install
@@ -132,7 +132,7 @@ To manage dependencies on Windows, use vcpkg.
 
 1. Install vcpkg:
    ```bash
-   git clone https://github.com/microsoft/vcpkg --depth 1
+   git clone https://github.com/microsoft/vcpkg
    cd vcpkg
    .\bootstrap-vcpkg.bat -disableMetrics
    .\vcpkg integrate install
