@@ -10,7 +10,8 @@ AllowShortFunctionsOnASingleLine: Inline
 SpacesInParentheses: false
 SpaceAfterCStyleCast: false
 Cpp11BracedListStyle: true
-ReflowComments: true
+ReflowComments: false
+CommentPragmas: '^$'
 SortIncludes: true
 IncludeBlocks: Preserve
 IncludeIsMainRegex: '([-_](test|unittest))?$'
@@ -28,4 +29,4 @@ AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: true
-AlignTrailingComments: true
+AlignTrailingComments: false

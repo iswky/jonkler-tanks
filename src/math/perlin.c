@@ -7,9 +7,15 @@
 
 int32_t perm[PERLIN_SIZE * 2];
 
-float fade(float t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-float lerp(float a, float b, float t) { return a + t * (b - a); }
-int32_t grad(int32_t hash) { return (hash & 1) ? 1 : -1; }
+float fade(float t) {
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+float lerp(float a, float b, float t) {
+  return a + t * (b - a);
+}
+int32_t grad(int32_t hash) {
+  return (hash & 1) ? 1 : -1;
+}
 
 float perlin1d(float x) {
   int32_t X = (int32_t)floor(x) & 255;
