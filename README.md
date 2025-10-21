@@ -4,9 +4,7 @@
 
 ![Tank Game](https://img.shields.io/badge/Game-Tank%20Battle-blue?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-green?style=for-the-badge)
-![Language](https://img.shields.io/badge/Language-C%2B%2B-orange?style=for-the-badge)
-
-Welcome to **Jonkler Tanks**! 🚀 An exciting tank battle game built with C++ and SDL2.
+![Language](https://img.shields.io/badge/Language-C-orange?style=for-the-badge)
 
 </div>
 
@@ -215,6 +213,7 @@ Want to add your own bot? Follow this comprehensive guide:
 ---
 
 <div align="center">
+
 
 Made with 🍻 by the Pivstar games
 
