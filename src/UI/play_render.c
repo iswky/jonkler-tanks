@@ -482,7 +482,7 @@ void playMain(App* app, uint32_t SEED) {
       (app->screenWidth / app->scalingFactorX -
        speedLabelObject->data.texture.constRect.w) /
       2;
-  speedLabelObject->data.texture.constRect.y = 100;
+  speedLabelObject->data.texture.constRect.y = 80;
 
   RenderObject* directionIconObject =
       createRenderObject(app->renderer, TEXTURE | EXTENDED, 1, b_NONE,

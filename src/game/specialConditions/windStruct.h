@@ -5,12 +5,12 @@
 // excluding S and N cuz it would be strange
 // when bullet flies straight down or up
 enum WindDirection {
-  E = 0,   // 0
-  SE,      // pi/4
-  SW = 3,  // 3pi/4
-  W,       // pi
-  NW,      // 5pi/4
-  NE = 7,  // 7pi/4
+  E = 0,  // 0
+  SE,     // pi/4
+  SW,     // 3pi/4
+  W,      // pi
+  NW,     // 5pi/4
+  NE,     // 7pi/4
 };
 
 typedef struct {

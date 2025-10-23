@@ -17,7 +17,6 @@ void updateWind(App* app) {
 
   wind->windStrength = getRandomValue(0, 50) / 10.;
   wind->windDirection = getRandomValue(0, 6);
-  log_debug("dir: %d", wind->windDirection);
 
   updateWindDirectionIcon(wind->directionIcon, wind->windDirection);
   updateWindSpeedLabel(app, wind->speedLabel, wind->windStrength);
@@ -25,7 +24,26 @@ void updateWind(App* app) {
 
 void updateWindDirectionIcon(RenderObject* directionIcon,
                              enum WindDirection direction) {
-  directionIcon->data.texture.angle = direction * 45;
+  switch (direction) {
+    case E:
+      directionIcon->data.texture.angle = 0;
+      break;
+    case SE:
+      directionIcon->data.texture.angle = 45;
+      break;
+    case SW:
+      directionIcon->data.texture.angle = 135;
+      break;
+    case W:
+      directionIcon->data.texture.angle = 180;
+      break;
+    case NW:
+      directionIcon->data.texture.angle = 225;
+      break;
+    case NE:
+      directionIcon->data.texture.angle = 315;
+      break;
+  }
 }
 
 void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
@@ -37,7 +55,7 @@ void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
   maxWindSpeedLabel = ceil(windStrength) + getRandomValue(0, 1);
 
   char temp[16];
-  snprintf(temp, 16, "%d-%d m/s", minWindSpeedLabel % 10,
+  snprintf(temp, 16, "%d - %d m/s", minWindSpeedLabel % 10,
            maxWindSpeedLabel % 10);
 
   log_debug(temp);
