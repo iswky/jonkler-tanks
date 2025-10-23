@@ -407,6 +407,10 @@ void recalcPlayerGunAngle(Player* player, int32_t dy) {
 int32_t playerMove(void* data) {
   log_info("started player move thread! wazup o//");
 
+  struct UpdateConditions {
+    SDL_bool updateWind;
+  };
+
   struct paramsStruct {
     App* app;
     Player* firstPlayer;
@@ -416,8 +420,10 @@ int32_t playerMove(void* data) {
     RenderObject* explosion;
     SDL_bool* regenMap;
     SDL_bool* recalcBulletPath;
+    struct UpdateConditions* updateConditions;
     uint32_t mapSeed;
   };
+
   struct paramsStruct* params = (struct paramsStruct*)data;
 
   App* app = params->app;
@@ -429,6 +435,7 @@ int32_t playerMove(void* data) {
   SDL_bool* regenMap = params->regenMap;
   SDL_bool* recalcBulletPath = params->recalcBulletPath;
   uint32_t mapSeed = params->mapSeed;
+  struct UpdateConditions* updateConditions = params->updateConditions;
 
   while (app->currState == PLAY) {
     SDL_Delay(16);
@@ -575,6 +582,7 @@ int32_t playerMove(void* data) {
 
         log_info("players swapped");
         *recalcBulletPath = SDL_TRUE;
+        updateConditions->updateWind = SDL_TRUE;
         SDL_Delay(200);
       }
     }
@@ -598,7 +606,6 @@ int32_t playerMove(void* data) {
       } else {
         app->currPlayer = firstPlayer;
       }
-
       recalcPlayerPos(app, firstPlayer, heightMap, 0, 5);
       recalcPlayerPos(app, secondPlayer, heightMap, 0, 8);
 
@@ -606,7 +613,9 @@ int32_t playerMove(void* data) {
       app->currWeapon = -1;
       saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                        app->currPlayer == firstPlayer, mapSeed);
+
       *recalcBulletPath = SDL_TRUE;
+      updateConditions->updateWind = SDL_TRUE;
     }
   }
 

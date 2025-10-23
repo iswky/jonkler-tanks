@@ -9,6 +9,7 @@
 #include "../../SDL/ui_helpers.h"
 #include "../../math/math.h"
 #include "../../math/rand.h"
+#include "log/log.h"
 #include "windStruct.h"
 
 void updateWind(App* app) {
@@ -16,6 +17,7 @@ void updateWind(App* app) {
 
   wind->windStrength = getRandomValue(0, 50) / 10.;
   wind->windDirection = getRandomValue(0, 6);
+  log_debug("dir: %d", wind->windDirection);
 
   updateWindDirectionIcon(wind->directionIcon, wind->windDirection);
   updateWindSpeedLabel(app, wind->speedLabel, wind->windStrength);
@@ -35,8 +37,10 @@ void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
   maxWindSpeedLabel = ceil(windStrength) + getRandomValue(0, 1);
 
   char temp[16];
-  snprintf(temp, 16, "%d-%d m/s", minWindSpeedLabel % 50,
-           maxWindSpeedLabel % 50);
+  snprintf(temp, 16, "%d-%d m/s", minWindSpeedLabel % 10,
+           maxWindSpeedLabel % 10);
+
+  log_debug(temp);
 
   TTF_Font* speedLabelFont = loadSmallFont(app, 30);
 
