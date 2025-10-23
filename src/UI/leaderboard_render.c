@@ -400,6 +400,7 @@ void leaderboardAddMain(App* app) {
                                 nameInput, placeLabel, continueButton};
 
   while (app->currState == LEADERBOARD_ADD) {
+    threadEventPoll(app);
     // filling up the background with black color and clearing render
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);

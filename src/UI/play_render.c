@@ -15,6 +15,7 @@
 #include "../game/autosave.h"
 #include "../game/gen_map.h"
 #include "../game/player_movement.h"
+#include "../game/specialConditions/wind.h"
 #include "../math/math.h"
 #include "log/log.h"
 
@@ -466,13 +467,36 @@ void playMain(App* app, uint32_t SEED) {
       createRenderObject(app->renderer, GIF, 1, b_NONE, "media/imgs/arrow.png",
                          &(SDL_Point){0, 0}, 8, 3, SDL_FALSE);
 
-  RenderObject* projectile = createRenderObject(
-      app->renderer, TEXTURE, 1, b_NONE, "media/imgs/proj.png",
-      &(SDL_Point){0, 0}, &(SDL_Color){255, 255, 255, 255});
+  RenderObject* projectile =
+      createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
+                         "media/imgs/proj.png", &(SDL_Point){0, 0});
   projectile->disableRendering = SDL_TRUE;
 
   RenderObject* bulletPath =
       createRenderObject(app->renderer, EMPTY, 0, b_NONE, 333, 333);
+
+  RenderObject* speedLabelObject =
+      createRenderObject(app->renderer, TEXT, 1, b_NONE, "1337", smallFont,
+                         &(SDL_Point){0, 0}, &(SDL_Color){255, 255, 255, 255});
+  speedLabelObject->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX -
+       speedLabelObject->data.texture.constRect.w) /
+      2;
+  speedLabelObject->data.texture.constRect.y = 80;
+
+  RenderObject* directionIconObject =
+      createRenderObject(app->renderer, TEXTURE | EXTENDED, 1, b_NONE,
+                         "media/imgs/windDirection.png", &(SDL_Point){0, 0}, 0,
+                         SDL_FLIP_NONE, &(SDL_Point){32, 32});
+
+  directionIconObject->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX -
+       directionIconObject->data.texture.constRect.w) /
+      2;
+  directionIconObject->data.texture.constRect.y = 10;
+
+  app->globalConditions.wind.speedLabel = speedLabelObject;
+  app->globalConditions.wind.directionIcon = directionIconObject;
 
   firstPlayer.tankObj = Player1Tank;
   firstPlayer.tankGunObj = Player1Gun;
@@ -541,8 +565,14 @@ void playMain(App* app, uint32_t SEED) {
                      mapSeed);
   }
 
+  struct UpdateConditions {
+    SDL_bool updateWind;
+  } updateConditions;
   SDL_bool regenMap = SDL_FALSE;
   SDL_bool recalcBulletPath = SDL_TRUE;
+  updateConditions = (struct UpdateConditions){
+      .updateWind = SDL_TRUE,
+  };
 
   struct paramsStruct {
     App* app;
@@ -553,6 +583,7 @@ void playMain(App* app, uint32_t SEED) {
     RenderObject* explosion;
     SDL_bool* regenMap;
     SDL_bool* recalcBulletPath;
+    struct UpdateConditions* updateConditions;
     uint32_t mapSeed;
   };
 
@@ -565,6 +596,7 @@ void playMain(App* app, uint32_t SEED) {
       .explosion = explosionObj,
       .regenMap = &regenMap,
       .recalcBulletPath = &recalcBulletPath,
+      .updateConditions = &updateConditions,
       .mapSeed = mapSeed,
   };
 
@@ -658,6 +690,8 @@ void playMain(App* app, uint32_t SEED) {
       secondPlayer.tankObj,
       explosionObj,
       bulletPath,
+      speedLabelObject,
+      directionIconObject,
   };
 
   while (app->currState == PLAY) {
@@ -686,6 +720,11 @@ void playMain(App* app, uint32_t SEED) {
         &(SDL_Rect){0, app->screenHeight - 40 * app->scalingFactorY,
                     app->screenWidth, app->screenHeight});
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
+
+    if (updateConditions.updateWind) {
+      updateWind(app);
+      updateConditions.updateWind = SDL_FALSE;
+    }
 
     // recalc bullet path if needed
     if (recalcBulletPath) {

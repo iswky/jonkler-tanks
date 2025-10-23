@@ -249,16 +249,12 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
   return 0;
 }
 
-void getPositionAtSpecTime(SDL_FPoint* pos, double initVel, double angle,
-                           double currTime) {
-  double angleRad = DEGTORAD(angle);
-  double vx = initVel * cos(angleRad);
-  double vy = initVel * sin(angleRad);
-
+void getPositionAtSpecTime(SDL_FPoint* pos, double vx, double vy, double windVx,
+                           double windVy, double currTime) {
   const double G = 9.81;
 
-  pos->x = vx * currTime;
-  pos->y = vy * currTime - 0.5 * G * currTime * currTime;
+  pos->x = vx * currTime + windVx * currTime;
+  pos->y = vy * currTime - 0.5 * G * currTime * currTime + windVy * currTime;
 
   // printf("currTime: %lf, vy:%lf\n", currTime, vy - G * currTime);
 }

@@ -29,22 +29,6 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
     enemyPlayer = firstPlayer;
   }
 
-  // printf("[\e[36mDEBUG\e[0m][\e[1;32mINFO\e[0m] currPlayer angle: %.0f\n", app->currPlayer->tankAngle);
-
-  // printf("[\e[36mDEBUG\e[0m][\e[1;32mINFO\e[0m] currPlayer pos: [%.0f, %.0f]\n",
-  //     app->currPlayer->tankObj->data.texture.constRect.x * app->scalingFactorX,
-  //     app->currPlayer->tankObj->data.texture.constRect.x * app->scalingFactorX + app->currPlayer->tankObj->data.texture.constRect.w * app->scalingFactorX * cos(DEGTORAD(app->currPlayer->tankAngle))
-  // );
-
-  // printf("[\e[36mDEBUG\e[0m][\e[1;32mINFO\e[0m] enemyPlayer angle: %.0f\n", enemyPlayer->tankAngle);
-  // printf("[\e[36mDEBUG\e[0m][\e[1;32mINFO\e[0m] enemyPlayer width: %d\n", enemyPlayer->tankObj->data.texture.constRect.w);
-
-  // printf("[\e[36mDEBUG\e[0m][\e[1;32mINFO\e[0m] enemyPlayer pos: [%.0f, %.0f]\n",
-  //     enemyPlayer->tankObj->data.texture.constRect.x * app->scalingFactorX,
-  //     enemyPlayer->tankObj->data.texture.constRect.x * app->scalingFactorX + enemyPlayer->tankObj->data.texture.constRect.w * app->scalingFactorX * cos(DEGTORAD(enemyPlayer->tankAngle))
-  // );
-  //
-
   // that angle is clockwise
   double currGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
 
@@ -210,12 +194,22 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
     collisionP3R = 9 * hypot(app->scalingFactorX, app->scalingFactorY);
   }
 
+  double windAngleRad = DEGTORAD(normalizeAngle(
+      360 - app->globalConditions.wind.directionIcon->data.texture.angle));
+  double windStrength = app->globalConditions.wind.windStrength;
+  double windStrengthX = windStrength * cos(windAngleRad);
+  double windStrengthY = windStrength * sin(windAngleRad);
+
+  double vx = vel * cos(DEGTORAD(currGunAngle));
+  double vy = vel * sin(DEGTORAD(currGunAngle));
+
   // main shooting loop
   while (app->currState == PLAY) {
     currTime += dt;
 
     // getting coords with respect to the init pos
-    getPositionAtSpecTime(&relativePos, vel, currGunAngle, currTime);
+    getPositionAtSpecTime(&relativePos, vx, vy, windStrengthX, windStrengthY,
+                          currTime);
 
     int32_t currX = initPos.x + relativePos.x;
     int32_t currY = initPos.y - relativePos.y;
@@ -407,6 +401,10 @@ void recalcPlayerGunAngle(Player* player, int32_t dy) {
 int32_t playerMove(void* data) {
   log_info("started player move thread! wazup o//");
 
+  struct UpdateConditions {
+    SDL_bool updateWind;
+  };
+
   struct paramsStruct {
     App* app;
     Player* firstPlayer;
@@ -416,8 +414,10 @@ int32_t playerMove(void* data) {
     RenderObject* explosion;
     SDL_bool* regenMap;
     SDL_bool* recalcBulletPath;
+    struct UpdateConditions* updateConditions;
     uint32_t mapSeed;
   };
+
   struct paramsStruct* params = (struct paramsStruct*)data;
 
   App* app = params->app;
@@ -429,6 +429,7 @@ int32_t playerMove(void* data) {
   SDL_bool* regenMap = params->regenMap;
   SDL_bool* recalcBulletPath = params->recalcBulletPath;
   uint32_t mapSeed = params->mapSeed;
+  struct UpdateConditions* updateConditions = params->updateConditions;
 
   while (app->currState == PLAY) {
     SDL_Delay(16);
@@ -574,6 +575,7 @@ int32_t playerMove(void* data) {
                          app->currPlayer == firstPlayer, mapSeed);
 
         log_info("players swapped");
+        updateConditions->updateWind = SDL_TRUE;
         *recalcBulletPath = SDL_TRUE;
         SDL_Delay(200);
       }
@@ -598,7 +600,6 @@ int32_t playerMove(void* data) {
       } else {
         app->currPlayer = firstPlayer;
       }
-
       recalcPlayerPos(app, firstPlayer, heightMap, 0, 5);
       recalcPlayerPos(app, secondPlayer, heightMap, 0, 8);
 
@@ -606,6 +607,8 @@ int32_t playerMove(void* data) {
       app->currWeapon = -1;
       saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                        app->currPlayer == firstPlayer, mapSeed);
+
+      updateConditions->updateWind = SDL_TRUE;
       *recalcBulletPath = SDL_TRUE;
     }
   }
