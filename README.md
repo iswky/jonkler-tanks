@@ -172,7 +172,7 @@ Follow these steps to build the project on Windows 10/11:
    # From the project root directory
    xcopy /E /I media build\Debug\media
    ```
-   Or manually copy the `jonkler-tanks/media` folder to `jonkler-tanks/build/Debug/media`
+   Or manually copy the `jonkler-tanks/media` folder to `jonkler-tanks/Debug/media` or `jonkler-tanks/Release/media`
 
 ---
 
