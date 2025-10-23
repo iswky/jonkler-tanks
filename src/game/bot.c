@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include "../math/math.h"
+#include "../math/rand.h"
 #include "log/log.h"
 #include "player_movement.h"
 
