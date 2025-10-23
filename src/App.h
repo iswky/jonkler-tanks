@@ -1,6 +1,8 @@
 #ifndef APP_H
 #define APP_H
 
+#include "game/specialConditions/windStruct.h"
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
@@ -75,7 +77,7 @@ enum Button {
   b_W4,
 };
 
-typedef struct settingsStruct {
+typedef struct SettingsStruct {
   SDL_bool isFullscreen;
   int32_t currentVolume;
   SDL_bool weaponsAllowed[4];
@@ -160,30 +162,45 @@ typedef struct Player {
   enum PlayerType type;
 } Player;
 
+typedef struct SpecialGlobalConditions {
+  Wind wind;
+} SpecialGlobalConditions;
+
 typedef struct App {
+  // main sdl stuff
   SDL_Window* window;
   SDL_Renderer* renderer;
+
+  // for special loaded cursor
   SDL_Cursor* cursor;
   SDL_Cursor* cursorTriggered;
 
+  // pwd path saved
   char* basePath;
-  SDL_Thread* eventPollThread;
+
+  // for special loaded cursor
   SDL_Thread* cursorTriggerThread;
 
+  // saving keystate arr provided by sdl
   const Uint8* keyStateArr;
+  // current pressed key on keyboard
   SDL_KeyCode curPressedKey;
 
   enum State currState;
 
+  // screen settings
   int32_t screenWidth;
   int32_t screenHeight;
   double scalingFactorX;
   double scalingFactorY;
 
+  // for mouse
   int32_t xMouse;
   int32_t yMouse;
   int32_t isMouseDragging;
   int32_t isMouseTriggered;
+
+  // for triggered buttons
   enum Button currentTriggeredObject;
   enum Button buttonPosTriggered;
 
@@ -193,12 +210,23 @@ typedef struct App {
 
   Mix_Chunk* sounds[2];
 
+  // difficulty choice buttons
   enum Button p1Diff;
   enum Button p2Diff;
+
+  // current player weapon
   int32_t currWeapon;
+
+  // in game results this would
+  // store winner and winner score
   int32_t winnerScore;
   int32_t winner;
+
+  // how many shots were fired
   int32_t timesPlayed;
+
+  // storing global special conditions here!
+  SpecialGlobalConditions globalConditions;
 } App;
 
 #endif
