@@ -58,8 +58,7 @@ void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
   snprintf(temp, 16, "%d - %d m/s", minWindSpeedLabel % 10,
            maxWindSpeedLabel % 10);
 
-  log_debug(temp);
-
+  log_debug("%s, REAL=%.1lf", temp, windStrength);
   TTF_Font* speedLabelFont = loadSmallFont(app, 30);
 
   // detroying old texture
