@@ -12,14 +12,7 @@ SDL_Point getPixelScreenPosition(SDL_Point drawPos, SDL_Point center,
                                  double angleDeg, SDL_Point target);
 double normalizeAngle(double angleDeg);
 
-int32_t getRandomValue(int32_t min, int32_t max);
 int32_t getAllowedNumber(App* app);
-
-#if defined(__unix__)
-int32_t getRandomDWORD_unix();
-#elif defined(_WIN32)
-int32_t getRandomDWORD_win();
-#endif
 
 void getPositionAtSpecTime(SDL_FPoint* pos, double initVel, double angle,
                            double currTime);
