@@ -14,8 +14,9 @@ double normalizeAngle(double angleDeg);
 
 int32_t getAllowedNumber(App* app);
 
-void getPositionAtSpecTime(SDL_FPoint* pos, double initVel, double angle,
-                           double currTime);
+void getPositionAtSpecTime(SDL_FPoint* pos, double vx, double vy, double windVx,
+                           double windVy, double currTime);
+
 int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
                         int32_t* heightMap, const App* app,
                         const SDL_Point* collision1, const SDL_Point* collison2,

@@ -15,11 +15,13 @@
 void updateWind(App* app) {
   Wind* wind = &app->globalConditions.wind;
 
-  wind->windStrength = getRandomValue(0, 50) / 10.;
+  wind->windStrength = getRandomValue(10, 100) / 10.;
   wind->windDirection = getRandomValue(0, 6);
 
   updateWindDirectionIcon(wind->directionIcon, wind->windDirection);
   updateWindSpeedLabel(app, wind->speedLabel, wind->windStrength);
+
+  wind->windStrength *= 2;
 }
 
 void updateWindDirectionIcon(RenderObject* directionIcon,
@@ -55,9 +57,8 @@ void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
   maxWindSpeedLabel = MAX(ceil(windStrength) + getRandomValue(0, 1), 1);
 
   char temp[16];
-  snprintf(temp, 16, "%d - %d m/s", minWindSpeedLabel % 10,
-           maxWindSpeedLabel % 10);
-
+  snprintf(temp, 16, "%d - %d m/s", minWindSpeedLabel % 20,
+           maxWindSpeedLabel % 20);
   log_debug("%s, REAL=%.1lf", temp, windStrength);
   TTF_Font* speedLabelFont = loadSmallFont(app, 30);
 

@@ -726,8 +726,19 @@ void renderBulletPath(App* app, RenderObject* bulletPath) {
 
   SDL_SetRenderDrawColor(app->renderer, currColor.r, currColor.g, currColor.b,
                          currColor.a);
+
+  double windAngleRad = DEGTORAD(normalizeAngle(
+      360 - app->globalConditions.wind.directionIcon->data.texture.angle));
+  double windStrength = app->globalConditions.wind.windStrength;
+  double windStrengthX = windStrength * cos(windAngleRad);
+  double windStrengthY = windStrength * sin(windAngleRad);
+
+  double vx = currVel * cos(DEGTORAD(currGunAngle));
+  double vy = currVel * sin(DEGTORAD(currGunAngle));
+
   for (double currTime = 0.0; currTime <= 1.5; currTime += dt) {
-    getPositionAtSpecTime(&relativePos, currVel, currGunAngle, currTime);
+    getPositionAtSpecTime(&relativePos, vx, vy, windStrengthX, windStrengthY,
+                          currTime);
     if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
         SDL_FLIP_HORIZONTAL) {
       int32_t currX = relativePos.x + 15 * currGunCos +

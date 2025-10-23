@@ -721,15 +721,15 @@ void playMain(App* app, uint32_t SEED) {
                     app->screenWidth, app->screenHeight});
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
 
+    if (updateConditions.updateWind) {
+      updateWind(app);
+      updateConditions.updateWind = SDL_FALSE;
+    }
+
     // recalc bullet path if needed
     if (recalcBulletPath) {
       renderBulletPath(app, bulletPath);
       recalcBulletPath = SDL_FALSE;
-    }
-
-    if (updateConditions.updateWind) {
-      updateWind(app);
-      updateConditions.updateWind = SDL_FALSE;
     }
 
     // redrawing info texture
