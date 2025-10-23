@@ -52,7 +52,7 @@ void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
   minWindSpeedLabel = floor(windStrength) - getRandomValue(0, 1);
   minWindSpeedLabel = MAX(minWindSpeedLabel, 0);
 
-  maxWindSpeedLabel = ceil(windStrength) + getRandomValue(0, 1);
+  maxWindSpeedLabel = MAX(ceil(windStrength) + getRandomValue(0, 1), 1);
 
   char temp[16];
   snprintf(temp, 16, "%d - %d m/s", minWindSpeedLabel % 10,
