@@ -857,6 +857,8 @@ void playMain(App* app, uint32_t SEED) {
   freeRenderObject(playerScore1);
   freeRenderObject(playerScore2);
   freeRenderObject(bulletPath);
+  freeRenderObject(speedLabelObject);
+  freeRenderObject(directionIconObject);
 
   TTF_CloseFont(smallFont);
   SDL_DestroyTexture(gameMap);
