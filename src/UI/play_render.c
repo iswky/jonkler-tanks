@@ -484,10 +484,10 @@ void playMain(App* app, uint32_t SEED) {
       2;
   speedLabelObject->data.texture.constRect.y = 80;
 
-  RenderObject* directionIconObject =
-      createRenderObject(app->renderer, TEXTURE | EXTENDED, 1, b_NONE,
-                         "media/imgs/windDirection.png", &(SDL_Point){0, 0}, 0,
-                         SDL_FLIP_NONE, &(SDL_Point){32, 32});
+  RenderObject* directionIconObject = createRenderObject(
+      app->renderer, TEXTURE | EXTENDED, 1, b_NONE,
+      "media/imgs/windDirection.png", &(SDL_Point){0, 0}, 0, SDL_FLIP_NONE,
+      &(SDL_Point){32 * app->scalingFactorX, 32 * app->scalingFactorY});
 
   directionIconObject->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX -
