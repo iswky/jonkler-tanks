@@ -9,7 +9,7 @@ typedef struct PlayerScore {
 } PlayerScore;
 
 void leaderboardAddMain(App* app);
-void addToLeaderBoard(const char* name, int32_t score);
+//void addToLeaderBoard(const char* name, int32_t score);
 void leaderboardMain(App* app, const char* name);
 
 #endif

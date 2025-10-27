@@ -232,7 +232,7 @@ void settingsMain(App* app) {
   int32_t prevVolume = app->settings.currentVolume;
 
   while (app->currState == SETTINGS) {
-    threadEventPoll(app);
+    pollAllEvents(app);
     // new texture if volume changed
     if (app->settings.currentVolume != prevVolume) {
       Mix_VolumeMusic(app->settings.currentVolume);

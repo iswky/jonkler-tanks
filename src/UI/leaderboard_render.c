@@ -13,9 +13,9 @@
 #include "../SDL/ui_helpers.h"
 #include "log/log.h"
 
-void renderPlayer(App* app, int32_t y, PlayerScore currPlayer,
-                  const char* placeText, TTF_Font* font, uint8_t r, uint8_t g,
-                  uint8_t b, uint8_t a) {
+static void renderPlayer(App* app, int32_t y, PlayerScore currPlayer,
+                         const char* placeText, TTF_Font* font, uint8_t r,
+                         uint8_t g, uint8_t b, uint8_t a) {
   char temp[10];
   int32_t w, h;
   int32_t x;
@@ -55,7 +55,7 @@ void renderPlayer(App* app, int32_t y, PlayerScore currPlayer,
   SDL_DestroyTexture(playerName);
 }
 
-void loadLeaderboardToArray(PlayerScore* leaderboard) {
+static void loadLeaderboardToArray(PlayerScore* leaderboard) {
   char temp[256];
 
   char* basePath = SDL_GetBasePath();
@@ -83,7 +83,7 @@ void loadLeaderboardToArray(PlayerScore* leaderboard) {
   fclose(file);
 }
 
-int32_t findPlaceInLeaderboard(int32_t score) {
+static int32_t findPlaceInLeaderboard(int32_t score) {
   char temp[256];
 
   char* basePath = SDL_GetBasePath();
@@ -118,7 +118,7 @@ int32_t findPlaceInLeaderboard(int32_t score) {
   return -1;
 }
 
-void addToLeaderBoard(const char* name, int32_t score) {
+static void addToLeaderBoard(const char* name, int32_t score) {
   char temp[256];
 
   char* basePath = SDL_GetBasePath();
@@ -263,7 +263,7 @@ void leaderboardMain(App* app, const char* name) {
                                 nameLabel, scoreLabel};
 
   while (app->currState == LEADERBOARD) {
-    threadEventPoll(app);
+    pollAllEvents(app);
     // filling up the background with black color and clearing render
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);
@@ -400,7 +400,7 @@ void leaderboardAddMain(App* app) {
                                 nameInput, placeLabel, continueButton};
 
   while (app->currState == LEADERBOARD_ADD) {
-    threadEventPoll(app);
+    pollAllEvents(app);
     // filling up the background with black color and clearing render
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);

@@ -12,20 +12,8 @@
 #include "log/log.h"
 #include "windStruct.h"
 
-void updateWind(App* app) {
-  Wind* wind = &app->globalConditions.wind;
-
-  wind->windStrength = getRandomValue(10, 100) / 10.;
-  wind->windDirection = getRandomValue(0, 6);
-
-  updateWindDirectionIcon(wind->directionIcon, wind->windDirection);
-  updateWindSpeedLabel(app, wind->speedLabel, wind->windStrength);
-
-  wind->windStrength *= 2;
-}
-
-void updateWindDirectionIcon(RenderObject* directionIcon,
-                             enum WindDirection direction) {
+static void updateWindDirectionIcon(RenderObject* directionIcon,
+                                    enum WindDirection direction) {
   switch (direction) {
     case E:
       directionIcon->data.texture.angle = 0;
@@ -48,8 +36,8 @@ void updateWindDirectionIcon(RenderObject* directionIcon,
   }
 }
 
-void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
-                          double windStrength) {
+static void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
+                                 double windStrength) {
   int32_t minWindSpeedLabel, maxWindSpeedLabel;
   minWindSpeedLabel = floor(windStrength) - getRandomValue(0, 1);
   minWindSpeedLabel = MAX(minWindSpeedLabel, 0);
@@ -70,4 +58,16 @@ void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
       createTextTexture(app->renderer, speedLabelFont, temp, 0, 0, 200, 255);
 
   TTF_CloseFont(speedLabelFont);
+}
+
+void updateWind(App* app) {
+  Wind* wind = &app->globalConditions.wind;
+
+  wind->windStrength = getRandomValue(10, 100) / 10.;
+  wind->windDirection = getRandomValue(0, 6);
+
+  updateWindDirectionIcon(wind->directionIcon, wind->windDirection);
+  updateWindSpeedLabel(app, wind->speedLabel, wind->windStrength);
+
+  wind->windStrength *= 2;
 }
