@@ -13,53 +13,13 @@
 #include "log/log.h"
 #include "player_movement.h"
 
-void botMain(App* app, Player* player1, Player* player2, int32_t* heightMap,
-             RenderObject* projectile, RenderObject* explosion,
-             SDL_bool* regenMap, SDL_bool* recalcBulletPath,
-             enum PlayerType playerType) {
-  double initGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
-
-  // calculating angle specifically for a current player
-  if (app->currPlayer == player2) {
-    initGunAngle += 180 - app->currPlayer->tankGunObj->data.texture.angleAlt;
-  } else {
-    initGunAngle += app->currPlayer->tankGunObj->data.texture.angleAlt;
-  }
-
-  // normalizing just to be sure its in [0;2pi) and now its counterclockwise
-  initGunAngle = 360 - normalizeAngle(initGunAngle);
-
-  switch (playerType) {
-    case EASY:
-      while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, recalcBulletPath, 55,
-                            initGunAngle, playerType) &&
-             app->currState == PLAY);
-      break;
-    case NORMAL:
-      while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, recalcBulletPath, 77,
-                            initGunAngle, playerType) &&
-             app->currState == PLAY);
-      break;
-    case HARD:
-      while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, recalcBulletPath, 90,
-                            initGunAngle, playerType) &&
-             app->currState == PLAY);
-      break;
-    default:
-      log_info("[bot] default actiton for bot");
-      break;
-  }
-}
-
 // this func decide what option is the best
-int32_t calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
-                       int32_t* heightMap, RenderObject* projectile,
-                       RenderObject* explosion, SDL_bool* regenMap,
-                       SDL_bool* recalcBulletPath, int32_t hitChance,
-                       double initGunAngle, enum PlayerType playerType) {
+static int32_t calcBestOption(App* app, Player* firstPlayer,
+                              Player* secondPlayer, int32_t* heightMap,
+                              RenderObject* projectile, RenderObject* explosion,
+                              SDL_bool* regenMap, SDL_bool* recalcBulletPath,
+                              int32_t hitChance, double initGunAngle,
+                              enum PlayerType playerType) {
   Player* enemy;
   if (app->currPlayer == firstPlayer) {
     enemy = secondPlayer;
@@ -349,4 +309,45 @@ int32_t calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
     }
   }
   return 1;
+}
+
+void botMain(App* app, Player* player1, Player* player2, int32_t* heightMap,
+             RenderObject* projectile, RenderObject* explosion,
+             SDL_bool* regenMap, SDL_bool* recalcBulletPath,
+             enum PlayerType playerType) {
+  double initGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
+
+  // calculating angle specifically for a current player
+  if (app->currPlayer == player2) {
+    initGunAngle += 180 - app->currPlayer->tankGunObj->data.texture.angleAlt;
+  } else {
+    initGunAngle += app->currPlayer->tankGunObj->data.texture.angleAlt;
+  }
+
+  // normalizing just to be sure its in [0;2pi) and now its counterclockwise
+  initGunAngle = 360 - normalizeAngle(initGunAngle);
+
+  switch (playerType) {
+    case EASY:
+      while (calcBestOption(app, player1, player2, heightMap, projectile,
+                            explosion, regenMap, recalcBulletPath, 55,
+                            initGunAngle, playerType) &&
+             app->currState == PLAY);
+      break;
+    case NORMAL:
+      while (calcBestOption(app, player1, player2, heightMap, projectile,
+                            explosion, regenMap, recalcBulletPath, 77,
+                            initGunAngle, playerType) &&
+             app->currState == PLAY);
+      break;
+    case HARD:
+      while (calcBestOption(app, player1, player2, heightMap, projectile,
+                            explosion, regenMap, recalcBulletPath, 90,
+                            initGunAngle, playerType) &&
+             app->currState == PLAY);
+      break;
+    default:
+      log_info("[bot] default actiton for bot");
+      break;
+  }
 }

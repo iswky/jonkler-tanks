@@ -286,7 +286,8 @@ SDL_Texture* createTextTexture(SDL_Renderer* renderer, TTF_Font* font,
 }
 
 // scale rects without any proportions
-void scaleObjects(App* app, RenderObject* objectsArr[], int32_t objectArrSize) {
+static void scaleObjects(App* app, RenderObject* objectsArr[],
+                         int32_t objectArrSize) {
   for (int32_t i = 0; i != objectArrSize; ++i) {
     if (objectsArr[i] == NULL) {
       continue;
@@ -332,14 +333,9 @@ void scaleObjects(App* app, RenderObject* objectsArr[], int32_t objectArrSize) {
   }
 }
 
-// scale SDL_Rect with fixed ratio
-void scaleRectRatio(SDL_Rect* rect, const float ratio) {
-  (*rect).h *= ratio;
-  (*rect).w *= ratio;
-}
-
 // draw thick rects
-void drawThickRect(SDL_Renderer* renderer, SDL_Rect rect, int32_t thickness) {
+static void drawThickRect(SDL_Renderer* renderer, SDL_Rect rect,
+                          int32_t thickness) {
   for (int32_t i = 0; i < thickness; i++) {
     SDL_RenderDrawRect(renderer, &rect);
     rect.x++;
@@ -349,18 +345,22 @@ void drawThickRect(SDL_Renderer* renderer, SDL_Rect rect, int32_t thickness) {
   }
 }
 
+// draw fiiled triangle using 3 points (vertexes)
+static void drawFilledTriangle(SDL_Renderer* renderer, const SDL_Point* p1,
+                               const SDL_Point* p2, const SDL_Point* p3,
+                               SDL_Color color) {
+  SDL_Vertex vertexes[] = {
+      {{p1->x, p1->y}, color, {1, 1}},
+      {{p2->x, p2->y}, color, {1, 1}},
+      {{p3->x, p3->y}, color, {1, 1}},
+  };
+
+  SDL_RenderGeometry(renderer, NULL, vertexes, 3, NULL, 0);
+}
+
 // render textures objects with/without scaling
 void renderTextures(App* app, RenderObject* objectsArr[],
                     int32_t objectsArrSize, int32_t isScaling) {
-  // if (app->rendererState == RENDER_PENDING_BLOCK) {
-  //   app->rendererState = RENDER_BLOCKED;
-  // }
-
-  // if (app->rendererState == RENDER_BLOCKED) {
-  //   return;
-  // }
-
-  //app->rendererState = RENDER_RUNNING;
   // scale objects
   if (isScaling) {
     scaleObjects(app, objectsArr, objectsArrSize);
@@ -612,20 +612,6 @@ void renderTextures(App* app, RenderObject* objectsArr[],
     app->isMouseTriggered = SDL_FALSE;
     app->buttonPosTriggered = b_NONE;
   }
-  //app->rendererState = RENDER_FINISHED;
-}
-
-// draw fiiled triangle using 3 points (vertexes)
-void drawFilledTriangle(SDL_Renderer* renderer, const SDL_Point* p1,
-                        const SDL_Point* p2, const SDL_Point* p3,
-                        SDL_Color color) {
-  SDL_Vertex vertexes[] = {
-      {{p1->x, p1->y}, color, {1, 1}},
-      {{p2->x, p2->y}, color, {1, 1}},
-      {{p3->x, p3->y}, color, {1, 1}},
-  };
-
-  SDL_RenderGeometry(renderer, NULL, vertexes, 3, NULL, 0);
 }
 
 void renderBulletPath(App* app, RenderObject* bulletPath) {

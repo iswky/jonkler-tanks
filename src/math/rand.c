@@ -11,24 +11,8 @@
 
 #include "log/log.h"
 
-// func return a random value from a native linux file
-// or using windiws crypt lib
-int32_t getRandomValue(int32_t min, int32_t max) {
-  int32_t res;
 #if defined(__unix__)
-  res = getRandomDWORD_unix();
-#elif defined(_WIN32)
-  res = getRandomDWORD_win();
-#endif
-  res = (res % (max - min + 1));
-  if (res < 0) {
-    res += max - min + 1;
-  }
-  return res + min;
-}
-
-#if defined(__unix__)
-int32_t getRandomDWORD_unix() {
+static int32_t getRandomDWORD_unix() {
   int32_t res;
   FILE* randFile = fopen("/dev/urandom", "r");
   if (randFile == NULL) {
@@ -47,7 +31,7 @@ int32_t getRandomDWORD_unix() {
 #endif
 
 #if defined(_WIN32)
-int32_t getRandomDWORD_win() {
+static int32_t getRandomDWORD_win() {
   HCRYPTPROV hProv;
   uint32_t randomValue = 0;
 
@@ -66,3 +50,19 @@ int32_t getRandomDWORD_win() {
   return randomValue;
 }
 #endif
+
+// func return a random value from a native linux file
+// or using windiws crypt lib
+int32_t getRandomValue(int32_t min, int32_t max) {
+  int32_t res;
+#if defined(__unix__)
+  res = getRandomDWORD_unix();
+#elif defined(_WIN32)
+  res = getRandomDWORD_win();
+#endif
+  res = (res % (max - min + 1));
+  if (res < 0) {
+    res += max - min + 1;
+  }
+  return res + min;
+}
