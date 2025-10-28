@@ -504,7 +504,13 @@ void playMain(App* app, uint32_t SEED) {
   secondPlayer.tankGunObj = Player2Gun;
   firstPlayer.inAnimation = SDL_FALSE;
   secondPlayer.inAnimation = SDL_FALSE;
-
+  // ==================================
+  firstPlayer.inAnimation = SDL_TRUE;
+  secondPlayer.inAnimation = SDL_TRUE;
+  // ==================================
+  // firstPlayer.inAnimation = SDL_FALSE;
+  // secondPlayer.inAnimation = SDL_FALSE;
+  // ==================================
   // if settings wasnt loaded
   // setting up the 'default' settings
   if (!wasLoaded) {

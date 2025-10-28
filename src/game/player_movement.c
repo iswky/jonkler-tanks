@@ -8,6 +8,8 @@
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
 
+#include "specialConditions/spread.h"
+
 #include "../math/math.h"
 #include "autosave.h"
 #include "bot.h"
@@ -41,6 +43,12 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
 
   // normalizing just to be sure its in [0;2pi) and now its counterclockwise
   currGunAngle = 360 - normalizeAngle(currGunAngle);
+
+  // add spread to current angle
+  if (app->currPlayer->buffs.weaponIsBroken) {
+    currGunAngle = addSpreadToCurrAngle(app->currWeapon, currGunAngle);
+  }
+  // currGunAngle = addSpreadToCurrAngle(app->currWeapon, currGunAngle);
 
   // thats an init pos of a curr player tank
   SDL_Point tempPos;
