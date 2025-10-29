@@ -645,9 +645,6 @@ static void playMain(App* app, uint32_t SEED) {
           emoji->data.texture.flipFlag = SDL_FLIP_NONE;
           //emoji->data.texture.currFrame = 0;
           emoji->disableRendering = SDL_FALSE;
-        } else {
-          emoji->data.texture.constRect.y = 100000;
-          emoji->data.texture.constRect.x = 100000;
         }
       }
     }
@@ -845,8 +842,8 @@ void preGameMain(App* app) {
 
   // easy diff
   RenderObject* Player1Diff_bE = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Easy, "BOT: kid",
-      smallFont, &(SDL_Point){0, Player1Diff_p->data.texture.constRect.y + 50},
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Easy, "BOT1", smallFont,
+      &(SDL_Point){0, Player1Diff_p->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
   Player1Diff_bE->data.texture.constRect.x =
@@ -856,8 +853,8 @@ void preGameMain(App* app) {
 
   // normal diff
   RenderObject* Player1Diff_bN = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Normal, "BOT: normal",
-      smallFont, &(SDL_Point){0, Player1Diff_bE->data.texture.constRect.y + 50},
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Normal, "BOT2", smallFont,
+      &(SDL_Point){0, Player1Diff_bE->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
   Player1Diff_bN->data.texture.constRect.x =
@@ -867,8 +864,8 @@ void preGameMain(App* app) {
 
   // hard diff
   RenderObject* Player1Diff_bH = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Hard, "BOT: Bring 'em on!",
-      smallFont, &(SDL_Point){0, Player1Diff_bN->data.texture.constRect.y + 50},
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Hard, "BOT3", smallFont,
+      &(SDL_Point){0, Player1Diff_bN->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
   Player1Diff_bH->data.texture.constRect.x =
@@ -900,8 +897,8 @@ void preGameMain(App* app) {
 
   // easy diff
   RenderObject* Player2Diff_bE = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Easy, "BOT: kid",
-      smallFont, &(SDL_Point){0, Player2Diff_p->data.texture.constRect.y + 50},
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Easy, "BOT1", smallFont,
+      &(SDL_Point){0, Player2Diff_p->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
   Player2Diff_bE->data.texture.constRect.x =
@@ -911,8 +908,8 @@ void preGameMain(App* app) {
 
   // normal diff
   RenderObject* Player2Diff_bN = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Normal, "BOT: normal",
-      smallFont, &(SDL_Point){0, Player2Diff_bE->data.texture.constRect.y + 50},
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Normal, "BOT2", smallFont,
+      &(SDL_Point){0, Player2Diff_bE->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
   Player2Diff_bN->data.texture.constRect.x =
@@ -922,8 +919,8 @@ void preGameMain(App* app) {
 
   // hard diff
   RenderObject* Player2Diff_bH = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Hard, "BOT: Bring 'em on!",
-      smallFont, &(SDL_Point){0, Player2Diff_bN->data.texture.constRect.y + 50},
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Hard, "BOT3", smallFont,
+      &(SDL_Point){0, Player2Diff_bN->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
   Player2Diff_bH->data.texture.constRect.x =
