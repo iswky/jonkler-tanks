@@ -45,7 +45,6 @@ void renderSpreadArea(App* app, RenderObject* spreadArea) {
 
   // calculating starting point for the path (aka gun basis)
   SDL_Point gunEdgeCoord;
-  SDL_Color currColor = {0, 0, 0, 255};
 
   // for 2nd player
   if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
@@ -108,9 +107,6 @@ void renderSpreadArea(App* app, RenderObject* spreadArea) {
   SDL_FPoint relativePos = {0.f, 0.f};
 
   SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 255);
-
-  double vx = cos(DEGTORAD(currGunAngle));
-  double vy = sin(DEGTORAD(currGunAngle));
 
   if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
       SDL_FLIP_HORIZONTAL) {
