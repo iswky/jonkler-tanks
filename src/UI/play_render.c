@@ -194,10 +194,11 @@ static void playMain(App* app, uint32_t SEED) {
   RenderObject* betmentAvatar = createRenderObject(
       app->renderer, GIF, 1, b_NONE, "media/imgs/betment.png",
       &(SDL_Point){12, 30}, 39, 2, SDL_FALSE);
-  
-  RenderObject* emoji = createRenderObject(
-      app->renderer, GIF, 1, b_NONE, "media/imgs/cl_goblin.png",
-      &(SDL_Point){0, 0}, 32, 5, SDL_FALSE);
+
+  RenderObject* emoji = createRenderObject(app->renderer, GIF, 1, b_NONE,
+                                           "media/imgs/cl_goblin.png",
+                                           &(SDL_Point){0, 0}, 32, 2, SDL_TRUE);
+  emoji->disableRendering = SDL_TRUE;
 
   RenderObject* jonklerAvatar =
       createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
@@ -611,13 +612,13 @@ static void playMain(App* app, uint32_t SEED) {
               Player2Tank->data.texture.constRect.w *
                   fabs(sin(DEGTORAD(Player2Tank->data.texture.angle))) -
               80;
-          emoji->data.texture.constRect.x = Player2Tank->data.texture.constRect.x - 30;
+          emoji->data.texture.constRect.x =
+              Player2Tank->data.texture.constRect.x - 30;
           emoji->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
+          //emoji->data.texture.currFrame = 0;
+          emoji->disableRendering = SDL_FALSE;
         }
-        else {
-          emoji->data.texture.constRect.y = 100000;
-          emoji->data.texture.constRect.x = 100000;
-        }
+
       } else {
         currentPlayerInfo->data.texture.constRect.x =
             app->screenWidth / app->scalingFactorX -
@@ -642,8 +643,9 @@ static void playMain(App* app, uint32_t SEED) {
           emoji->data.texture.constRect.x =
               Player1Tank->data.texture.constRect.x - 45;
           emoji->data.texture.flipFlag = SDL_FLIP_NONE;
-        }
-        else {
+          //emoji->data.texture.currFrame = 0;
+          emoji->disableRendering = SDL_FALSE;
+        } else {
           emoji->data.texture.constRect.y = 100000;
           emoji->data.texture.constRect.x = 100000;
         }
