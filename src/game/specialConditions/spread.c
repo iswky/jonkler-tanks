@@ -12,7 +12,7 @@
 double getMaxSpreadByWeapon(int weapon) {
   if (weapon == 0) return 5;
   if (weapon == 1) return 10;
-  if (weapon == 2) return 20;
+  if (weapon == 2) return 15;
   if (weapon == 3) return 25;
   return 10;
 }
@@ -31,11 +31,9 @@ double addSpreadToCurrAngle(int weapon, double currAngle) {
 }
 
 static void drawSpreadLines(SDL_Renderer* renderer, int x0, int y0, int x1,
-                            int y1, int offset) {
-  for (int i = 0; i <= 1; i++)
-    SDL_RenderDrawLine(renderer, x0, y0 + i, x1 + offset, y1 + offset + i);
-  for (int i = 0; i <= 1; i++)
-    SDL_RenderDrawLine(renderer, x0, y0 + i, x1 - offset, y1 - offset + i);
+                            int y1, int thickness) {
+  for (int i = -1; i < thickness; i++)
+    SDL_RenderDrawLine(renderer, x0, y0 + i, x1, y1 + i);
 }
 
 void renderSpreadArea(App* app, RenderObject* spreadArea) {
@@ -43,10 +41,8 @@ void renderSpreadArea(App* app, RenderObject* spreadArea) {
   SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 0);
   SDL_RenderClear(app->renderer);
 
-  // calculating starting point for the path (aka gun basis)
   SDL_Point gunEdgeCoord;
 
-  // for 2nd player
   if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
       SDL_FLIP_HORIZONTAL) {
     gunEdgeCoord = getPixelScreenPosition(
@@ -67,7 +63,6 @@ void renderSpreadArea(App* app, RenderObject* spreadArea) {
         gunEdgeCoord.y / app->scalingFactorY -
         spreadArea->data.texture.constRect.h / 1.5f;
   } else {
-    // for 1st player
     gunEdgeCoord = getPixelScreenPosition(
         (SDL_Point){
             app->currPlayer->tankObj->data.texture.constRect.x *
@@ -85,52 +80,66 @@ void renderSpreadArea(App* app, RenderObject* spreadArea) {
         spreadArea->data.texture.constRect.h / 1.5f;
   }
 
-  // that angle is clockwise
   double currGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
 
-  // calculating angle specifically for a current player
-  // if currPlayer is a second player
   if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
       SDL_FLIP_HORIZONTAL) {
     currGunAngle += 180 - app->currPlayer->tankGunObj->data.texture.angleAlt;
   } else {
-    //  if currPlayer is a first player
     currGunAngle += app->currPlayer->tankGunObj->data.texture.angleAlt;
   }
 
-  // normalizing just to be sure its in [0; 2pi) and now its counterclockwise
   currGunAngle = 360 - normalizeAngle(currGunAngle);
+
+  SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 255);
+
+  double offset = getMaxSpreadByWeapon(app->currWeapon);
 
   double currGunCos = cos(DEGTORAD(currGunAngle));
   double currGunSin = sin(DEGTORAD(currGunAngle));
 
-  SDL_FPoint relativePos = {0.f, 0.f};
+  double upLineCos = cos(DEGTORAD((currGunAngle + offset)));
+  double upLineSin = sin(DEGTORAD((currGunAngle + offset)));
 
-  SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 255);
+  double downLineCos = cos(DEGTORAD((currGunAngle - offset)));
+  double downLineSin = sin(DEGTORAD((currGunAngle - offset)));
 
   if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
       SDL_FLIP_HORIZONTAL) {
     drawSpreadLines(
-        app->renderer,
-        relativePos.x + relativePos.x + 15 * currGunCos +
-            spreadArea->data.texture.constRect.w,
-        -relativePos.y + spreadArea->data.texture.constRect.h / 1.5 -
-            18 * currGunSin,
-        relativePos.x + relativePos.x + 15 * currGunCos * 5 +
-            spreadArea->data.texture.constRect.w,
-        -relativePos.y + spreadArea->data.texture.constRect.h / 1.5 -
-            18 * currGunSin * 5,
-        getMaxSpreadByWeapon(app->currWeapon));
+      app->renderer,
+      15 * currGunCos + spreadArea->data.texture.constRect.w,
+      spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
+      15 * upLineCos * 5 + spreadArea->data.texture.constRect.w,
+      spreadArea->data.texture.constRect.h / 1.5 - 18 * upLineSin * 5,
+      1
+    );
+    drawSpreadLines(
+      app->renderer,
+      15 * currGunCos + spreadArea->data.texture.constRect.w,
+      spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
+      15 * downLineCos * 5 + spreadArea->data.texture.constRect.w,
+      spreadArea->data.texture.constRect.h / 1.5 - 18 * downLineSin * 5,
+      1
+    );
   } else {
     drawSpreadLines(
-        app->renderer, relativePos.x + 20 * currGunCos,
-        -relativePos.y + spreadArea->data.texture.constRect.h / 1.5 -
-            18 * currGunSin,
-        relativePos.x + 20 * currGunCos * 5,
-        -relativePos.y + spreadArea->data.texture.constRect.h / 1.5 -
-            18 * currGunSin * 5,
-        getMaxSpreadByWeapon(app->currWeapon));
+      app->renderer, 
+      20 * currGunCos,
+      spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
+      20 * upLineCos * 5,
+      spreadArea->data.texture.constRect.h / 1.5 - 18 * upLineSin * 5,
+      1
+    );
+    drawSpreadLines(
+      app->renderer, 
+      20 * currGunCos,
+      spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
+      20 * downLineCos * 5,
+      spreadArea->data.texture.constRect.h / 1.5 - 18 * downLineSin * 5,
+      1
+    );
   }
-  // enable rendering back
+
   SDL_SetRenderTarget(app->renderer, NULL);
 }
