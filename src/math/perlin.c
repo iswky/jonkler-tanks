@@ -77,6 +77,7 @@ void generateHeightmap(int32_t* heightmap, uint32_t seed, int32_t WIDTH,
     rareNoise = pow(fabs(rareNoise), 4) * (rareNoise > 0 ? 1 : -1);
 
     float heightValue = baseNoise + rareNoise;
-    heightmap[x] = HEIGHT - (int32_t)((heightValue + 1) * 0.7 * HEIGHT * 0.7);
+    heightmap[x] =
+        (HEIGHT - (int32_t)((heightValue + 1) * HEIGHT * 0.49)) * 0.7;
   }
 }

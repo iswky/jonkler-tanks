@@ -5,6 +5,8 @@
 
 typedef struct {
   SDL_bool weaponIsBroken;
+  SDL_bool isDoubleDamage;
+  SDL_bool isShielded;
 } Buffs;
 
 #endif

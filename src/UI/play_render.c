@@ -15,8 +15,8 @@
 #include "../game/autosave.h"
 #include "../game/gen_map.h"
 #include "../game/player_movement.h"
-#include "../game/specialConditions/wind.h"
 #include "../game/specialConditions/spread.h"
+#include "../game/specialConditions/wind.h"
 #include "../math/math.h"
 #include "log/log.h"
 
@@ -137,6 +137,14 @@ static void playMain(App* app, uint32_t SEED) {
     x2 = app->screenWidth / app->scalingFactorX - 44 - 20;
     app->timesPlayed = 0;
   }
+
+  // default buffs state (enabled by default)
+  firstPlayer.buffs.weaponIsBroken = SDL_TRUE;
+  firstPlayer.buffs.isDoubleDamage = SDL_FALSE;
+  firstPlayer.buffs.isShielded = SDL_FALSE;
+  secondPlayer.buffs.weaponIsBroken = SDL_TRUE;
+  secondPlayer.buffs.isDoubleDamage = SDL_TRUE;
+  secondPlayer.buffs.isShielded = SDL_TRUE;
 
   // height map will contain the 'base' for map (for rendering different
   // colors)
@@ -425,6 +433,49 @@ static void playMain(App* app, uint32_t SEED) {
       app->screenWidth / app->scalingFactorX -
       playerScore2->data.texture.constRect.w - 30;
 
+  // Buff icons under SCORE (double damage, then shield) for both players
+  RenderObject* p1DoubleDmgIcon =
+      createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
+                         "media/imgs/doubleDamage.png", &(SDL_Point){0, 0});
+  RenderObject* p1ShieldIcon =
+      createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
+                         "media/imgs/shield.png", &(SDL_Point){0, 0});
+
+  RenderObject* p2DoubleDmgIcon =
+      createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
+                         "media/imgs/doubleDamage.png", &(SDL_Point){0, 0});
+  RenderObject* p2ShieldIcon =
+      createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
+                         "media/imgs/shield.png", &(SDL_Point){0, 0});
+
+  // buffs icons
+  p1DoubleDmgIcon->data.texture.constRect.x =
+      playerScore1->data.texture.constRect.x;
+  p1DoubleDmgIcon->data.texture.constRect.y =
+      playerScore1->data.texture.constRect.y +
+      playerScore1->data.texture.constRect.h + 6;
+  p1ShieldIcon->data.texture.constRect.x =
+      p1DoubleDmgIcon->data.texture.constRect.x +
+      p1DoubleDmgIcon->data.texture.constRect.w + 6;
+  p1ShieldIcon->data.texture.constRect.y =
+      p1DoubleDmgIcon->data.texture.constRect.y;
+
+  p2DoubleDmgIcon->data.texture.constRect.y =
+      playerScore2->data.texture.constRect.y +
+      playerScore2->data.texture.constRect.h + 6;
+  p2ShieldIcon->data.texture.constRect.y =
+      p2DoubleDmgIcon->data.texture.constRect.y;
+  // align right player's icons to the right edge of SCORE2
+  {
+    int32_t rightEdge = playerScore2->data.texture.constRect.x +
+                        playerScore2->data.texture.constRect.w;
+    p2ShieldIcon->data.texture.constRect.x =
+        rightEdge - p2ShieldIcon->data.texture.constRect.w;
+    p2DoubleDmgIcon->data.texture.constRect.x =
+        p2ShieldIcon->data.texture.constRect.x - 6 -
+        p2DoubleDmgIcon->data.texture.constRect.w;
+  }
+
   if (app->currPlayer == &secondPlayer) {
     currentPlayerInfo->data.texture.constRect.x =
         app->screenWidth / app->scalingFactorX -
@@ -438,6 +489,10 @@ static void playMain(App* app, uint32_t SEED) {
       jonklerAvatar,
       playerScore1,
       playerScore2,
+      p1DoubleDmgIcon,
+      p1ShieldIcon,
+      p2DoubleDmgIcon,
+      p2ShieldIcon,
       arrow,
       firstPlayer.tankGunObj,
       firstPlayer.tankObj,
@@ -576,6 +631,18 @@ static void playMain(App* app, uint32_t SEED) {
       SDL_QueryTexture(playerScore1->data.texture.texture, NULL, NULL,
                        &playerScore1->data.texture.constRect.w,
                        &playerScore1->data.texture.constRect.h);
+
+      // reposition icons under updated SCORE1
+      p1DoubleDmgIcon->data.texture.constRect.x =
+          playerScore1->data.texture.constRect.x;
+      p1DoubleDmgIcon->data.texture.constRect.y =
+          playerScore1->data.texture.constRect.y +
+          playerScore1->data.texture.constRect.h + 6;
+      p1ShieldIcon->data.texture.constRect.x =
+          p1DoubleDmgIcon->data.texture.constRect.x +
+          p1DoubleDmgIcon->data.texture.constRect.w + 6;
+      p1ShieldIcon->data.texture.constRect.y =
+          p1DoubleDmgIcon->data.texture.constRect.y;
     }
 
     if (oldScorePlayer2 != secondPlayer.score) {
@@ -591,7 +658,31 @@ static void playMain(App* app, uint32_t SEED) {
       SDL_QueryTexture(playerScore2->data.texture.texture, NULL, NULL,
                        &playerScore2->data.texture.constRect.w,
                        &playerScore2->data.texture.constRect.h);
+
+      // reposition icons under updated SCORE2 and align to right
+      p2DoubleDmgIcon->data.texture.constRect.y =
+          playerScore2->data.texture.constRect.y +
+          playerScore2->data.texture.constRect.h + 6;
+      p2ShieldIcon->data.texture.constRect.y =
+          p2DoubleDmgIcon->data.texture.constRect.y;
+      int32_t rightEdge2 = playerScore2->data.texture.constRect.x +
+                           playerScore2->data.texture.constRect.w;
+      p2ShieldIcon->data.texture.constRect.x =
+          rightEdge2 - p2ShieldIcon->data.texture.constRect.w;
+      p2DoubleDmgIcon->data.texture.constRect.x =
+          p2ShieldIcon->data.texture.constRect.x - 6 -
+          p2DoubleDmgIcon->data.texture.constRect.w;
     }
+
+    // toggle visibility based on buffs each frame
+    p1DoubleDmgIcon->disableRendering =
+        firstPlayer.buffs.isDoubleDamage ? SDL_FALSE : SDL_TRUE;
+    p1ShieldIcon->disableRendering =
+        firstPlayer.buffs.isShielded ? SDL_FALSE : SDL_TRUE;
+    p2DoubleDmgIcon->disableRendering =
+        secondPlayer.buffs.isDoubleDamage ? SDL_FALSE : SDL_TRUE;
+    p2ShieldIcon->disableRendering =
+        secondPlayer.buffs.isShielded ? SDL_FALSE : SDL_TRUE;
 
     renderTextures(app, objectsArr, sizeof(objectsArr) / sizeof(*objectsArr),
                    SDL_TRUE);
@@ -614,6 +705,10 @@ static void playMain(App* app, uint32_t SEED) {
   freeRenderObject(explosionObj);
   freeRenderObject(playerScore1);
   freeRenderObject(playerScore2);
+  freeRenderObject(p1DoubleDmgIcon);
+  freeRenderObject(p1ShieldIcon);
+  freeRenderObject(p2DoubleDmgIcon);
+  freeRenderObject(p2ShieldIcon);
   freeRenderObject(bulletPath);
   freeRenderObject(spreadArea);
   freeRenderObject(speedLabelObject);
