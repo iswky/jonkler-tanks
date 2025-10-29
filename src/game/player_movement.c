@@ -450,6 +450,7 @@ int32_t playerMove(void* data) {
     RenderObject* explosion;
     SDL_bool* regenMap;
     SDL_bool* recalcBulletPath;
+    SDL_bool* hideBulletPath;
     struct UpdateConditions* updateConditions;
     uint32_t mapSeed;
   };
@@ -464,6 +465,7 @@ int32_t playerMove(void* data) {
   RenderObject* explosion = params->explosion;
   SDL_bool* regenMap = params->regenMap;
   SDL_bool* recalcBulletPath = params->recalcBulletPath;
+  SDL_bool* hideBulletPath = params->hideBulletPath;
   uint32_t mapSeed = params->mapSeed;
   struct UpdateConditions* updateConditions = params->updateConditions;
 
@@ -504,7 +506,9 @@ int32_t playerMove(void* data) {
       if (app->keyStateArr[SDL_SCANCODE_RIGHT] && app->currPlayer->movesLeft) {
         // now in animation
         app->currPlayer->inAnimation = SDL_TRUE;
+        *hideBulletPath = SDL_TRUE;
         smoothMove(app, app->currPlayer == firstPlayer, SDL_TRUE, heightMap);
+        *hideBulletPath = SDL_FALSE;
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
         *recalcBulletPath = SDL_TRUE;
@@ -517,7 +521,9 @@ int32_t playerMove(void* data) {
                app->currPlayer->movesLeft) {
         // now in animation
         app->currPlayer->inAnimation = SDL_TRUE;
+        *hideBulletPath = SDL_TRUE;
         smoothMove(app, app->currPlayer == firstPlayer, SDL_FALSE, heightMap);
+        *hideBulletPath = SDL_FALSE;
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
         *recalcBulletPath = SDL_TRUE;
@@ -624,10 +630,12 @@ int32_t playerMove(void* data) {
         SDL_Delay(16);
       }
       log_info("currweapon - %d", app->currWeapon);
-
+      // !! FULLY DISABLING BULLET PATH RENDERING FOR BOTS
+      // !! JUST FOR NOW
+      *hideBulletPath = SDL_TRUE;
       botMain(app, firstPlayer, secondPlayer, heightMap, projectile, explosion,
               regenMap, recalcBulletPath, app->currPlayer->type);
-
+      *hideBulletPath = SDL_FALSE;
       app->currPlayer->inAnimation = SDL_FALSE;
 
       // switching players

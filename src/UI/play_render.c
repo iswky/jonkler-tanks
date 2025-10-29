@@ -55,16 +55,6 @@ static SDL_Texture* saveRenderMapToTexture(SDL_Renderer* renderer,
   SDL_RenderClear(renderer);
 
   renderMap(renderer, heightMap, basedMap, width, height);
-  // for (int32_t x = 0; x < width; x += 20 + getRandomValue(0, 30)) {
-  //   SDL_SetRenderDrawColor(renderer, 4, 137, 3, 255);
-  //   SDL_RenderDrawLine(renderer, x, (height - heightMap[x]), x,
-  //                      (height - heightMap[x]) - 15);
-  //   SDL_RenderDrawLine(renderer, x, (height - heightMap[x]), x - 5,
-  //                      (height - heightMap[x]) - 10);
-  //   SDL_RenderDrawLine(renderer, x, (height - heightMap[x]), x + 5,
-  //                      (height - heightMap[x]) - 10);
-  // }
-
   SDL_SetRenderTarget(renderer, NULL);
 
   return texture;
@@ -261,13 +251,6 @@ static void playMain(App* app, uint32_t SEED) {
   secondPlayer.tankGunObj = Player2Gun;
   firstPlayer.inAnimation = SDL_FALSE;
   secondPlayer.inAnimation = SDL_FALSE;
-  // ==================================
-  firstPlayer.inAnimation = SDL_TRUE;
-  secondPlayer.inAnimation = SDL_TRUE;
-  // ==================================
-  // firstPlayer.inAnimation = SDL_FALSE;
-  // secondPlayer.inAnimation = SDL_FALSE;
-  // ==================================
   // if settings wasnt loaded
   // setting up the 'default' settings
   if (!wasLoaded) {
@@ -332,6 +315,7 @@ static void playMain(App* app, uint32_t SEED) {
     SDL_bool updateWind;
   } updateConditions;
   SDL_bool regenMap = SDL_FALSE;
+  SDL_bool hideBulletPath = SDL_FALSE;
   SDL_bool recalcBulletPath = SDL_TRUE;
   updateConditions = (struct UpdateConditions){
       .updateWind = SDL_TRUE,
@@ -346,6 +330,7 @@ static void playMain(App* app, uint32_t SEED) {
     RenderObject* explosion;
     SDL_bool* regenMap;
     SDL_bool* recalcBulletPath;
+    SDL_bool* hideBulletPath;
     struct UpdateConditions* updateConditions;
     uint32_t mapSeed;
   };
@@ -360,6 +345,7 @@ static void playMain(App* app, uint32_t SEED) {
       .regenMap = &regenMap,
       .recalcBulletPath = &recalcBulletPath,
       .updateConditions = &updateConditions,
+      .hideBulletPath = &hideBulletPath,
       .mapSeed = mapSeed,
   };
 
@@ -537,12 +523,22 @@ static void playMain(App* app, uint32_t SEED) {
       updateConditions.updateWind = SDL_FALSE;
     }
 
+    // if flag was set but texture hasnt been hidden yet
+    if (hideBulletPath && bulletPath->disableRendering == SDL_FALSE) {
+      bulletPath->disableRendering = SDL_TRUE;
+      spreadArea->disableRendering = SDL_TRUE;
+    } else if (!hideBulletPath && bulletPath->disableRendering == SDL_TRUE) {
+      bulletPath->disableRendering = SDL_FALSE;
+      spreadArea->disableRendering = SDL_FALSE;
+    }
+
     // recalc bullet path
     if (recalcBulletPath) {
       renderBulletPath(app, bulletPath);
       if (app->currPlayer->buffs.weaponIsBroken) {
         renderSpreadArea(app, spreadArea);
       }
+      recalcBulletPath = SDL_FALSE;
     }
 
     // redrawing info texture
