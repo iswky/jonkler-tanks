@@ -15,7 +15,7 @@
 #include <windows.h>
 #endif
 
-static uint8_t createFolder(char* name, uint32_t mode) {
+inline static uint8_t createFolder(char* name, uint32_t mode) {
 #if defined(__unix__)
   return mkdir(name, mode);
 #elif defined(_WIN32)

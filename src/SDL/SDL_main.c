@@ -77,7 +77,7 @@ void SDL_Main() {
 }
 
 // initialising all necessarily
-static int32_t SDL_Initialise(App* app) {
+inline static int32_t SDL_Initialise(App* app) {
   // initialising all subsystems
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS)) {
     // if it fails
@@ -109,7 +109,7 @@ static int32_t SDL_Initialise(App* app) {
   return 0;
 }
 
-static void loadAllSounds(App* app) {
+inline static void loadAllSounds(App* app) {
   char temp[256];
 
   sprintf(temp, "%smedia/music/gunshot.wav", app->basePath);
@@ -129,7 +129,7 @@ static void loadAllSounds(App* app) {
   log_info("loaded %s", temp);
 }
 
-static void mainGameLoop(App* app) {
+inline static void mainGameLoop(App* app) {
   // main loop
   while (app->currState != EXIT) {
     switch (app->currState) {
@@ -165,14 +165,14 @@ static void mainGameLoop(App* app) {
   }
 }
 
-static void startMusic(const App* app) {
+inline static void startMusic(const App* app) {
   playMusic();
   Mix_VolumeMusic(app->settings.currentVolume);
   Mix_Volume(-1, app->settings.currentVolume);
 }
 
 #ifndef DEBUG
-static void initCursor(App* app) {
+inline static void initCursor(App* app) {
   char temp[256];
   sprintf(temp, "%smedia/imgs/cursor32.png", app->basePath);
   // loading cursor
@@ -191,7 +191,7 @@ static void initCursor(App* app) {
 }
 #endif
 
-static void createWindow(App* app) {
+inline static void createWindow(App* app) {
   app->window = SDL_CreateWindow("Jonkler Tanks: Betment edition",
                                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                  app->screenWidth, app->screenHeight, 0);

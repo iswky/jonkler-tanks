@@ -12,8 +12,8 @@
 #include "log/log.h"
 #include "windStruct.h"
 
-static void updateWindDirectionIcon(RenderObject* directionIcon,
-                                    enum WindDirection direction) {
+inline static void updateWindDirectionIcon(RenderObject* directionIcon,
+                                           enum WindDirection direction) {
   switch (direction) {
     case E:
       directionIcon->data.texture.angle = 0;

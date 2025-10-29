@@ -334,8 +334,8 @@ static void scaleObjects(App* app, RenderObject* objectsArr[],
 }
 
 // draw thick rects
-static void drawThickRect(SDL_Renderer* renderer, SDL_Rect rect,
-                          int32_t thickness) {
+inline static void drawThickRect(SDL_Renderer* renderer, SDL_Rect rect,
+                                 int32_t thickness) {
   for (int32_t i = 0; i < thickness; i++) {
     SDL_RenderDrawRect(renderer, &rect);
     rect.x++;
@@ -346,9 +346,9 @@ static void drawThickRect(SDL_Renderer* renderer, SDL_Rect rect,
 }
 
 // draw fiiled triangle using 3 points (vertexes)
-static void drawFilledTriangle(SDL_Renderer* renderer, const SDL_Point* p1,
-                               const SDL_Point* p2, const SDL_Point* p3,
-                               SDL_Color color) {
+inline static void drawFilledTriangle(SDL_Renderer* renderer,
+                                      const SDL_Point* p1, const SDL_Point* p2,
+                                      const SDL_Point* p3, SDL_Color color) {
   SDL_Vertex vertexes[] = {
       {{p1->x, p1->y}, color, {1, 1}},
       {{p2->x, p2->y}, color, {1, 1}},

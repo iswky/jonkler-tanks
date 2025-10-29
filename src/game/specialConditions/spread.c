@@ -7,9 +7,7 @@
 #include "../../math/math.h"
 #include "../../math/rand.h"
 
-#include "log/log.h"
-
-double getMaxSpreadByWeapon(int weapon) {
+inline double getMaxSpreadByWeapon(int weapon) {
   if (weapon == 0) return 5;
   if (weapon == 1) return 10;
   if (weapon == 2) return 15;
@@ -17,7 +15,7 @@ double getMaxSpreadByWeapon(int weapon) {
   return 10;
 }
 
-static int getRandomSpread() {
+inline static int getRandomSpread() {
   return getRandomValue(0, 100);
 }
 
@@ -30,8 +28,8 @@ double addSpreadToCurrAngle(int weapon, double currAngle) {
   return currAngle + spread;
 }
 
-static void drawSpreadLines(SDL_Renderer* renderer, int x0, int y0, int x1,
-                            int y1, int thickness) {
+inline static void drawSpreadLines(SDL_Renderer* renderer, int x0, int y0,
+                                   int x1, int y1, int thickness) {
   for (int i = -1; i < thickness; i++)
     SDL_RenderDrawLine(renderer, x0, y0 + i, x1, y1 + i);
 }
@@ -107,38 +105,26 @@ void renderSpreadArea(App* app, RenderObject* spreadArea) {
   if (app->currPlayer->tankGunObj->data.texture.flipFlag ==
       SDL_FLIP_HORIZONTAL) {
     drawSpreadLines(
-      app->renderer,
-      15 * currGunCos + spreadArea->data.texture.constRect.w,
-      spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
-      15 * upLineCos * 5 + spreadArea->data.texture.constRect.w,
-      spreadArea->data.texture.constRect.h / 1.5 - 18 * upLineSin * 5,
-      1
-    );
+        app->renderer, 15 * currGunCos + spreadArea->data.texture.constRect.w,
+        spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
+        15 * upLineCos * 5 + spreadArea->data.texture.constRect.w,
+        spreadArea->data.texture.constRect.h / 1.5 - 18 * upLineSin * 5, 1);
     drawSpreadLines(
-      app->renderer,
-      15 * currGunCos + spreadArea->data.texture.constRect.w,
-      spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
-      15 * downLineCos * 5 + spreadArea->data.texture.constRect.w,
-      spreadArea->data.texture.constRect.h / 1.5 - 18 * downLineSin * 5,
-      1
-    );
+        app->renderer, 15 * currGunCos + spreadArea->data.texture.constRect.w,
+        spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
+        15 * downLineCos * 5 + spreadArea->data.texture.constRect.w,
+        spreadArea->data.texture.constRect.h / 1.5 - 18 * downLineSin * 5, 1);
   } else {
     drawSpreadLines(
-      app->renderer, 
-      20 * currGunCos,
-      spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
-      20 * upLineCos * 5,
-      spreadArea->data.texture.constRect.h / 1.5 - 18 * upLineSin * 5,
-      1
-    );
+        app->renderer, 20 * currGunCos,
+        spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
+        20 * upLineCos * 5,
+        spreadArea->data.texture.constRect.h / 1.5 - 18 * upLineSin * 5, 1);
     drawSpreadLines(
-      app->renderer, 
-      20 * currGunCos,
-      spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
-      20 * downLineCos * 5,
-      spreadArea->data.texture.constRect.h / 1.5 - 18 * downLineSin * 5,
-      1
-    );
+        app->renderer, 20 * currGunCos,
+        spreadArea->data.texture.constRect.h / 1.5 - 18 * currGunSin,
+        20 * downLineCos * 5,
+        spreadArea->data.texture.constRect.h / 1.5 - 18 * downLineSin * 5, 1);
   }
 
   SDL_SetRenderTarget(app->renderer, NULL);
