@@ -1,4 +1,5 @@
 #include "bot.h"
+#include "../UI/obstacle.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -341,10 +342,10 @@ int32_t calcBestOption(App* app, Player* firstPlayer, Player* secondPlayer,
     return 0;
   } else {
     if (app->currPlayer == firstPlayer) {
-      smoothMove(app, SDL_TRUE, SDL_TRUE, heightMap);
+      smoothMove(app, SDL_TRUE, SDL_TRUE, heightMap, obstacleRock);
       return 1;
     } else {
-      smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap);
+      smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap, obstacleRock);
       return 1;
     }
   }

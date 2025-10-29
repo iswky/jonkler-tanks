@@ -180,11 +180,23 @@ void smoothChangePower(Player* player, int32_t endPower, enum State* currState,
 }
 
 int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
-                   int32_t* heightMap) {
+                   int32_t* heightMap, uint32_t* obstacle) {
   if (isRight) {
     int32_t i = 0;
     for (; i != 45; ++i) {
       // trying to move forward
+
+      for (int j = 0; j < 4; j++) {
+          if ((app->currPlayer->tankObj->data.texture.constRect.x +
+              app->currPlayer->tankObj->data.texture.constRect.w-5) >=
+                obstacle[j] && isFirstPlayer) {
+          if (i) {
+            app->currPlayer->movesLeft--;
+          }
+          return 2;
+          }
+      }
+
       if ((app->currPlayer->tankObj->data.texture.constRect.x +
            app->currPlayer->tankObj->data.texture.constRect.w - 2) *
               app->scalingFactorX >=
@@ -218,6 +230,15 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
     int32_t i = 0;
     for (; i != 45; ++i) {
       // trying to move forward
+      for (int j = 0; j < 4; j++) {
+        if (app->currPlayer->tankObj->data.texture.constRect.x <=
+                obstacle[j] + 100 && !isFirstPlayer && obstacle[j]!=10000) {
+          if (i) {
+            app->currPlayer->movesLeft--;
+          }
+          return 2;
+        }
+      }
       if (app->currPlayer->tankObj->data.texture.constRect.x <= 2) {
         if (i) {
           app->currPlayer->movesLeft--;

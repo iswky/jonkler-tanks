@@ -1,4 +1,5 @@
 #include "player_movement.h"
+#include "../UI/obstacle.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -468,7 +469,7 @@ int32_t playerMove(void* data) {
       if (app->keyStateArr[SDL_SCANCODE_RIGHT] && app->currPlayer->movesLeft) {
         // now in animation
         app->currPlayer->inAnimation = SDL_TRUE;
-        smoothMove(app, app->currPlayer == firstPlayer, SDL_TRUE, heightMap);
+        smoothMove(app, app->currPlayer == firstPlayer, SDL_TRUE, heightMap, obstacleRock);
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
         *recalcBulletPath = SDL_TRUE;
@@ -481,7 +482,7 @@ int32_t playerMove(void* data) {
                app->currPlayer->movesLeft) {
         // now in animation
         app->currPlayer->inAnimation = SDL_TRUE;
-        smoothMove(app, app->currPlayer == firstPlayer, SDL_FALSE, heightMap);
+        smoothMove(app, app->currPlayer == firstPlayer, SDL_FALSE, heightMap, obstacleRock);
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
         *recalcBulletPath = SDL_TRUE;

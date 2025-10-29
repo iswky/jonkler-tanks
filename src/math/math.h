@@ -30,7 +30,7 @@ void smoothChangePower(Player* player, int32_t endPower, enum State* currState,
                        SDL_bool* recalcBulletPath);
 
 int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
-                   int32_t* heightMap);
+                   int32_t* heightMap, uint32_t* obstacle);
 
 SDL_bool isInTriangle(const int32_t x, const int32_t y, SDL_Point p1,
                       SDL_Point p2, SDL_Point p3);
