@@ -3,9 +3,9 @@
 
 #include "../App.h"
 
-#define DEGTORAD(x) (x * M_PI / 180.0)
-#define RADTODEG(x) (x * 180.0 / M_PI)
-#define MAX(x, y) (x > y ? x : y)
+#define DEGTORAD(x) ((x) * M_PI / 180.0)
+#define RADTODEG(x) ((x) * 180.0 / M_PI)
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 double getAngle(int32_t x, int32_t* heightMap, int32_t dx);
 SDL_Point getPixelScreenPosition(SDL_Point drawPos, SDL_Point center,
