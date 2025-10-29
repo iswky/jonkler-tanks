@@ -270,17 +270,31 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
                             enemyPlayer->tankObj->data.texture.constRect.w / 2.;
       // hitting father than center
       if (currX > enemyCenter) {
-        app->currPlayer->score +=
+        double deltaDamage =
             10 + ((enemyCenter +
                    enemyPlayer->tankObj->data.texture.constRect.w / 2.) -
                   currX) *
                      damageMultiplier;
+        if (app->currPlayer->buffs.isDoubleDamage) {
+          deltaDamage *= 2.0;
+        }
+        if (enemyPlayer->buffs.isShielded) {
+          deltaDamage *= 0.15;  // 85% damage blocked
+        }
+        app->currPlayer->score += (int32_t)deltaDamage;
       }
       // hitting before the center
       else {
-        app->currPlayer->score +=
+        double deltaDamage =
             10 + (currX - enemyPlayer->tankObj->data.texture.constRect.x) *
                      damageMultiplier;
+        if (app->currPlayer->buffs.isDoubleDamage) {
+          deltaDamage *= 2.0;
+        }
+        if (enemyPlayer->buffs.isShielded) {
+          deltaDamage *= 0.15;  // 85% damage blocked
+        }
+        app->currPlayer->score += (int32_t)deltaDamage;
       }
       if (isHittableNearby == SDL_FALSE) {
         explosion->data.texture.constRect.h =
@@ -318,19 +332,33 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
                          enemyPlayer->tankObj->data.texture.constRect.w / 2) {
           // hitting after center (after right tank corner)
           if (currX > center) {
-            app->currPlayer->score +=
+            double deltaDamage =
                 5 +
                 ((center + enemyPlayer->tankObj->data.texture.constRect.w / 2. +
                   explosionRadius) -
                  currX) *
                     damageMultiplier / 1.5;
+            if (app->currPlayer->buffs.isDoubleDamage) {
+              deltaDamage *= 2.0;
+            }
+            if (enemyPlayer->buffs.isShielded) {
+              deltaDamage *= 0.15;  // 85% damage blocked
+            }
+            app->currPlayer->score += (int32_t)deltaDamage;
           }
           // hitting before center (before left tank corner)
           else {
-            app->currPlayer->score +=
+            double deltaDamage =
                 5 + (currX - (enemyPlayer->tankObj->data.texture.constRect.x -
                               explosionRadius)) *
                         damageMultiplier / 1.5;
+            if (app->currPlayer->buffs.isDoubleDamage) {
+              deltaDamage *= 2.0;
+            }
+            if (enemyPlayer->buffs.isShielded) {
+              deltaDamage *= 0.15;  // 85% damage blocked
+            }
+            app->currPlayer->score += (int32_t)deltaDamage;
           }
         }
 
