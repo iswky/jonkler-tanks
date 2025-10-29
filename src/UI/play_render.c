@@ -16,6 +16,7 @@
 #include "../game/gen_map.h"
 #include "../game/player_movement.h"
 #include "../game/specialConditions/wind.h"
+#include "../game/specialConditions/spread.h"
 #include "../math/math.h"
 #include "log/log.h"
 
