@@ -6,6 +6,6 @@
 double getMaxSpreadByWeapon(int weapon);
 double addSpreadToCurrAngle(int weapon, double currAngle);
 
-void renderSpreadLines(App* app);
+void renderSpreadArea(App* app, RenderObject* spreadArea);
 
 #endif

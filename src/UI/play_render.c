@@ -475,6 +475,9 @@ void playMain(App* app, uint32_t SEED) {
   RenderObject* bulletPath =
       createRenderObject(app->renderer, EMPTY, 0, b_NONE, 333, 333);
 
+  RenderObject* spreadArea =
+      createRenderObject(app->renderer, EMPTY, 0, b_NONE, 333, 333);
+
   RenderObject* speedLabelObject =
       createRenderObject(app->renderer, TEXT, 1, b_NONE, "1337", smallFont,
                          &(SDL_Point){0, 0}, &(SDL_Color){255, 255, 255, 255});
@@ -696,6 +699,7 @@ void playMain(App* app, uint32_t SEED) {
       secondPlayer.tankObj,
       explosionObj,
       bulletPath,
+      spreadArea,
       speedLabelObject,
       directionIconObject,
   };
@@ -732,10 +736,12 @@ void playMain(App* app, uint32_t SEED) {
       updateConditions.updateWind = SDL_FALSE;
     }
 
-    // recalc bullet path if needed
+    // recalc bullet path
     if (recalcBulletPath) {
       renderBulletPath(app, bulletPath);
-      recalcBulletPath = SDL_FALSE;
+      if (app->currPlayer->buffs.weaponIsBroken) {
+        renderSpreadArea(app, spreadArea);
+      }
     }
 
     // redrawing info texture
@@ -863,6 +869,7 @@ void playMain(App* app, uint32_t SEED) {
   freeRenderObject(playerScore1);
   freeRenderObject(playerScore2);
   freeRenderObject(bulletPath);
+  freeRenderObject(spreadArea);
   freeRenderObject(speedLabelObject);
   freeRenderObject(directionIconObject);
 
