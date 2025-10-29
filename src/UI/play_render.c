@@ -16,6 +16,7 @@
 #include "../game/gen_map.h"
 #include "../game/player_movement.h"
 #include "../game/specialConditions/wind.h"
+#include "../game/specialConditions/spread.h"
 #include "../math/math.h"
 #include "log/log.h"
 
@@ -220,6 +221,9 @@ static void playMain(App* app, uint32_t SEED) {
   RenderObject* bulletPath =
       createRenderObject(app->renderer, EMPTY, 0, b_NONE, 333, 333);
 
+  RenderObject* spreadArea =
+      createRenderObject(app->renderer, EMPTY, 0, b_NONE, 333, 333);
+
   RenderObject* speedLabelObject =
       createRenderObject(app->renderer, TEXT, 1, b_NONE, "1337", smallFont,
                          &(SDL_Point){0, 0}, &(SDL_Color){255, 255, 255, 255});
@@ -249,7 +253,13 @@ static void playMain(App* app, uint32_t SEED) {
   secondPlayer.tankGunObj = Player2Gun;
   firstPlayer.inAnimation = SDL_FALSE;
   secondPlayer.inAnimation = SDL_FALSE;
-
+  // ==================================
+  firstPlayer.inAnimation = SDL_TRUE;
+  secondPlayer.inAnimation = SDL_TRUE;
+  // ==================================
+  // firstPlayer.inAnimation = SDL_FALSE;
+  // secondPlayer.inAnimation = SDL_FALSE;
+  // ==================================
   // if settings wasnt loaded
   // setting up the 'default' settings
   if (!wasLoaded) {
@@ -435,6 +445,7 @@ static void playMain(App* app, uint32_t SEED) {
       secondPlayer.tankObj,
       explosionObj,
       bulletPath,
+      spreadArea,
       speedLabelObject,
       directionIconObject,
   };
@@ -471,10 +482,12 @@ static void playMain(App* app, uint32_t SEED) {
       updateConditions.updateWind = SDL_FALSE;
     }
 
-    // recalc bullet path if needed
+    // recalc bullet path
     if (recalcBulletPath) {
       renderBulletPath(app, bulletPath);
-      recalcBulletPath = SDL_FALSE;
+      if (app->currPlayer->buffs.weaponIsBroken) {
+        renderSpreadArea(app, spreadArea);
+      }
     }
 
     // redrawing info texture
@@ -602,6 +615,7 @@ static void playMain(App* app, uint32_t SEED) {
   freeRenderObject(playerScore1);
   freeRenderObject(playerScore2);
   freeRenderObject(bulletPath);
+  freeRenderObject(spreadArea);
   freeRenderObject(speedLabelObject);
   freeRenderObject(directionIconObject);
 
