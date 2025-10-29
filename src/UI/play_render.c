@@ -196,6 +196,10 @@ static void playMain(App* app, uint32_t SEED) {
   RenderObject* betmentAvatar = createRenderObject(
       app->renderer, GIF, 1, b_NONE, "media/imgs/betment.png",
       &(SDL_Point){12, 30}, 39, 2, SDL_FALSE);
+  
+  RenderObject* emoji = createRenderObject(
+      app->renderer, GIF, 1, b_NONE, "media/imgs/cl_goblin.png",
+      &(SDL_Point){0, 0}, 32, 5, SDL_FALSE);
 
   RenderObject* jonklerAvatar =
       createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
@@ -435,6 +439,7 @@ static void playMain(App* app, uint32_t SEED) {
       currentPlayerInfo,
       projectile,
       betmentAvatar,
+      emoji,
       jonklerAvatar,
       playerScore1,
       playerScore2,
@@ -547,6 +552,21 @@ static void playMain(App* app, uint32_t SEED) {
         arrow->data.texture.constRect.x =
             Player1Tank->data.texture.constRect.x - 15;
         arrow->data.texture.flipFlag = SDL_FLIP_NONE;
+
+        // moving trashtalk to "follow" second player
+        if (app->wasHitten) {
+          emoji->data.texture.constRect.y =
+              Player2Tank->data.texture.constRect.y -
+              Player2Tank->data.texture.constRect.w *
+                  fabs(sin(DEGTORAD(Player2Tank->data.texture.angle))) -
+              80;
+          emoji->data.texture.constRect.x = Player2Tank->data.texture.constRect.x - 30;
+          emoji->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
+        }
+        else {
+          emoji->data.texture.constRect.y = 100000;
+          emoji->data.texture.constRect.x = 100000;
+        }
       } else {
         currentPlayerInfo->data.texture.constRect.x =
             app->screenWidth / app->scalingFactorX -
@@ -560,6 +580,22 @@ static void playMain(App* app, uint32_t SEED) {
             80;
         arrow->data.texture.constRect.x = Player2Tank->data.texture.constRect.x;
         arrow->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
+
+        // moving trashtalk to "follow" first player
+        if (app->wasHitten) {
+          emoji->data.texture.constRect.y =
+              Player1Tank->data.texture.constRect.y -
+              Player1Tank->data.texture.constRect.w *
+                  fabs(sin(DEGTORAD(Player1Tank->data.texture.angle))) -
+              80;
+          emoji->data.texture.constRect.x =
+              Player1Tank->data.texture.constRect.x - 45;
+          emoji->data.texture.flipFlag = SDL_FLIP_NONE;
+        }
+        else {
+          emoji->data.texture.constRect.y = 100000;
+          emoji->data.texture.constRect.x = 100000;
+        }
       }
     }
 
@@ -608,6 +644,7 @@ static void playMain(App* app, uint32_t SEED) {
   freeRenderObject(Player2Gun);
   freeRenderObject(currentPlayerInfo);
   freeRenderObject(betmentAvatar);
+  freeRenderObject(emoji);
   freeRenderObject(jonklerAvatar);
   freeRenderObject(arrow);
   freeRenderObject(projectile);
