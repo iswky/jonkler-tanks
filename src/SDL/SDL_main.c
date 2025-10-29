@@ -127,6 +127,14 @@ inline static void loadAllSounds(App* app) {
     log_error("error: %s", Mix_GetError());
   }
   log_info("loaded %s", temp);
+
+  sprintf(temp, "%smedia/music/cl_goblin_crying.wav", app->basePath);
+
+  app->sounds[2] = Mix_LoadWAV(temp);
+  if (!app->sounds[2]) {
+    log_error("error: %s", Mix_GetError());
+  }
+  log_info("loaded %s", temp);
 }
 
 inline static void mainGameLoop(App* app) {

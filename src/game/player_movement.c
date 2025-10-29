@@ -259,12 +259,17 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
 
     int32_t currXScaled = currX * app->scalingFactorX;
     int32_t currYScaled = currY * app->scalingFactorY;
+
+    app->wasHitten = false;
     // if we hit enemy straight
     if (isInCircle(currXScaled, currYScaled, &collisionP1, collisionP1R) ||
         isInCircle(currXScaled, currYScaled, &collisionP2, collisionP2R) ||
         isInCircle(currXScaled, currYScaled, &collisionP3, collisionP3R)) {
       //     printf("COLLISION HIT!\n");
       //
+      app->wasHitten = true;
+      Mix_PlayChannel(-1, app->sounds[2], 0);
+
 
       int32_t enemyCenter = enemyPlayer->tankObj->data.texture.constRect.x +
                             enemyPlayer->tankObj->data.texture.constRect.w / 2.;

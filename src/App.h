@@ -210,7 +210,7 @@ typedef struct App {
 
   Player* currPlayer;
 
-  Mix_Chunk* sounds[2];
+  Mix_Chunk* sounds[3];
 
   // difficulty choice buttons
   enum Button p1Diff;
@@ -229,6 +229,9 @@ typedef struct App {
 
   // storing global special conditions here!
   SpecialGlobalConditions globalConditions;
+
+  // just for trash talk
+  SDL_bool wasHitten;
 } App;
 
 #endif
