@@ -2,6 +2,7 @@
 #define BASIC_MATH_H
 
 #include "../App.h"
+#include "../game/obstacle_struct.h"
 
 #define DEGTORAD(x) ((x) * M_PI / 180.0)
 #define RADTODEG(x) ((x) * 180.0 / M_PI)
@@ -30,7 +31,7 @@ void smoothChangePower(Player* player, int32_t endPower, enum State* currState,
                        SDL_bool* recalcBulletPath);
 
 int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
-                   int32_t* heightMap, uint32_t* obstacle);
+                   int32_t* heightMap, obstacleStruct* obstacle);
 
 SDL_bool isInTriangle(const int32_t x, const int32_t y, SDL_Point p1,
                       SDL_Point p2, SDL_Point p3);

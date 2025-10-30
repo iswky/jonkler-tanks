@@ -197,7 +197,7 @@ static void playMain(App* app, uint32_t SEED) {
 
   RenderObject* emoji = createRenderObject(app->renderer, GIF, 1, b_NONE,
                                            "media/imgs/cl_goblin.png",
-                                           &(SDL_Point){0, 0}, 32, 2, SDL_TRUE);
+                                           &(SDL_Point){0, 0}, 32, 5, SDL_TRUE);
   emoji->disableRendering = SDL_TRUE;
 
   RenderObject* jonklerAvatar =
@@ -359,14 +359,14 @@ static void playMain(App* app, uint32_t SEED) {
   RenderObject* tree2 = createTree(app, heightMap, 400, 600, 20);
   RenderObject* tree3 = createTree(app, heightMap, 400, 600, 20);
   RenderObject* tree4 = createTree(app, heightMap, 400, 600, 20);
-  RenderObject* tree5 = createTree(app, heightMap, 850, 999, 10);
+  RenderObject* tree5 = createTree(app, heightMap, 850, 950, 10);
 
-  RenderObject* cloud1 = createCloud(app, heightMap, 100, 200, 30);
-  RenderObject* cloud2 = createCloud(app, heightMap, 250, 400, 30);
-  RenderObject* cloud3 = createCloud(app, heightMap, 450, 600, 30);
-  RenderObject* cloud4 = createCloud(app, heightMap, 650, 800, 30);
+  RenderObject* cloud1 = createCloud(app, heightMap, 100, 200, 10);
+  RenderObject* cloud2 = createCloud(app, heightMap, 250, 400, 10);
+  RenderObject* cloud3 = createCloud(app, heightMap, 450, 600, 10);
+  RenderObject* cloud4 = createCloud(app, heightMap, 650, 800, 10);
   // 999 yeah
-  RenderObject* cloud5 = createCloud(app, heightMap, 850, 999, 30);
+  RenderObject* cloud5 = createCloud(app, heightMap, 850, 950, 10);
 
   // creating stones
   RenderObject* stone1 = createStone(app, heightMap, 200, 300);
@@ -499,12 +499,6 @@ static void playMain(App* app, uint32_t SEED) {
       betmentAvatar,
       emoji,
       jonklerAvatar,
-      playerScore1,
-      playerScore2,
-      p1DoubleDmgIcon,
-      p1ShieldIcon,
-      p2DoubleDmgIcon,
-      p2ShieldIcon,
       arrow,
       firstPlayer.tankGunObj,
       firstPlayer.tankObj,
@@ -523,6 +517,12 @@ static void playMain(App* app, uint32_t SEED) {
       cloud3,
       cloud4,
       cloud5,
+      playerScore1,
+      playerScore2,
+      p1DoubleDmgIcon,
+      p1ShieldIcon,
+      p2DoubleDmgIcon,
+      p2ShieldIcon,
       bulletPath,
       spreadArea,
       speedLabelObject,
@@ -637,18 +637,19 @@ static void playMain(App* app, uint32_t SEED) {
         arrow->data.texture.flipFlag = SDL_FLIP_NONE;
 
         // moving trashtalk to "follow" second player
-        if (app->wasHitten) {
-          emoji->data.texture.constRect.y =
-              Player2Tank->data.texture.constRect.y -
-              Player2Tank->data.texture.constRect.w *
-                  fabs(sin(DEGTORAD(Player2Tank->data.texture.angle))) -
-              80;
-          emoji->data.texture.constRect.x =
-              Player2Tank->data.texture.constRect.x - 30;
-          emoji->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
-          //emoji->data.texture.currFrame = 0;
-          emoji->disableRendering = SDL_FALSE;
-        }
+        // if (app->wasHitten) {
+        //   emoji->data.texture.constRect.y =
+        //       Player2Tank->data.texture.constRect.y -
+        //       Player2Tank->data.texture.constRect.w *
+        //           fabs(sin(DEGTORAD(Player2Tank->data.texture.angle))) -
+        //       80;
+        //   emoji->data.texture.constRect.x =
+        //       Player2Tank->data.texture.constRect.x - 30;
+        //   emoji->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
+        //   //emoji->data.texture.currFrame = 0;
+        //   emoji->disableRendering = SDL_FALSE;
+        //   app->wasHitten = SDL_FALSE;
+        // }
 
       } else {
         currentPlayerInfo->data.texture.constRect.x =
@@ -665,18 +666,19 @@ static void playMain(App* app, uint32_t SEED) {
         arrow->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
 
         // moving trashtalk to "follow" first player
-        if (app->wasHitten) {
-          emoji->data.texture.constRect.y =
-              Player1Tank->data.texture.constRect.y -
-              Player1Tank->data.texture.constRect.w *
-                  fabs(sin(DEGTORAD(Player1Tank->data.texture.angle))) -
-              80;
-          emoji->data.texture.constRect.x =
-              Player1Tank->data.texture.constRect.x - 45;
-          emoji->data.texture.flipFlag = SDL_FLIP_NONE;
-          //emoji->data.texture.currFrame = 0;
-          emoji->disableRendering = SDL_FALSE;
-        }
+        // if (app->wasHitten) {
+        //   emoji->data.texture.constRect.y =
+        //       Player1Tank->data.texture.constRect.y -
+        //       Player1Tank->data.texture.constRect.w *
+        //           fabs(sin(DEGTORAD(Player1Tank->data.texture.angle))) -
+        //       80;
+        //   emoji->data.texture.constRect.x =
+        //       Player1Tank->data.texture.constRect.x - 45;
+        //   emoji->data.texture.flipFlag = SDL_FLIP_NONE;
+        //   //emoji->data.texture.currFrame = 0;
+        //   emoji->disableRendering = SDL_FALSE;
+        //   app->wasHitten = SDL_FALSE;
+        // }
       }
     }
 

@@ -302,10 +302,10 @@ static int32_t calcBestOption(App* app, Player* firstPlayer,
     return 0;
   } else {
     if (app->currPlayer == firstPlayer) {
-      smoothMove(app, SDL_TRUE, SDL_TRUE, heightMap, obstacleRock);
+      smoothMove(app, SDL_TRUE, SDL_TRUE, heightMap, obstacles);
       return 1;
     } else {
-      smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap, obstacleRock);
+      smoothMove(app, SDL_FALSE, SDL_FALSE, heightMap, obstacles);
       return 1;
     }
   }

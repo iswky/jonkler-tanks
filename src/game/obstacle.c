@@ -2,16 +2,19 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_stdinc.h>
+#include <SDL_rect.h>
 #include <stdbool.h>
 
 #include "../SDL/SDL_render.h"
 #include "../math/math.h"
 #include "../math/rand.h"
+#include "obstacle_struct.h"
 
-uint32_t obstacleRock[2];
+obstacleStruct obstacles[MAXSTONES + MAXCLOUDS];
 
-// the freak is fall func name??
-static RenderObject* fall(App* app, int32_t* heightmap, int32_t x) {
+// the freak was fall func name??
+static RenderObject* renderStoneWithAngle(App* app, int32_t* heightmap,
+                                          int32_t x) {
   SDL_Point pos = {x, -66 + app->screenHeight / app->scalingFactorY -
                           heightmap[(int32_t)(x * app->scalingFactorX)] /
                               app->scalingFactorY};
@@ -24,8 +27,10 @@ static RenderObject* fall(App* app, int32_t* heightmap, int32_t x) {
   return object;
 }
 
+// create a single cloud with 1 hp and prob. (1-probability)
 RenderObject* createCloud(App* app, int32_t* heightmap, int32_t startPos,
                           int32_t endPos, int32_t probability) {
+  static uint32_t currCloudsCnt = 0;
   int imMrKrabsAndILikeMoney = getRandomValue(0, 100);
   RenderObject* res = NULL;
 
@@ -39,18 +44,26 @@ RenderObject* createCloud(App* app, int32_t* heightmap, int32_t startPos,
                          heightmap[(int32_t)((x + 54) * app->scalingFactorX)] /
                              app->scalingFactorY});
   }
+  obstacles[MAXSTONES + currCloudsCnt].obstacleObject = res;
+  obstacles[MAXSTONES + currCloudsCnt].health = 1;
+  currCloudsCnt++;
 
   return res;
 }
 
+// create a single stone with 3 hp
 RenderObject* createStone(App* app, int32_t* heightmap, int32_t startPos,
                           int32_t endPos) {
   static uint32_t currStonesCnt = 0;
   int x = getRandomValue(startPos, endPos);
-  obstacleRock[currStonesCnt++] = x;
-  return fall(app, heightmap, x);
+  RenderObject* res = renderStoneWithAngle(app, heightmap, x);
+  obstacles[currStonesCnt].obstacleObject = res;
+  obstacles[currStonesCnt].health = 3;
+  currStonesCnt++;
+  return res;
 }
 
+// create a single tree with prob. (1-probability)
 RenderObject* createTree(App* app, int32_t* heightmap, int32_t startPos,
                          int32_t endPos, int32_t probability) {
   int imMrKrabsAndILikeMoney = getRandomValue(0, 100);
@@ -68,4 +81,35 @@ RenderObject* createTree(App* app, int32_t* heightmap, int32_t startPos,
   }
 
   return res;
+}
+
+// checking for all obstacle collisions
+// and removing health
+// returns true if some obstacle was destroyed
+SDL_bool checkObstacleCollisions(uint32_t currX, uint32_t currY) {
+  for (uint32_t i = 0; i != MAXSTONES + MAXCLOUDS; ++i) {
+    // skipping non existing objects or alredy destroyed objects
+    if (obstacles[i].obstacleObject == NULL || obstacles[i].health == 0) {
+      continue;
+    }
+
+    int obstacleX = obstacles[i].obstacleObject->data.texture.constRect.x;
+    int obstacleW = obstacles[i].obstacleObject->data.texture.constRect.w;
+
+    int obstacleY = obstacles[i].obstacleObject->data.texture.constRect.y;
+    int obstacleH = obstacles[i].obstacleObject->data.texture.constRect.h;
+
+    SDL_Rect obstacleRect = {
+        .x = obstacleX, .y = obstacleY, .h = obstacleH, .w = obstacleW};
+
+    if (SDL_PointInRect(&(SDL_Point){currX, currY}, &(obstacleRect))) {
+      obstacles[i].health--;
+      if (obstacles[i].health == 0) {
+        // hiding destroyed objects
+        obstacles[i].obstacleObject->disableRendering = SDL_TRUE;
+      }
+      return SDL_TRUE;
+    }
+  }
+  return SDL_FALSE;
 }

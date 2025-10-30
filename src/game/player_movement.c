@@ -250,16 +250,29 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
     projectile->data.texture.constRect.y = currY;
     projectile->data.texture.angle = currAngle;
 
+    int32_t currXScaled = currX * app->scalingFactorX;
+    int32_t currYScaled = currY * app->scalingFactorY;
+
     // out of bounds check
-    if (currX < 0 || currX * app->scalingFactorX >= app->screenWidth ||
-        currY * app->scalingFactorY > app->screenHeight) {
+    if (currX < 0 || currXScaled >= app->screenWidth ||
+        currYScaled > app->screenHeight) {
       //     printf("out of bounds!\n");
       //
       break;
     }
 
-    int32_t currXScaled = currX * app->scalingFactorX;
-    int32_t currYScaled = currY * app->scalingFactorY;
+    // firsty checking the collision
+    if (checkObstacleCollisions(currX, currY)) {
+      explosion->data.texture.constRect.h = explosionRadius;
+      explosion->data.texture.constRect.w = explosionRadius;
+      explosion->data.texture.constRect.x =
+          currX - explosion->data.texture.constRect.w / 2;
+      explosion->data.texture.constRect.y =
+          currY - explosion->data.texture.constRect.h / 2;
+      explosion->data.texture.currFrame = 0;
+      explosion->disableRendering = SDL_FALSE;
+      break;
+    }
 
     app->wasHitten = false;
     // if we hit enemy straight
@@ -513,7 +526,7 @@ int32_t playerMove(void* data) {
         app->currPlayer->inAnimation = SDL_TRUE;
         *hideBulletPath = SDL_TRUE;
         smoothMove(app, app->currPlayer == firstPlayer, SDL_TRUE, heightMap,
-                   obstacleRock);
+                   obstacles);
         *hideBulletPath = SDL_FALSE;
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
@@ -529,7 +542,7 @@ int32_t playerMove(void* data) {
         app->currPlayer->inAnimation = SDL_TRUE;
         *hideBulletPath = SDL_TRUE;
         smoothMove(app, app->currPlayer == firstPlayer, SDL_FALSE, heightMap,
-                   obstacleRock);
+                   obstacles);
         *hideBulletPath = SDL_FALSE;
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);

@@ -8,6 +8,7 @@
 #include <math.h>
 
 #include "../game/obstacle.h"
+#include "../game/obstacle_struct.h"
 #include "../game/player_movement.h"
 #include "rand.h"
 
@@ -181,7 +182,7 @@ void smoothChangePower(Player* player, int32_t endPower, enum State* currState,
 }
 
 int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
-                   int32_t* heightMap, uint32_t* obstacle) {
+                   int32_t* heightMap, obstacleStruct* obstacle) {
   if (isRight) {
     int32_t i = 0;
     for (; i != 45; ++i) {
@@ -189,7 +190,8 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
       for (int j = 0; j < MAXSTONES; j++) {
         if ((app->currPlayer->tankObj->data.texture.constRect.x +
              app->currPlayer->tankObj->data.texture.constRect.w - 5) >=
-            obstacle[j]) {
+                obstacle[j].obstacleObject->data.texture.constRect.x &&
+            obstacle[j].health != 0) {
           if (i) {
             app->currPlayer->movesLeft--;
           }
@@ -221,8 +223,8 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
       // trying to move forward
       for (int j = 0; j < 4; j++) {
         if (app->currPlayer->tankObj->data.texture.constRect.x <=
-                obstacle[j] + 100 &&
-            !isFirstPlayer && obstacle[j] != 10000) {
+                obstacle[j].obstacleObject->data.texture.constRect.x + 100 &&
+            obstacle[j].health != 0) {
           if (i) {
             app->currPlayer->movesLeft--;
           }
