@@ -1,5 +1,4 @@
 #include "play_render.h"
-#include "obstacle.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -15,43 +14,13 @@
 #include "../SDL/event_handlers.h"
 #include "../game/autosave.h"
 #include "../game/gen_map.h"
+#include "../game/obstacle.h"
 #include "../game/player_movement.h"
 #include "../game/specialConditions/spread.h"
 #include "../game/specialConditions/wind.h"
 #include "../math/math.h"
 #include "log/log.h"
 
-
-// saving current render state to a texture, so it will be faster to output
-// after
-SDL_Texture* saveRenderMapToTexture(SDL_Renderer* renderer, int32_t width,
-                                    int32_t height, int32_t* heightMap,
-                                    int32_t* basedMap) {
-  SDL_Texture* texture =
-      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                        SDL_TEXTUREACCESS_TARGET, width, height);
-
-  SDL_SetRenderDrawColor(renderer, 135, 206, 235, 255);
-
-  SDL_SetRenderTarget(renderer, texture);
-  SDL_RenderClear(renderer);
-  renderMap(renderer, heightMap, basedMap, width, height);
-  // for (int32_t x = 0; x < width; x += 20 + getRandomValue(0, 30)) {
-  //   SDL_SetRenderDrawColor(renderer, 4, 137, 3, 255);
-  //   SDL_RenderDrawLine(renderer, x, (height - heightMap[x]), x,
-  //                      (height - heightMap[x]) - 15);
-  //   SDL_RenderDrawLine(renderer, x, (height - heightMap[x]), x - 5,
-  //                      (height - heightMap[x]) - 10);
-  //   SDL_RenderDrawLine(renderer, x, (height - heightMap[x]), x + 5,
-  //                      (height - heightMap[x]) - 10);
-  // }
-  SDL_SetRenderTarget(renderer, NULL);
-
-  return texture;
-}
-
-void renderMap(SDL_Renderer* renderer, int32_t* heightmap, int32_t* basedMap,
-               int32_t width, int32_t height) {
 static void playMain(App* app, uint32_t SEED);
 
 static void renderMap(SDL_Renderer* renderer, int32_t* heightmap,
@@ -386,14 +355,14 @@ static void playMain(App* app, uint32_t SEED) {
       .updateConditions = &updateConditions,
       .hideBulletPath = &hideBulletPath,
       .mapSeed = mapSeed,
-      .regenTree = true,
-      .regenCloud = true,
-      .regenShelter = true,
+      .regenTree = SDL_TRUE,
+      .regenCloud = SDL_TRUE,
+      .regenShelter = SDL_TRUE,
   };
   // all that need for render trees
   struct objTree {
-      int32_t count;
-      int32_t x[5];
+    int32_t count;
+    int32_t x[5];
   };
 
   struct objTree trees = {0};
@@ -405,8 +374,10 @@ static void playMain(App* app, uint32_t SEED) {
   RenderObject* treeArr[] = {
       tree1, tree2, tree3, tree4, tree5,
   };
+
   renderTree(app, treeArr, &playerMove_Params.regenTree, &trees.count, trees.x,
              heightMap);
+
   // all that need for render clouds
   struct objCloud {
     int32_t count;
@@ -422,7 +393,8 @@ static void playMain(App* app, uint32_t SEED) {
   RenderObject* cloudArr[] = {
       cloud1, cloud2, cloud3, cloud4, cloud5,
   };
-  renderCloud(app, cloudArr, &playerMove_Params.regenCloud, &clouds.count, clouds.x, heightMap);
+  renderCloud(app, cloudArr, &playerMove_Params.regenCloud, &clouds.count,
+              clouds.x, heightMap);
   //Shelter76
   struct objShelter76 {
     int32_t count;
@@ -435,23 +407,14 @@ static void playMain(App* app, uint32_t SEED) {
   RenderObject* shelter3 = NULL;
   RenderObject* shelter4 = NULL;
   RenderObject* shelterArr[] = {
-      shelter1, shelter2, shelter3, shelter4,
+      shelter1,
+      shelter2,
+      shelter3,
+      shelter4,
   };
-  renderShelter76(app, shelterArr, &playerMove_Params.regenShelter, &shelter.count,
-              shelter.x, heightMap);
-  /*double angle = getAngle(200, heightMap, 90);
-  shelter1 = createRenderObject(
-      app->renderer, TEXTURE | EXTENDED, 1, b_NONE,
-      "media/imgs/rock.png",
-      &(SDL_Point){200,
-                   -69 + app->screenHeight / app->scalingFactorY -
-                          heightMap[(int32_t)(200 * app->scalingFactorX)] /
-                              app->scalingFactorY},
-      360 - angle, SDL_FLIP_NONE,
-      &(SDL_Point){55 * app->scalingFactorX, 69 * app->scalingFactorY});
-  obstacleRock[0] = shelter1->data.texture.scaleRect.x;*/
-  //shelter1 =  fall(app, NULL, heightMap,200);
-  //--------------------------------------------------------
+
+  renderShelter76(app, shelterArr, &playerMove_Params.regenShelter,
+                  &shelter.count, shelter.x, heightMap);
 
   recalcPlayerPos(app, &firstPlayer, heightMap, 0, 5);
   recalcPlayerPos(app, &secondPlayer, heightMap, 0, 8);
@@ -555,6 +518,7 @@ static void playMain(App* app, uint32_t SEED) {
       playerScore2->data.texture.constRect.h + 6;
   p2ShieldIcon->data.texture.constRect.y =
       p2DoubleDmgIcon->data.texture.constRect.y;
+
   // align right player's icons to the right edge of SCORE2
   {
     int32_t rightEdge = playerScore2->data.texture.constRect.x +
@@ -595,6 +559,14 @@ static void playMain(App* app, uint32_t SEED) {
       speedLabelObject,
       directionIconObject,
       shelter1,
+      shelter2,
+      shelter3,
+      shelter4,
+      tree1,
+      tree2,
+      tree3,
+      tree4,
+      tree5,
   };
   while (app->currState == PLAY) {
     pollAllEvents(app);
@@ -613,11 +585,8 @@ static void playMain(App* app, uint32_t SEED) {
       gameMap = saveRenderMapToTexture(app->renderer, app->screenWidth,
                                        app->screenHeight, heightMap, basedMap);
       regenMap = SDL_FALSE;
-      printf("DEBUG RENDER: rendering... \n");
       renderTree(app, treeArr, &playerMove_Params.regenTree, &trees.count,
                  trees.x, heightMap);
-      renderCloud(app, cloudArr, &playerMove_Params.regenCloud, &clouds.count,
-                  clouds.x, heightMap);
     }
 
     SDL_RenderCopy(app->renderer, gameMap, NULL, NULL);
@@ -853,6 +822,20 @@ static void playMain(App* app, uint32_t SEED) {
   freeRenderObject(spreadArea);
   freeRenderObject(speedLabelObject);
   freeRenderObject(directionIconObject);
+  freeRenderObject(tree1);
+  freeRenderObject(tree2);
+  freeRenderObject(tree3);
+  freeRenderObject(tree4);
+  freeRenderObject(tree5);
+  freeRenderObject(shelter1);
+  freeRenderObject(shelter2);
+  freeRenderObject(shelter3);
+  freeRenderObject(shelter4);
+  freeRenderObject(cloud1);
+  freeRenderObject(cloud2);
+  freeRenderObject(cloud3);
+  freeRenderObject(cloud4);
+  freeRenderObject(cloud5);
 
   TTF_CloseFont(smallFont);
   SDL_DestroyTexture(gameMap);

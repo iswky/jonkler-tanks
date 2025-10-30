@@ -1,5 +1,4 @@
 #include "player_movement.h"
-#include "../UI/obstacle.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -15,6 +14,7 @@
 #include "autosave.h"
 #include "bot.h"
 #include "log/log.h"
+#include "obstacle.h"
 
 // function fires a shot from currPlayer and detects any hits to enemyPlayer
 void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
@@ -271,7 +271,6 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
       app->wasHitten = true;
       Mix_PlayChannel(-1, app->sounds[2], 0);
 
-
       int32_t enemyCenter = enemyPlayer->tankObj->data.texture.constRect.x +
                             enemyPlayer->tankObj->data.texture.constRect.w / 2.;
       // hitting father than center
@@ -512,9 +511,9 @@ int32_t playerMove(void* data) {
       if (app->keyStateArr[SDL_SCANCODE_RIGHT] && app->currPlayer->movesLeft) {
         // now in animation
         app->currPlayer->inAnimation = SDL_TRUE;
-        smoothMove(app, app->currPlayer == firstPlayer, SDL_TRUE, heightMap, obstacleRock);
         *hideBulletPath = SDL_TRUE;
-        smoothMove(app, app->currPlayer == firstPlayer, SDL_TRUE, heightMap);
+        smoothMove(app, app->currPlayer == firstPlayer, SDL_TRUE, heightMap,
+                   obstacleRock);
         *hideBulletPath = SDL_FALSE;
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
@@ -528,9 +527,9 @@ int32_t playerMove(void* data) {
                app->currPlayer->movesLeft) {
         // now in animation
         app->currPlayer->inAnimation = SDL_TRUE;
-        smoothMove(app, app->currPlayer == firstPlayer, SDL_FALSE, heightMap, obstacleRock);
         *hideBulletPath = SDL_TRUE;
-        smoothMove(app, app->currPlayer == firstPlayer, SDL_FALSE, heightMap);
+        smoothMove(app, app->currPlayer == firstPlayer, SDL_FALSE, heightMap,
+                   obstacleRock);
         *hideBulletPath = SDL_FALSE;
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);

@@ -1,5 +1,4 @@
 #include "bot.h"
-#include "../UI/obstacle.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -12,6 +11,7 @@
 #include "../math/math.h"
 #include "../math/rand.h"
 #include "log/log.h"
+#include "obstacle.h"
 #include "player_movement.h"
 
 // this func decide what option is the best
