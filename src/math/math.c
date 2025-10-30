@@ -7,6 +7,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
 
+#include "../game/obstacle.h"
 #include "../game/player_movement.h"
 #include "rand.h"
 
@@ -185,16 +186,15 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
     int32_t i = 0;
     for (; i != 45; ++i) {
       // trying to move forward
-
-      for (int j = 0; j < 4; j++) {
-          if ((app->currPlayer->tankObj->data.texture.constRect.x +
-              app->currPlayer->tankObj->data.texture.constRect.w-5) >=
-                obstacle[j] && isFirstPlayer) {
+      for (int j = 0; j < MAXSTONES; j++) {
+        if ((app->currPlayer->tankObj->data.texture.constRect.x +
+             app->currPlayer->tankObj->data.texture.constRect.w - 5) >=
+            obstacle[j]) {
           if (i) {
             app->currPlayer->movesLeft--;
           }
           return 2;
-          }
+        }
       }
 
       if ((app->currPlayer->tankObj->data.texture.constRect.x +
@@ -205,17 +205,6 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
           app->currPlayer->movesLeft--;
         }
         return 2;
-      }
-      int32_t currPos = app->currPlayer->tankObj->data.texture.constRect.x *
-                        app->scalingFactorX;
-      int32_t currAngle =
-          RADTODEG(atan2(heightMap[currPos + 10] - heightMap[currPos], 10));
-
-      if (currAngle > 60) {
-        if (i) {
-          app->currPlayer->movesLeft--;
-        }
-        return 1;
       }
 
       recalcPlayerPos(app, app->currPlayer, heightMap, 1,
@@ -232,7 +221,8 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
       // trying to move forward
       for (int j = 0; j < 4; j++) {
         if (app->currPlayer->tankObj->data.texture.constRect.x <=
-                obstacle[j] + 100 && !isFirstPlayer && obstacle[j]!=10000) {
+                obstacle[j] + 100 &&
+            !isFirstPlayer && obstacle[j] != 10000) {
           if (i) {
             app->currPlayer->movesLeft--;
           }

@@ -3,16 +3,16 @@
 
 #include "../App.h"
 
-RenderObject* fall(App* app, RenderObject* object, int32_t* heightmap,
-                   int32_t x);
-void renderTree(App* app, RenderObject* objectsArr[], SDL_bool* flag_regenTree,
-                int32_t* count_tree, int32_t* x, int32_t* heightmap);
-void renderCloud(App* app, RenderObject* objectsArr[],
-                 SDL_bool* flag_regencloud, int32_t* count_cloud, int32_t* x,
-                 int32_t* heightmap);
-void renderShelter76(App* app, RenderObject* objectsArr[],
-                     SDL_bool* flag_regenShelter, int32_t* count_shelter,
-                     int32_t* x, int32_t* heightmap);
+#define MAXSTONES 2
 
-extern uint32_t obstacleRock[4];
+void createTrees(App* app, RenderObject* objectsArr[], int32_t* count_tree,
+                 int32_t* x, int32_t* heightmap);
+void createClouds(App* app, RenderObject* objectsArr[],
+                  SDL_bool* flag_regencloud, int32_t* count_cloud, int32_t* x,
+                  int32_t* heightmap);
+
+RenderObject* createStone(App* app, int32_t* heightmap, int32_t startPos,
+                          int32_t endPos);
+
+extern uint32_t obstacleRock[MAXSTONES];
 #endif

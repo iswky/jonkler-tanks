@@ -338,9 +338,6 @@ static void playMain(App* app, uint32_t SEED) {
     SDL_bool* hideBulletPath;
     struct UpdateConditions* updateConditions;
     uint32_t mapSeed;
-    SDL_bool regenTree;
-    SDL_bool regenCloud;
-    SDL_bool regenShelter;
   };
 
   struct paramsStruct playerMove_Params = {
@@ -355,11 +352,8 @@ static void playMain(App* app, uint32_t SEED) {
       .updateConditions = &updateConditions,
       .hideBulletPath = &hideBulletPath,
       .mapSeed = mapSeed,
-      .regenTree = SDL_TRUE,
-      .regenCloud = SDL_TRUE,
-      .regenShelter = SDL_TRUE,
   };
-  // all that need for render trees
+  // creating trees
   struct objTree {
     int32_t count;
     int32_t x[5];
@@ -375,10 +369,9 @@ static void playMain(App* app, uint32_t SEED) {
       tree1, tree2, tree3, tree4, tree5,
   };
 
-  renderTree(app, treeArr, &playerMove_Params.regenTree, &trees.count, trees.x,
-             heightMap);
+  createTrees(app, treeArr, &trees.count, trees.x, heightMap);
 
-  // all that need for render clouds
+  // creating clouds
   struct objCloud {
     int32_t count;
     int32_t x[5];
@@ -393,28 +386,15 @@ static void playMain(App* app, uint32_t SEED) {
   RenderObject* cloudArr[] = {
       cloud1, cloud2, cloud3, cloud4, cloud5,
   };
-  renderCloud(app, cloudArr, &playerMove_Params.regenCloud, &clouds.count,
-              clouds.x, heightMap);
-  //Shelter76
-  struct objShelter76 {
-    int32_t count;
-    int32_t x[4];
-  };
-  struct objShelter76 shelter = {0};
 
-  RenderObject* shelter1 = NULL;
-  RenderObject* shelter2 = NULL;
-  RenderObject* shelter3 = NULL;
-  RenderObject* shelter4 = NULL;
-  RenderObject* shelterArr[] = {
-      shelter1,
-      shelter2,
-      shelter3,
-      shelter4,
-  };
+  SDL_bool REMOVETHISSHIT;
+  createClouds(app, cloudArr, &REMOVETHISSHIT, &clouds.count, clouds.x,
+               heightMap);
 
-  renderShelter76(app, shelterArr, &playerMove_Params.regenShelter,
-                  &shelter.count, shelter.x, heightMap);
+  // creating stones
+  RenderObject* stone1 = createStone(app, heightMap, 200, 300);
+  RenderObject* stone2 = createStone(
+      app, heightMap, 600, app->screenWidth / app->scalingFactorX - 250);
 
   recalcPlayerPos(app, &firstPlayer, heightMap, 0, 5);
   recalcPlayerPos(app, &secondPlayer, heightMap, 0, 8);
@@ -554,19 +534,17 @@ static void playMain(App* app, uint32_t SEED) {
       secondPlayer.tankGunObj,
       secondPlayer.tankObj,
       explosionObj,
-      bulletPath,
-      spreadArea,
-      speedLabelObject,
-      directionIconObject,
-      shelter1,
-      shelter2,
-      shelter3,
-      shelter4,
       tree1,
       tree2,
       tree3,
       tree4,
       tree5,
+      stone1,
+      stone2,
+      bulletPath,
+      spreadArea,
+      speedLabelObject,
+      directionIconObject,
   };
   while (app->currState == PLAY) {
     pollAllEvents(app);
@@ -577,16 +555,12 @@ static void playMain(App* app, uint32_t SEED) {
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);
 
-    // rendering map
-    renderCloud(app, cloudArr, &playerMove_Params.regenCloud, &clouds.count,
-                clouds.x, heightMap);
+    // regenin' map if needed
     if (regenMap) {
       SDL_DestroyTexture(gameMap);
       gameMap = saveRenderMapToTexture(app->renderer, app->screenWidth,
                                        app->screenHeight, heightMap, basedMap);
       regenMap = SDL_FALSE;
-      renderTree(app, treeArr, &playerMove_Params.regenTree, &trees.count,
-                 trees.x, heightMap);
     }
 
     SDL_RenderCopy(app->renderer, gameMap, NULL, NULL);
@@ -780,8 +754,6 @@ static void playMain(App* app, uint32_t SEED) {
           p2DoubleDmgIcon->data.texture.constRect.w;
     }
 
-    renderTextures(app, cloudArr, clouds.count, SDL_TRUE);
-    renderTextures(app, shelterArr, shelter.count, SDL_TRUE);
     // toggle visibility based on buffs each frame
     p1DoubleDmgIcon->disableRendering =
         firstPlayer.buffs.isDoubleDamage ? SDL_FALSE : SDL_TRUE;
@@ -794,7 +766,6 @@ static void playMain(App* app, uint32_t SEED) {
 
     renderTextures(app, objectsArr, sizeof(objectsArr) / sizeof(*objectsArr),
                    SDL_TRUE);
-    renderTextures(app, treeArr, trees.count, SDL_TRUE);
     SDL_RenderPresent(app->renderer);
     SDL_Delay(16);
   }
@@ -827,10 +798,8 @@ static void playMain(App* app, uint32_t SEED) {
   freeRenderObject(tree3);
   freeRenderObject(tree4);
   freeRenderObject(tree5);
-  freeRenderObject(shelter1);
-  freeRenderObject(shelter2);
-  freeRenderObject(shelter3);
-  freeRenderObject(shelter4);
+  freeRenderObject(stone1);
+  freeRenderObject(stone2);
   freeRenderObject(cloud1);
   freeRenderObject(cloud2);
   freeRenderObject(cloud3);
