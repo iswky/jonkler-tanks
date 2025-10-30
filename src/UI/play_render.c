@@ -353,23 +353,14 @@ static void playMain(App* app, uint32_t SEED) {
       .hideBulletPath = &hideBulletPath,
       .mapSeed = mapSeed,
   };
-  // creating trees
-  struct objTree {
-    int32_t count;
-    int32_t x[5];
-  };
-
-  struct objTree trees = {0};
-  RenderObject* tree1 = NULL;
-  RenderObject* tree2 = NULL;
-  RenderObject* tree3 = NULL;
-  RenderObject* tree4 = NULL;
-  RenderObject* tree5 = NULL;
-  RenderObject* treeArr[] = {
-      tree1, tree2, tree3, tree4, tree5,
-  };
-
-  createTrees(app, treeArr, &trees.count, trees.x, heightMap);
+  // creating trees with some probability of apearing
+  //
+  RenderObject* tree1 = createTree(app, heightMap, 100, 150, 10);
+  RenderObject* tree2 = createTree(app, heightMap, 400, 600, 20);
+  RenderObject* tree3 = createTree(app, heightMap, 400, 600, 20);
+  RenderObject* tree4 = createTree(app, heightMap, 400, 600, 20);
+  RenderObject* tree5 = createTree(
+      app, heightMap, 800, app->screenWidth / app->scalingFactorX - 100, 10);
 
   // creating clouds
   struct objCloud {

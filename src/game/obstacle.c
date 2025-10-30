@@ -1,6 +1,5 @@
 #include "obstacle.h"
 
-#include "log/log.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_stdinc.h>
 #include <stdbool.h>
@@ -23,26 +22,6 @@ static RenderObject* fall(App* app, int32_t* heightmap, int32_t x) {
       app->renderer, TEXTURE | EXTENDED, 0, b_NONE, "media/imgs/rock.png", &pos,
       360 - angle, SDL_FLIP_NONE, &(SDL_Point){0, 0});
   return object;
-}
-
-//generate count trees, coordination_x and create render object for trees
-void createTrees(App* app, RenderObject* objectsArr[], int32_t* count_tree,
-                 int32_t* x, int32_t* heightmap) {
-  *count_tree = getRandomValue(0, 6);
-  log_debug("count trees = %d", *count_tree);
-  for (int i = 0; i < *count_tree; i++) {
-    x[i] = getRandomValue(100, app->screenWidth - 100);
-  }
-
-  if (*count_tree == 0) return;
-  for (int i = 0; i < *count_tree; i++) {
-    objectsArr[i] = createRenderObject(
-        app->renderer, TEXTURE, 1, b_NONE, "media/imgs/tree1.png",
-        &(SDL_Point){
-            x[i], -120 + app->screenHeight / app->scalingFactorY -
-                      heightmap[(int32_t)((x[i] + 54) * app->scalingFactorX)] /
-                          app->scalingFactorY});
-  }
 }
 
 //generate count clouds, coordination_x and create render object for clouds
@@ -79,4 +58,23 @@ RenderObject* createStone(App* app, int32_t* heightmap, int32_t startPos,
   int x = getRandomValue(startPos, endPos);
   obstacleRock[currStonesCnt++] = x;
   return fall(app, heightmap, x);
+}
+
+RenderObject* createTree(App* app, int32_t* heightmap, int32_t startPos,
+                         int32_t endPos, int32_t probability) {
+  int imMrKrabsAndILikeMoney = getRandomValue(0, 100);
+  RenderObject* res = NULL;
+
+  if (imMrKrabsAndILikeMoney > probability) {
+    int x = getRandomValue(startPos, endPos);
+
+    res = createRenderObject(
+        app->renderer, TEXTURE, 1, b_NONE, "media/imgs/tree1.png",
+        &(SDL_Point){x,
+                     -120 + app->screenHeight / app->scalingFactorY -
+                         heightmap[(int32_t)((x + 54) * app->scalingFactorX)] /
+                             app->scalingFactorY});
+  }
+
+  return res;
 }
