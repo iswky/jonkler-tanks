@@ -27,17 +27,8 @@ SDL_Texture* createTextTexture(SDL_Renderer* renderer, TTF_Font* font,
                                const char* text, uint8_t r, uint8_t g,
                                uint8_t b, uint8_t a);
 
-void scaleObjects(App* app, RenderObject* objectsArr[], int32_t objectArrSize);
-void scaleRectRatio(SDL_Rect* rect, float ratio);
-
-SDL_bool isInTriangle(const int32_t x, const int32_t y, SDL_Point p1,
-                      SDL_Point p2, SDL_Point p3);
-
 void renderTextures(App* app, RenderObject* objectsArr[],
                     int32_t objectsArrSize, int32_t isScaling);
-void drawFilledTriangle(SDL_Renderer* renderer, const SDL_Point* p1,
-                        const SDL_Point* p2, const SDL_Point* p3,
-                        SDL_Color color);
 
 void renderBulletPath(App* app, RenderObject* bulletPath);
 

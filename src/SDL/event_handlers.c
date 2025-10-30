@@ -8,119 +8,9 @@
 #include "SDL_render.h"
 #include "log/log.h"
 
-// function for thread that replace cursor32.png with cursor32Triggered.png
-int32_t threadCursorTrigger(void* arg) {
-  App* app = arg;
-  while (app->currState != EXIT) {
-    if (app->isMouseTriggered) {
-      SDL_SetCursor(app->cursorTriggered);
-    } else {
-      SDL_SetCursor(app->cursor);
-    }
-    SDL_Delay(16);
-  }
-  return 0;
-}
-
-// function for thread that handle different events every 16ms (60 fps)
-int32_t threadEventPoll(void* arg) {
-  App* app = arg;
-  SDL_Event currEvent;
-  while (SDL_PollEvent(&currEvent)) {
-    switch (currEvent.type) {
-      // is it closing the app?
-      case SDL_QUIT: {
-        log_info(
-            "thread success detected SDL_QUIT like "
-            "event. Setting STATUS TO EXIT");
-        app->currState = EXIT;
-        break;
-      }
-      // has window been resized?
-      case SDL_WINDOWEVENT: {
-        if (currEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
-          log_info(
-              "hread success detected RESIZE like "
-              "event. Fixing textures sizes");
-
-          SDL_GetWindowSize(app->window, &app->screenWidth, &app->screenHeight);
-          app->scalingFactorX = app->screenWidth / 1024.0;
-          app->scalingFactorY = app->screenHeight / 768.0;
-          log_info("curr scaling X:%lf (%d), Y:%lf (%d)", app->scalingFactorX,
-                   app->screenWidth, app->scalingFactorY, app->screenHeight);
-        }
-        break;
-      }
-      // is some key down?
-      case SDL_KEYDOWN: {
-        keyPressHandler(app, currEvent);
-        break;
-      }
-      // is LMB pressed?
-      case SDL_MOUSEBUTTONDOWN: {
-        if (currEvent.button.button == SDL_BUTTON_LEFT) {
-          app->isMouseDragging = SDL_TRUE;
-        }
-        break;
-      }
-
-      // is LMB released?
-      case SDL_MOUSEBUTTONUP: {
-        if (currEvent.button.button == SDL_BUTTON_LEFT) {
-          app->isMouseDragging = SDL_FALSE;
-          int32_t x, y;
-          SDL_GetMouseState(&x, &y);
-          log_info(
-              "detected mouse click (lbm_up) in (%d, "
-              "%d)",
-              x, y);
-
-          LMBReleaseHandle(app);
-        }
-        break;
-      }
-    }
-  }
-  return 0;
-}
-
-void proceedSlider(App* app, int32_t sliderPosX) {
-  switch (app->buttonPosTriggered) {
-    case s_VOLUME:
-      app->settings.currentVolume = sliderPosX;
-      break;
-    default:
-      break;
-  }
-}
-
-void proceedShiftedButtons(App* app, enum Button buttonName) {
-  switch (buttonName) {
-    case bT_DECREMENT_VOLUME:
-      log_info(
-          "thread success detected \"volume -\" was "
-          "pressed. Decresing volume by 1");
-
-      app->settings.currentVolume = app->settings.currentVolume - 1 < 0
-                                        ? 0
-                                        : app->settings.currentVolume - 1;
-      break;
-    case bT_INCREMENT_VOLUME:
-      log_info(
-          "thread success detected \"volume +\" was "
-          "pressed. Increasing volume by 1");
-
-      app->settings.currentVolume = app->settings.currentVolume + 1 > 100
-                                        ? 100
-                                        : app->settings.currentVolume + 1;
-      break;
-    default:
-      break;
-  }
-}
-
+// ---------- HANDLERS --------------
 // proceed lmb clicks
-void LMBReleaseHandle(App* app) {
+static void LMBReleaseHandle(App* app) {
   SDL_bool wasTriggeredObjTriggered = SDL_FALSE;
   switch (app->buttonPosTriggered) {
     case b_PLAY:
@@ -283,7 +173,7 @@ void LMBReleaseHandle(App* app) {
 }
 
 // proceed key presses
-void keyPressHandler(App* app, SDL_Event currEvent) {
+static void keyPressHandler(App* app, SDL_Event currEvent) {
   switch (currEvent.key.keysym.sym) {
     // if ESC was pressed
     case SDLK_ESCAPE: {
@@ -327,7 +217,7 @@ void keyPressHandler(App* app, SDL_Event currEvent) {
   }
 }
 
-char filterPressedKey(SDL_Keycode key, int32_t flags) {
+static char filterPressedKey(SDL_Keycode key, int32_t flags) {
   // latin letters
   if ((flags & 1) && SDLK_a <= key && SDLK_z >= key) {
     return key;
@@ -344,6 +234,42 @@ char filterPressedKey(SDL_Keycode key, int32_t flags) {
   }
 
   return -1;
+}
+
+// ------- EXTERNAL HANDLERS ---------------
+void proceedSlider(App* app, int32_t sliderPosX) {
+  switch (app->buttonPosTriggered) {
+    case s_VOLUME:
+      app->settings.currentVolume = sliderPosX;
+      break;
+    default:
+      break;
+  }
+}
+
+void proceedShiftedButtons(App* app, enum Button buttonName) {
+  switch (buttonName) {
+    case bT_DECREMENT_VOLUME:
+      log_info(
+          "thread success detected \"volume -\" was "
+          "pressed. Decresing volume by 1");
+
+      app->settings.currentVolume = app->settings.currentVolume - 1 < 0
+                                        ? 0
+                                        : app->settings.currentVolume - 1;
+      break;
+    case bT_INCREMENT_VOLUME:
+      log_info(
+          "thread success detected \"volume +\" was "
+          "pressed. Increasing volume by 1");
+
+      app->settings.currentVolume = app->settings.currentVolume + 1 > 100
+                                        ? 100
+                                        : app->settings.currentVolume + 1;
+      break;
+    default:
+      break;
+  }
 }
 
 void proceedTextInputLine(App* app, RenderObject* currObj) {
@@ -385,4 +311,82 @@ void proceedTextInputLine(App* app, RenderObject* currObj) {
         app->renderer, currObj->data.textInputLine.font,
         currObj->data.textInputLine.savedText, 255, 255, 255, 255);
   }
+}
+
+// -----------------------------------------------
+
+// function for thread that replace cursor32.png with cursor32Triggered.png
+int32_t threadCursorTrigger(void* arg) {
+  App* app = arg;
+  while (app->currState != EXIT) {
+    if (app->isMouseTriggered) {
+      SDL_SetCursor(app->cursorTriggered);
+    } else {
+      SDL_SetCursor(app->cursor);
+    }
+    SDL_Delay(16);
+  }
+  return 0;
+}
+
+// function for thread that handle different events every 16ms (60 fps)
+int32_t pollAllEvents(void* arg) {
+  App* app = arg;
+  SDL_Event currEvent;
+  while (SDL_PollEvent(&currEvent)) {
+    switch (currEvent.type) {
+      // is it closing the app?
+      case SDL_QUIT: {
+        log_info(
+            "thread success detected SDL_QUIT like "
+            "event. Setting STATUS TO EXIT");
+        app->currState = EXIT;
+        break;
+      }
+      // has window been resized?
+      case SDL_WINDOWEVENT: {
+        if (currEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
+          log_info(
+              "hread success detected RESIZE like "
+              "event. Fixing textures sizes");
+
+          SDL_GetWindowSize(app->window, &app->screenWidth, &app->screenHeight);
+          app->scalingFactorX = app->screenWidth / 1024.0;
+          app->scalingFactorY = app->screenHeight / 768.0;
+          log_info("curr scaling X:%lf (%d), Y:%lf (%d)", app->scalingFactorX,
+                   app->screenWidth, app->scalingFactorY, app->screenHeight);
+        }
+        break;
+      }
+      // is some key down?
+      case SDL_KEYDOWN: {
+        keyPressHandler(app, currEvent);
+        break;
+      }
+      // is LMB pressed?
+      case SDL_MOUSEBUTTONDOWN: {
+        if (currEvent.button.button == SDL_BUTTON_LEFT) {
+          app->isMouseDragging = SDL_TRUE;
+        }
+        break;
+      }
+
+      // is LMB released?
+      case SDL_MOUSEBUTTONUP: {
+        if (currEvent.button.button == SDL_BUTTON_LEFT) {
+          app->isMouseDragging = SDL_FALSE;
+          int32_t x, y;
+          SDL_GetMouseState(&x, &y);
+          log_info(
+              "detected mouse click (lbm_up) in (%d, "
+              "%d)",
+              x, y);
+
+          LMBReleaseHandle(app);
+        }
+        break;
+      }
+    }
+  }
+  return 0;
 }

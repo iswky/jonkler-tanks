@@ -3,7 +3,6 @@
 
 #include "../App.h"
 
-int32_t loadVolume();
 void settingsMain(App* app);
 
 #endif

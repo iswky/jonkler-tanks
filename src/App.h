@@ -2,6 +2,7 @@
 #define APP_H
 
 #include "game/specialConditions/windStruct.h"
+#include "game/specialConditions/buffsStruct.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -160,6 +161,7 @@ typedef struct Player {
   SDL_bool inAnimation;
 
   enum PlayerType type;
+  Buffs buffs;
 } Player;
 
 typedef struct SpecialGlobalConditions {
@@ -208,7 +210,7 @@ typedef struct App {
 
   Player* currPlayer;
 
-  Mix_Chunk* sounds[2];
+  Mix_Chunk* sounds[3];
 
   // difficulty choice buttons
   enum Button p1Diff;
@@ -227,6 +229,9 @@ typedef struct App {
 
   // storing global special conditions here!
   SpecialGlobalConditions globalConditions;
+
+  // just for trash talk
+  SDL_bool wasHitten;
 } App;
 
 #endif

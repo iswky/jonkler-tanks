@@ -7,17 +7,17 @@
 
 int32_t perm[PERLIN_SIZE * 2];
 
-float fade(float t) {
+inline static float fade(float t) {
   return t * t * t * (t * (t * 6 - 15) + 10);
 }
-float lerp(float a, float b, float t) {
+inline static float lerp(float a, float b, float t) {
   return a + t * (b - a);
 }
-int32_t grad(int32_t hash) {
+inline static int32_t grad(int32_t hash) {
   return (hash & 1) ? 1 : -1;
 }
 
-float perlin1d(float x) {
+inline static float perlin1d(float x) {
   int32_t X = (int32_t)floor(x) & 255;
   float xf = x - floor(x);
   float u = fade(xf);
@@ -28,7 +28,8 @@ float perlin1d(float x) {
   return lerp(dot1, dot2, u);
 }
 
-float perlin1d_octaves(float x, int32_t octaves, float persistence) {
+inline static float perlin1d_octaves(float x, int32_t octaves,
+                                     float persistence) {
   float total = 0, amplitude = 1, maxValue = 0;
   for (int32_t i = 0; i < octaves; i++) {
     total += perlin1d(x * pow(2, i)) * amplitude;
@@ -38,7 +39,7 @@ float perlin1d_octaves(float x, int32_t octaves, float persistence) {
   return total / maxValue;
 }
 
-void generatePermutation(uint32_t seed) {
+inline static void generatePermutation(uint32_t seed) {
   int32_t basePerm[PERLIN_SIZE];
   for (int32_t i = 0; i < PERLIN_SIZE; i++) basePerm[i] = i;
   srand(seed);
@@ -77,6 +78,7 @@ void generateHeightmap(int32_t* heightmap, uint32_t seed, int32_t WIDTH,
     rareNoise = pow(fabs(rareNoise), 4) * (rareNoise > 0 ? 1 : -1);
 
     float heightValue = baseNoise + rareNoise;
-    heightmap[x] = HEIGHT - (int32_t)((heightValue + 1) * 0.7 * HEIGHT * 0.7);
+    heightmap[x] =
+        (HEIGHT - (int32_t)((heightValue + 1) * HEIGHT * 0.49)) * 0.7;
   }
 }

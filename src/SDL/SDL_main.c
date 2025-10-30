@@ -9,12 +9,23 @@
 
 #include "../UI/help_render.h"
 #include "../UI/leaderboard_render.h"
+#include "../UI/main_menu_render.h"
 #include "../UI/play_render.h"
 #include "../UI/settings_render.h"
 #include "../game/settings.h"
 #include "event_handlers.h"
 #include "log/log.h"
 #include "play_music.h"
+
+static int32_t SDL_Initialise(App*);
+static void mainGameLoop(App* app);
+static void loadAllSounds(App* app);
+static void startMusic(const App* app);
+static void createWindow(App* app);
+
+#ifndef DEBUG
+static void initCursor(App* app);
+#endif
 
 void SDL_Main() {
   App mainGameWindow = {
@@ -53,12 +64,9 @@ void SDL_Main() {
   startMusic(&mainGameWindow);
 
   // loading cursor
-  //initCursor(&mainGameWindow);
-
-  // creating thread that will loop while SDL_QUIT event is not polled
-  //mainGameWindow.eventPollThread =
-  //SDL_CreateThread(threadEventPoll, "eventPoll", &mainGameWindow);
-  // changing cursor when triggered
+#ifndef DEBUG
+  initCursor(&mainGameWindow);
+#endif
   mainGameWindow.cursorTriggerThread =
       SDL_CreateThread(threadCursorTrigger, "cursorTrigger", &mainGameWindow);
 
@@ -69,7 +77,7 @@ void SDL_Main() {
 }
 
 // initialising all necessarily
-int32_t SDL_Initialise(App* app) {
+inline static int32_t SDL_Initialise(App* app) {
   // initialising all subsystems
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS)) {
     // if it fails
@@ -101,7 +109,7 @@ int32_t SDL_Initialise(App* app) {
   return 0;
 }
 
-void loadAllSounds(App* app) {
+inline static void loadAllSounds(App* app) {
   char temp[256];
 
   sprintf(temp, "%smedia/music/gunshot.wav", app->basePath);
@@ -119,32 +127,17 @@ void loadAllSounds(App* app) {
     log_error("error: %s", Mix_GetError());
   }
   log_info("loaded %s", temp);
+
+  sprintf(temp, "%smedia/music/cl_goblin_crying.wav", app->basePath);
+
+  app->sounds[2] = Mix_LoadWAV(temp);
+  if (!app->sounds[2]) {
+    log_error("error: %s", Mix_GetError());
+  }
+  log_info("loaded %s", temp);
 }
 
-// clean up SDL, img and other sh.t
-void SDL_Cleanup(App* app) {
-  SDL_WaitThread(app->cursorTriggerThread, NULL);
-
-  SDL_FreeCursor(app->cursor);
-
-  SDL_DestroyRenderer(app->renderer);
-  SDL_DestroyWindow(app->window);
-
-  Mix_FreeChunk(app->sounds[0]);
-  Mix_FreeChunk(app->sounds[1]);
-  Mix_CloseAudio();
-
-  TTF_Quit();
-  IMG_Quit();
-  SDL_Quit();
-
-  free(app->basePath);
-
-  log_info("SUCCESS CLEANUP!");
-  exit(0);
-}
-
-void mainGameLoop(App* app) {
+inline static void mainGameLoop(App* app) {
   // main loop
   while (app->currState != EXIT) {
     switch (app->currState) {
@@ -180,13 +173,14 @@ void mainGameLoop(App* app) {
   }
 }
 
-void startMusic(const App* app) {
+inline static void startMusic(const App* app) {
   playMusic();
   Mix_VolumeMusic(app->settings.currentVolume);
   Mix_Volume(-1, app->settings.currentVolume);
 }
 
-void initCursor(App* app) {
+#ifndef DEBUG
+inline static void initCursor(App* app) {
   char temp[256];
   sprintf(temp, "%smedia/imgs/cursor32.png", app->basePath);
   // loading cursor
@@ -203,8 +197,9 @@ void initCursor(App* app) {
   SDL_FreeSurface(cursorSurface);
   SDL_FreeSurface(cursorTriggeredSurface);
 }
+#endif
 
-void createWindow(App* app) {
+inline static void createWindow(App* app) {
   app->window = SDL_CreateWindow("Jonkler Tanks: Betment edition",
                                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                  app->screenWidth, app->screenHeight, 0);
@@ -222,4 +217,27 @@ void createWindow(App* app) {
 
   // enabling "linear" smoothing
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+}
+
+// clean up SDL, img and other sh.t
+void SDL_Cleanup(App* app) {
+  SDL_WaitThread(app->cursorTriggerThread, NULL);
+
+  SDL_FreeCursor(app->cursor);
+
+  SDL_DestroyRenderer(app->renderer);
+  SDL_DestroyWindow(app->window);
+
+  Mix_FreeChunk(app->sounds[0]);
+  Mix_FreeChunk(app->sounds[1]);
+  Mix_CloseAudio();
+
+  TTF_Quit();
+  IMG_Quit();
+  SDL_Quit();
+
+  free(app->basePath);
+
+  log_info("SUCCESS CLEANUP!");
+  exit(0);
 }

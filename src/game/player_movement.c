@@ -9,6 +9,8 @@
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
 
+#include "specialConditions/spread.h"
+
 #include "../math/math.h"
 #include "autosave.h"
 #include "bot.h"
@@ -42,6 +44,12 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
 
   // normalizing just to be sure its in [0;2pi) and now its counterclockwise
   currGunAngle = 360 - normalizeAngle(currGunAngle);
+
+  // add spread to current angle
+  if (app->currPlayer->buffs.weaponIsBroken) {
+    currGunAngle = addSpreadToCurrAngle(app->currWeapon, currGunAngle);
+  }
+  // currGunAngle = addSpreadToCurrAngle(app->currWeapon, currGunAngle);
 
   // thats an init pos of a curr player tank
   SDL_Point tempPos;
@@ -252,28 +260,47 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
 
     int32_t currXScaled = currX * app->scalingFactorX;
     int32_t currYScaled = currY * app->scalingFactorY;
+
+    app->wasHitten = false;
     // if we hit enemy straight
     if (isInCircle(currXScaled, currYScaled, &collisionP1, collisionP1R) ||
         isInCircle(currXScaled, currYScaled, &collisionP2, collisionP2R) ||
         isInCircle(currXScaled, currYScaled, &collisionP3, collisionP3R)) {
       //     printf("COLLISION HIT!\n");
       //
+      app->wasHitten = true;
+      Mix_PlayChannel(-1, app->sounds[2], 0);
+
 
       int32_t enemyCenter = enemyPlayer->tankObj->data.texture.constRect.x +
                             enemyPlayer->tankObj->data.texture.constRect.w / 2.;
       // hitting father than center
       if (currX > enemyCenter) {
-        app->currPlayer->score +=
+        double deltaDamage =
             10 + ((enemyCenter +
                    enemyPlayer->tankObj->data.texture.constRect.w / 2.) -
                   currX) *
                      damageMultiplier;
+        if (app->currPlayer->buffs.isDoubleDamage) {
+          deltaDamage *= 2.0;
+        }
+        if (enemyPlayer->buffs.isShielded) {
+          deltaDamage *= 0.15;  // 85% damage blocked
+        }
+        app->currPlayer->score += (int32_t)deltaDamage;
       }
       // hitting before the center
       else {
-        app->currPlayer->score +=
+        double deltaDamage =
             10 + (currX - enemyPlayer->tankObj->data.texture.constRect.x) *
                      damageMultiplier;
+        if (app->currPlayer->buffs.isDoubleDamage) {
+          deltaDamage *= 2.0;
+        }
+        if (enemyPlayer->buffs.isShielded) {
+          deltaDamage *= 0.15;  // 85% damage blocked
+        }
+        app->currPlayer->score += (int32_t)deltaDamage;
       }
       if (isHittableNearby == SDL_FALSE) {
         explosion->data.texture.constRect.h =
@@ -311,19 +338,33 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
                          enemyPlayer->tankObj->data.texture.constRect.w / 2) {
           // hitting after center (after right tank corner)
           if (currX > center) {
-            app->currPlayer->score +=
+            double deltaDamage =
                 5 +
                 ((center + enemyPlayer->tankObj->data.texture.constRect.w / 2. +
                   explosionRadius) -
                  currX) *
                     damageMultiplier / 1.5;
+            if (app->currPlayer->buffs.isDoubleDamage) {
+              deltaDamage *= 2.0;
+            }
+            if (enemyPlayer->buffs.isShielded) {
+              deltaDamage *= 0.15;  // 85% damage blocked
+            }
+            app->currPlayer->score += (int32_t)deltaDamage;
           }
           // hitting before center (before left tank corner)
           else {
-            app->currPlayer->score +=
+            double deltaDamage =
                 5 + (currX - (enemyPlayer->tankObj->data.texture.constRect.x -
                               explosionRadius)) *
                         damageMultiplier / 1.5;
+            if (app->currPlayer->buffs.isDoubleDamage) {
+              deltaDamage *= 2.0;
+            }
+            if (enemyPlayer->buffs.isShielded) {
+              deltaDamage *= 0.15;  // 85% damage blocked
+            }
+            app->currPlayer->score += (int32_t)deltaDamage;
           }
         }
 
@@ -415,6 +456,7 @@ int32_t playerMove(void* data) {
     RenderObject* explosion;
     SDL_bool* regenMap;
     SDL_bool* recalcBulletPath;
+    SDL_bool* hideBulletPath;
     struct UpdateConditions* updateConditions;
     uint32_t mapSeed;
   };
@@ -429,6 +471,7 @@ int32_t playerMove(void* data) {
   RenderObject* explosion = params->explosion;
   SDL_bool* regenMap = params->regenMap;
   SDL_bool* recalcBulletPath = params->recalcBulletPath;
+  SDL_bool* hideBulletPath = params->hideBulletPath;
   uint32_t mapSeed = params->mapSeed;
   struct UpdateConditions* updateConditions = params->updateConditions;
 
@@ -470,6 +513,9 @@ int32_t playerMove(void* data) {
         // now in animation
         app->currPlayer->inAnimation = SDL_TRUE;
         smoothMove(app, app->currPlayer == firstPlayer, SDL_TRUE, heightMap, obstacleRock);
+        *hideBulletPath = SDL_TRUE;
+        smoothMove(app, app->currPlayer == firstPlayer, SDL_TRUE, heightMap);
+        *hideBulletPath = SDL_FALSE;
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
         *recalcBulletPath = SDL_TRUE;
@@ -483,6 +529,9 @@ int32_t playerMove(void* data) {
         // now in animation
         app->currPlayer->inAnimation = SDL_TRUE;
         smoothMove(app, app->currPlayer == firstPlayer, SDL_FALSE, heightMap, obstacleRock);
+        *hideBulletPath = SDL_TRUE;
+        smoothMove(app, app->currPlayer == firstPlayer, SDL_FALSE, heightMap);
+        *hideBulletPath = SDL_FALSE;
         saveCurrentState(app, firstPlayer, secondPlayer, heightMap,
                          app->currPlayer == firstPlayer, mapSeed);
         *recalcBulletPath = SDL_TRUE;
@@ -589,10 +638,12 @@ int32_t playerMove(void* data) {
         SDL_Delay(16);
       }
       log_info("currweapon - %d", app->currWeapon);
-
+      // !! FULLY DISABLING BULLET PATH RENDERING FOR BOTS
+      // !! JUST FOR NOW
+      *hideBulletPath = SDL_TRUE;
       botMain(app, firstPlayer, secondPlayer, heightMap, projectile, explosion,
               regenMap, recalcBulletPath, app->currPlayer->type);
-
+      *hideBulletPath = SDL_FALSE;
       app->currPlayer->inAnimation = SDL_FALSE;
 
       // switching players

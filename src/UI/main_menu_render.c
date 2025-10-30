@@ -7,6 +7,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <log/log.h>
 
+#include "../SDL/SDL_main.h"
 #include "../SDL/SDL_render.h"
 #include "../SDL/event_handlers.h"
 #include "../SDL/ui_helpers.h"
@@ -31,7 +32,7 @@ void mainMenu(App* app) {
   // output 'dropping' logo
   while (simulateFall_1Step(&height, &velocity) != -1 &&
          app->currState != EXIT) {
-    threadEventPoll(app);
+    pollAllEvents(app);
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);
 
@@ -101,7 +102,7 @@ void menuRenderLoop(App* app, RenderObject* logo) {
 
   uint32_t rgbOffset = 0;
   while (app->currState == MENU) {
-    threadEventPoll(app);
+    pollAllEvents(app);
     // filling up the background with black color and clearing render
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);

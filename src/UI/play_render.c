@@ -16,6 +16,7 @@
 #include "../game/autosave.h"
 #include "../game/gen_map.h"
 #include "../game/player_movement.h"
+#include "../game/specialConditions/spread.h"
 #include "../game/specialConditions/wind.h"
 #include "../math/math.h"
 #include "log/log.h"
@@ -51,6 +52,10 @@ SDL_Texture* saveRenderMapToTexture(SDL_Renderer* renderer, int32_t width,
 
 void renderMap(SDL_Renderer* renderer, int32_t* heightmap, int32_t* basedMap,
                int32_t width, int32_t height) {
+static void playMain(App* app, uint32_t SEED);
+
+static void renderMap(SDL_Renderer* renderer, int32_t* heightmap,
+                      int32_t* basedMap, int32_t width, int32_t height) {
   for (int32_t x = 0; x < width; x++) {
     for (int32_t y = heightmap[x]; y >= 0; y--) {
       if (y < basedMap[x] * 0.8) {
@@ -67,265 +72,28 @@ void renderMap(SDL_Renderer* renderer, int32_t* heightmap, int32_t* basedMap,
   }
 }
 
-// pre game (like settings before game starts :-) )
-void preGameMain(App* app) {
-  app->p1Diff = b_NULL;
-  app->p2Diff = b_NULL;
+// saving current render state to a texture, so it will be faster to output
+static SDL_Texture* saveRenderMapToTexture(SDL_Renderer* renderer,
+                                           int32_t width, int32_t height,
+                                           int32_t* heightMap,
+                                           int32_t* basedMap) {
+  SDL_Texture* texture =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, width, height);
 
-  char temp[256];
+  SDL_SetRenderDrawColor(renderer, 135, 206, 235, 255);
 
-  sprintf(temp, "%smedia/fonts/PixeloidSans.ttf", app->basePath);
-  TTF_Font* smallFont = loadFont(temp, 30);
+  SDL_SetRenderTarget(renderer, texture);
+  SDL_RenderClear(renderer);
 
-  sprintf(temp, "%smedia/fonts/PixeloidSans-Bold.ttf", app->basePath);
-  TTF_Font* mainFont = loadFont(temp, 60);
+  renderMap(renderer, heightMap, basedMap, width, height);
+  SDL_SetRenderTarget(renderer, NULL);
 
-  RenderObject* seedText =
-      createRenderObject(app->renderer, TEXT, 1, b_NONE, "SEED:", smallFont,
-                         &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255});
-  seedText->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX / 2 -
-       seedText->data.texture.constRect.w);
-  seedText->data.texture.constRect.y =
-      (app->screenHeight / app->scalingFactorY -
-       seedText->data.texture.constRect.h) /
-          2 -
-      300;
-
-  RenderObject* seedInput =
-      createRenderObject(app->renderer, TEXT_INPUT, 1, bTI_SEED,
-                         &(SDL_Rect){seedText->data.texture.constRect.x - 5,
-                                     seedText->data.texture.constRect.y +
-                                         seedText->data.texture.constRect.h,
-                                     200, 50},
-                         9, 2, smallFont);
-
-  RenderObject* loadTextButton = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_PREGAME_LOAD, "LOAD SAVE",
-      mainFont, &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255},
-      &(SDL_Color){230, 25, 25, 255});
-  loadTextButton->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX -
-       loadTextButton->data.texture.constRect.w) /
-      2;
-  loadTextButton->data.texture.constRect.y =
-      (app->screenHeight / app->scalingFactorY - 170);
-
-  RenderObject* startTextButton = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_PREGAME_START,
-      "START NEW GAME", mainFont, &(SDL_Point){0, 0},
-      &(SDL_Color){0, 255, 189, 200}, &(SDL_Color){230, 25, 25, 255});
-  startTextButton->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX -
-       startTextButton->data.texture.constRect.w) /
-      2;
-  startTextButton->data.texture.constRect.y =
-      (app->screenHeight / app->scalingFactorY - 100);
-
-  RenderObject* difficultyText = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "DIFFICULTY", mainFont,
-      &(SDL_Point){0, seedInput->data.texture.constRect.y + 100},
-      &(SDL_Color){128, 128, 128, 255});
-
-  difficultyText->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX -
-       difficultyText->data.texture.constRect.w) /
-      2;
-
-  // player1 difficulty choice
-  RenderObject* Player1Diff = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "Player 1: ", smallFont,
-      &(SDL_Point){30, difficultyText->data.texture.constRect.y + 100},
-      &(SDL_Color){128, 128, 128, 255});
-
-  Player1Diff->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX / 2 -
-       Player1Diff->data.texture.constRect.w) /
-      2;
-
-  // player
-  RenderObject* Player1Diff_p = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Player, "livin' man",
-      smallFont, &(SDL_Point){0, Player1Diff->data.texture.constRect.y + 50},
-      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
-
-  Player1Diff_p->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX / 2 -
-       Player1Diff_p->data.texture.constRect.w) /
-      2;
-
-  // easy diff
-  RenderObject* Player1Diff_bE = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Easy, "BOT: kid",
-      smallFont, &(SDL_Point){0, Player1Diff_p->data.texture.constRect.y + 50},
-      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
-
-  Player1Diff_bE->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX / 2 -
-       Player1Diff_bE->data.texture.constRect.w) /
-      2;
-
-  // normal diff
-  RenderObject* Player1Diff_bN = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Normal, "BOT: normal",
-      smallFont, &(SDL_Point){0, Player1Diff_bE->data.texture.constRect.y + 50},
-      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
-
-  Player1Diff_bN->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX / 2 -
-       Player1Diff_bN->data.texture.constRect.w) /
-      2;
-
-  // hard diff
-  RenderObject* Player1Diff_bH = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Hard, "BOT: Bring 'em on!",
-      smallFont, &(SDL_Point){0, Player1Diff_bN->data.texture.constRect.y + 50},
-      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
-
-  Player1Diff_bH->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX / 2 -
-       Player1Diff_bH->data.texture.constRect.w) /
-      2;
-
-  // player2 difficulty choice
-  RenderObject* Player2Diff = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "Player 2:", smallFont,
-      &(SDL_Point){0, difficultyText->data.texture.constRect.y + 100},
-      &(SDL_Color){128, 128, 128, 255});
-
-  Player2Diff->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX * 3 / 2 -
-       Player2Diff->data.texture.constRect.w) /
-      2;
-
-  // player
-  RenderObject* Player2Diff_p = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Player, "livin' man",
-      smallFont, &(SDL_Point){0, Player2Diff->data.texture.constRect.y + 50},
-      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
-
-  Player2Diff_p->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX * 3 / 2 -
-       Player2Diff_p->data.texture.constRect.w) /
-      2;
-
-  // easy diff
-  RenderObject* Player2Diff_bE = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Easy, "BOT: kid",
-      smallFont, &(SDL_Point){0, Player2Diff_p->data.texture.constRect.y + 50},
-      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
-
-  Player2Diff_bE->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX * 3 / 2 -
-       Player2Diff_bE->data.texture.constRect.w) /
-      2;
-
-  // normal diff
-  RenderObject* Player2Diff_bN = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Normal, "BOT: normal",
-      smallFont, &(SDL_Point){0, Player2Diff_bE->data.texture.constRect.y + 50},
-      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
-
-  Player2Diff_bN->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX * 3 / 2 -
-       Player2Diff_bN->data.texture.constRect.w) /
-      2;
-
-  // hard diff
-  RenderObject* Player2Diff_bH = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Hard, "BOT: Bring 'em on!",
-      smallFont, &(SDL_Point){0, Player2Diff_bN->data.texture.constRect.y + 50},
-      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
-
-  Player2Diff_bH->data.texture.constRect.x =
-      (app->screenWidth / app->scalingFactorX * 3 / 2 -
-       Player2Diff_bH->data.texture.constRect.w) /
-      2;
-
-  RenderObject* objectsArr[] = {
-      difficultyText, Player1Diff,    Player1Diff_p,  Player1Diff_bE,
-      Player1Diff_bN, Player1Diff_bH, Player2Diff,    Player2Diff_p,
-      Player2Diff_bE, Player2Diff_bN, Player2Diff_bH, seedText,
-      seedInput,      loadTextButton, startTextButton};
-
-  while (app->currState == PREGAME_SETTING) {
-    threadEventPoll(app);
-    SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
-    SDL_RenderClear(app->renderer);
-
-    // lines in the middle of the screen
-    SDL_SetRenderDrawColor(app->renderer, 128, 128, 128, 255);
-    SDL_RenderDrawLine(
-        app->renderer, 0,
-        (difficultyText->data.texture.constRect.y - 10) * app->scalingFactorY,
-        app->screenWidth,
-        (difficultyText->data.texture.constRect.y - 10) * app->scalingFactorY);
-    SDL_RenderDrawLine(
-        app->renderer, 0,
-        (difficultyText->data.texture.constRect.y + 90) * app->scalingFactorY,
-        app->screenWidth,
-        (difficultyText->data.texture.constRect.y + 90) * app->scalingFactorY);
-    SDL_RenderDrawLine(
-        app->renderer, app->screenWidth / 2,
-        (difficultyText->data.texture.constRect.y + 90) * app->scalingFactorY,
-        app->screenWidth / 2,
-        (loadTextButton->data.texture.constRect.y - 10) * app->scalingFactorY);
-    SDL_RenderDrawLine(
-        app->renderer, 0,
-        (loadTextButton->data.texture.constRect.y - 10) * app->scalingFactorY,
-        app->screenWidth,
-        (loadTextButton->data.texture.constRect.y - 10) * app->scalingFactorY);
-    //
-
-    renderTextures(app, objectsArr, sizeof(objectsArr) / sizeof(*objectsArr),
-                   SDL_TRUE);
-
-    SDL_RenderPresent(app->renderer);
-    SDL_Delay(16);
-  }
-
-  memcpy(temp, seedInput->data.textInputLine.savedText,
-         seedInput->data.textInputLine.maxInputChars);
-  SDL_DestroyTexture(seedInput->data.textInputLine.textTexture);
-  TTF_CloseFont(smallFont);
-  TTF_CloseFont(mainFont);
-  freeRenderObject(seedText);
-  freeRenderObject(startTextButton);
-  freeRenderObject(loadTextButton);
-  freeRenderObject(Player1Diff);
-  freeRenderObject(Player1Diff_p);
-  freeRenderObject(Player1Diff_bE);
-  freeRenderObject(Player1Diff_bN);
-  freeRenderObject(Player1Diff_bH);
-  freeRenderObject(Player2Diff);
-  freeRenderObject(Player2Diff_p);
-  freeRenderObject(Player2Diff_bE);
-  freeRenderObject(Player2Diff_bN);
-  freeRenderObject(Player2Diff_bH);
-  freeRenderObject(difficultyText);
-  free(seedInput);
-
-  if (app->currState == LOAD) {
-    app->currState = PLAY;
-    playMain(app, 1000000001u);
-    return;
-  }
-
-  if (app->currState == PLAY) {
-    if (*temp != '\0') {
-      playMain(app, (uint32_t)SDL_atoi(temp));
-      return;
-    } else {
-      playMain(app, 1000000000u);
-      return;
-    }
-  }
-
-  return;
+  return texture;
 }
 
 // main game loop
-void playMain(App* app, uint32_t SEED) {
+static void playMain(App* app, uint32_t SEED) {
   char temp[256];
   sprintf(temp, "%smedia/fonts/PixeloidSans.ttf", app->basePath);
   TTF_Font* smallFont = loadFont(temp, 30);
@@ -392,6 +160,14 @@ void playMain(App* app, uint32_t SEED) {
     app->timesPlayed = 0;
   }
 
+  // default buffs state (enabled by default)
+  firstPlayer.buffs.weaponIsBroken = SDL_TRUE;
+  firstPlayer.buffs.isDoubleDamage = SDL_FALSE;
+  firstPlayer.buffs.isShielded = SDL_FALSE;
+  secondPlayer.buffs.weaponIsBroken = SDL_TRUE;
+  secondPlayer.buffs.isDoubleDamage = SDL_TRUE;
+  secondPlayer.buffs.isShielded = SDL_TRUE;
+
   // height map will contain the 'base' for map (for rendering different
   // colors)
   SDL_Texture* gameMap = saveRenderMapToTexture(
@@ -450,6 +226,11 @@ void playMain(App* app, uint32_t SEED) {
       app->renderer, GIF, 1, b_NONE, "media/imgs/betment.png",
       &(SDL_Point){12, 30}, 39, 2, SDL_FALSE);
 
+  RenderObject* emoji = createRenderObject(app->renderer, GIF, 1, b_NONE,
+                                           "media/imgs/cl_goblin.png",
+                                           &(SDL_Point){0, 0}, 32, 2, SDL_TRUE);
+  emoji->disableRendering = SDL_TRUE;
+
   RenderObject* jonklerAvatar =
       createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
                          "media/imgs/jonkler.png", &(SDL_Point){0, 30});
@@ -474,6 +255,9 @@ void playMain(App* app, uint32_t SEED) {
   RenderObject* bulletPath =
       createRenderObject(app->renderer, EMPTY, 0, b_NONE, 333, 333);
 
+  RenderObject* spreadArea =
+      createRenderObject(app->renderer, EMPTY, 0, b_NONE, 333, 333);
+
   RenderObject* speedLabelObject =
       createRenderObject(app->renderer, TEXT, 1, b_NONE, "1337", smallFont,
                          &(SDL_Point){0, 0}, &(SDL_Color){255, 255, 255, 255});
@@ -483,10 +267,10 @@ void playMain(App* app, uint32_t SEED) {
       2;
   speedLabelObject->data.texture.constRect.y = 80;
 
-  RenderObject* directionIconObject =
-      createRenderObject(app->renderer, TEXTURE | EXTENDED, 1, b_NONE,
-                         "media/imgs/windDirection.png", &(SDL_Point){0, 0}, 0,
-                         SDL_FLIP_NONE, &(SDL_Point){32, 32});
+  RenderObject* directionIconObject = createRenderObject(
+      app->renderer, TEXTURE | EXTENDED, 1, b_NONE,
+      "media/imgs/windDirection.png", &(SDL_Point){0, 0}, 0, SDL_FLIP_NONE,
+      &(SDL_Point){32 * app->scalingFactorX, 32 * app->scalingFactorY});
 
   directionIconObject->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX -
@@ -503,7 +287,6 @@ void playMain(App* app, uint32_t SEED) {
   secondPlayer.tankGunObj = Player2Gun;
   firstPlayer.inAnimation = SDL_FALSE;
   secondPlayer.inAnimation = SDL_FALSE;
-
   // if settings wasnt loaded
   // setting up the 'default' settings
   if (!wasLoaded) {
@@ -568,6 +351,7 @@ void playMain(App* app, uint32_t SEED) {
     SDL_bool updateWind;
   } updateConditions;
   SDL_bool regenMap = SDL_FALSE;
+  SDL_bool hideBulletPath = SDL_FALSE;
   SDL_bool recalcBulletPath = SDL_TRUE;
   updateConditions = (struct UpdateConditions){
       .updateWind = SDL_TRUE,
@@ -582,6 +366,7 @@ void playMain(App* app, uint32_t SEED) {
     RenderObject* explosion;
     SDL_bool* regenMap;
     SDL_bool* recalcBulletPath;
+    SDL_bool* hideBulletPath;
     struct UpdateConditions* updateConditions;
     uint32_t mapSeed;
     SDL_bool regenTree;
@@ -599,6 +384,7 @@ void playMain(App* app, uint32_t SEED) {
       .regenMap = &regenMap,
       .recalcBulletPath = &recalcBulletPath,
       .updateConditions = &updateConditions,
+      .hideBulletPath = &hideBulletPath,
       .mapSeed = mapSeed,
       .regenTree = true,
       .regenCloud = true,
@@ -737,6 +523,49 @@ void playMain(App* app, uint32_t SEED) {
       app->screenWidth / app->scalingFactorX -
       playerScore2->data.texture.constRect.w - 30;
 
+  // Buff icons under SCORE (double damage, then shield) for both players
+  RenderObject* p1DoubleDmgIcon =
+      createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
+                         "media/imgs/doubleDamage.png", &(SDL_Point){0, 0});
+  RenderObject* p1ShieldIcon =
+      createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
+                         "media/imgs/shield.png", &(SDL_Point){0, 0});
+
+  RenderObject* p2DoubleDmgIcon =
+      createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
+                         "media/imgs/doubleDamage.png", &(SDL_Point){0, 0});
+  RenderObject* p2ShieldIcon =
+      createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
+                         "media/imgs/shield.png", &(SDL_Point){0, 0});
+
+  // buffs icons
+  p1DoubleDmgIcon->data.texture.constRect.x =
+      playerScore1->data.texture.constRect.x;
+  p1DoubleDmgIcon->data.texture.constRect.y =
+      playerScore1->data.texture.constRect.y +
+      playerScore1->data.texture.constRect.h + 6;
+  p1ShieldIcon->data.texture.constRect.x =
+      p1DoubleDmgIcon->data.texture.constRect.x +
+      p1DoubleDmgIcon->data.texture.constRect.w + 6;
+  p1ShieldIcon->data.texture.constRect.y =
+      p1DoubleDmgIcon->data.texture.constRect.y;
+
+  p2DoubleDmgIcon->data.texture.constRect.y =
+      playerScore2->data.texture.constRect.y +
+      playerScore2->data.texture.constRect.h + 6;
+  p2ShieldIcon->data.texture.constRect.y =
+      p2DoubleDmgIcon->data.texture.constRect.y;
+  // align right player's icons to the right edge of SCORE2
+  {
+    int32_t rightEdge = playerScore2->data.texture.constRect.x +
+                        playerScore2->data.texture.constRect.w;
+    p2ShieldIcon->data.texture.constRect.x =
+        rightEdge - p2ShieldIcon->data.texture.constRect.w;
+    p2DoubleDmgIcon->data.texture.constRect.x =
+        p2ShieldIcon->data.texture.constRect.x - 6 -
+        p2DoubleDmgIcon->data.texture.constRect.w;
+  }
+
   if (app->currPlayer == &secondPlayer) {
     currentPlayerInfo->data.texture.constRect.x =
         app->screenWidth / app->scalingFactorX -
@@ -747,9 +576,14 @@ void playMain(App* app, uint32_t SEED) {
       currentPlayerInfo,
       projectile,
       betmentAvatar,
+      emoji,
       jonklerAvatar,
       playerScore1,
       playerScore2,
+      p1DoubleDmgIcon,
+      p1ShieldIcon,
+      p2DoubleDmgIcon,
+      p2ShieldIcon,
       arrow,
       firstPlayer.tankGunObj,
       firstPlayer.tankObj,
@@ -757,12 +591,13 @@ void playMain(App* app, uint32_t SEED) {
       secondPlayer.tankObj,
       explosionObj,
       bulletPath,
+      spreadArea,
       speedLabelObject,
       directionIconObject,
       shelter1,
   };
   while (app->currState == PLAY) {
-    threadEventPoll(app);
+    pollAllEvents(app);
     while (app->currWeapon == -1) {
       app->currWeapon = getAllowedNumber(app);
     }
@@ -800,9 +635,21 @@ void playMain(App* app, uint32_t SEED) {
       updateConditions.updateWind = SDL_FALSE;
     }
 
-    // recalc bullet path if needed
+    // if flag was set but texture hasnt been hidden yet
+    if (hideBulletPath && bulletPath->disableRendering == SDL_FALSE) {
+      bulletPath->disableRendering = SDL_TRUE;
+      spreadArea->disableRendering = SDL_TRUE;
+    } else if (!hideBulletPath && bulletPath->disableRendering == SDL_TRUE) {
+      bulletPath->disableRendering = SDL_FALSE;
+      spreadArea->disableRendering = SDL_FALSE;
+    }
+
+    // recalc bullet path
     if (recalcBulletPath) {
       renderBulletPath(app, bulletPath);
+      if (app->currPlayer->buffs.weaponIsBroken) {
+        renderSpreadArea(app, spreadArea);
+      }
       recalcBulletPath = SDL_FALSE;
     }
 
@@ -863,6 +710,21 @@ void playMain(App* app, uint32_t SEED) {
         arrow->data.texture.constRect.x =
             Player1Tank->data.texture.constRect.x - 15;
         arrow->data.texture.flipFlag = SDL_FLIP_NONE;
+
+        // moving trashtalk to "follow" second player
+        if (app->wasHitten) {
+          emoji->data.texture.constRect.y =
+              Player2Tank->data.texture.constRect.y -
+              Player2Tank->data.texture.constRect.w *
+                  fabs(sin(DEGTORAD(Player2Tank->data.texture.angle))) -
+              80;
+          emoji->data.texture.constRect.x =
+              Player2Tank->data.texture.constRect.x - 30;
+          emoji->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
+          //emoji->data.texture.currFrame = 0;
+          emoji->disableRendering = SDL_FALSE;
+        }
+
       } else {
         currentPlayerInfo->data.texture.constRect.x =
             app->screenWidth / app->scalingFactorX -
@@ -876,6 +738,20 @@ void playMain(App* app, uint32_t SEED) {
             80;
         arrow->data.texture.constRect.x = Player2Tank->data.texture.constRect.x;
         arrow->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
+
+        // moving trashtalk to "follow" first player
+        if (app->wasHitten) {
+          emoji->data.texture.constRect.y =
+              Player1Tank->data.texture.constRect.y -
+              Player1Tank->data.texture.constRect.w *
+                  fabs(sin(DEGTORAD(Player1Tank->data.texture.angle))) -
+              80;
+          emoji->data.texture.constRect.x =
+              Player1Tank->data.texture.constRect.x - 45;
+          emoji->data.texture.flipFlag = SDL_FLIP_NONE;
+          //emoji->data.texture.currFrame = 0;
+          emoji->disableRendering = SDL_FALSE;
+        }
       }
     }
 
@@ -892,6 +768,18 @@ void playMain(App* app, uint32_t SEED) {
       SDL_QueryTexture(playerScore1->data.texture.texture, NULL, NULL,
                        &playerScore1->data.texture.constRect.w,
                        &playerScore1->data.texture.constRect.h);
+
+      // reposition icons under updated SCORE1
+      p1DoubleDmgIcon->data.texture.constRect.x =
+          playerScore1->data.texture.constRect.x;
+      p1DoubleDmgIcon->data.texture.constRect.y =
+          playerScore1->data.texture.constRect.y +
+          playerScore1->data.texture.constRect.h + 6;
+      p1ShieldIcon->data.texture.constRect.x =
+          p1DoubleDmgIcon->data.texture.constRect.x +
+          p1DoubleDmgIcon->data.texture.constRect.w + 6;
+      p1ShieldIcon->data.texture.constRect.y =
+          p1DoubleDmgIcon->data.texture.constRect.y;
     }
 
     if (oldScorePlayer2 != secondPlayer.score) {
@@ -907,10 +795,34 @@ void playMain(App* app, uint32_t SEED) {
       SDL_QueryTexture(playerScore2->data.texture.texture, NULL, NULL,
                        &playerScore2->data.texture.constRect.w,
                        &playerScore2->data.texture.constRect.h);
+
+      // reposition icons under updated SCORE2 and align to right
+      p2DoubleDmgIcon->data.texture.constRect.y =
+          playerScore2->data.texture.constRect.y +
+          playerScore2->data.texture.constRect.h + 6;
+      p2ShieldIcon->data.texture.constRect.y =
+          p2DoubleDmgIcon->data.texture.constRect.y;
+      int32_t rightEdge2 = playerScore2->data.texture.constRect.x +
+                           playerScore2->data.texture.constRect.w;
+      p2ShieldIcon->data.texture.constRect.x =
+          rightEdge2 - p2ShieldIcon->data.texture.constRect.w;
+      p2DoubleDmgIcon->data.texture.constRect.x =
+          p2ShieldIcon->data.texture.constRect.x - 6 -
+          p2DoubleDmgIcon->data.texture.constRect.w;
     }
 
     renderTextures(app, cloudArr, clouds.count, SDL_TRUE);
     renderTextures(app, shelterArr, shelter.count, SDL_TRUE);
+    // toggle visibility based on buffs each frame
+    p1DoubleDmgIcon->disableRendering =
+        firstPlayer.buffs.isDoubleDamage ? SDL_FALSE : SDL_TRUE;
+    p1ShieldIcon->disableRendering =
+        firstPlayer.buffs.isShielded ? SDL_FALSE : SDL_TRUE;
+    p2DoubleDmgIcon->disableRendering =
+        secondPlayer.buffs.isDoubleDamage ? SDL_FALSE : SDL_TRUE;
+    p2ShieldIcon->disableRendering =
+        secondPlayer.buffs.isShielded ? SDL_FALSE : SDL_TRUE;
+
     renderTextures(app, objectsArr, sizeof(objectsArr) / sizeof(*objectsArr),
                    SDL_TRUE);
     renderTextures(app, treeArr, trees.count, SDL_TRUE);
@@ -926,13 +838,19 @@ void playMain(App* app, uint32_t SEED) {
   freeRenderObject(Player2Gun);
   freeRenderObject(currentPlayerInfo);
   freeRenderObject(betmentAvatar);
+  freeRenderObject(emoji);
   freeRenderObject(jonklerAvatar);
   freeRenderObject(arrow);
   freeRenderObject(projectile);
   freeRenderObject(explosionObj);
   freeRenderObject(playerScore1);
   freeRenderObject(playerScore2);
+  freeRenderObject(p1DoubleDmgIcon);
+  freeRenderObject(p1ShieldIcon);
+  freeRenderObject(p2DoubleDmgIcon);
+  freeRenderObject(p2ShieldIcon);
   freeRenderObject(bulletPath);
+  freeRenderObject(spreadArea);
   freeRenderObject(speedLabelObject);
   freeRenderObject(directionIconObject);
 
@@ -941,4 +859,261 @@ void playMain(App* app, uint32_t SEED) {
 
   free(heightMap);
   free(basedMap);
+}
+
+// pre game (like settings before game starts :-) )
+void preGameMain(App* app) {
+  app->p1Diff = b_NULL;
+  app->p2Diff = b_NULL;
+
+  char temp[256];
+
+  sprintf(temp, "%smedia/fonts/PixeloidSans.ttf", app->basePath);
+  TTF_Font* smallFont = loadFont(temp, 30);
+
+  sprintf(temp, "%smedia/fonts/PixeloidSans-Bold.ttf", app->basePath);
+  TTF_Font* mainFont = loadFont(temp, 60);
+
+  RenderObject* seedText =
+      createRenderObject(app->renderer, TEXT, 1, b_NONE, "SEED:", smallFont,
+                         &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255});
+  seedText->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX / 2 -
+       seedText->data.texture.constRect.w);
+  seedText->data.texture.constRect.y =
+      (app->screenHeight / app->scalingFactorY -
+       seedText->data.texture.constRect.h) /
+          2 -
+      300;
+
+  RenderObject* seedInput =
+      createRenderObject(app->renderer, TEXT_INPUT, 1, bTI_SEED,
+                         &(SDL_Rect){seedText->data.texture.constRect.x - 5,
+                                     seedText->data.texture.constRect.y +
+                                         seedText->data.texture.constRect.h,
+                                     200, 50},
+                         9, 2, smallFont);
+
+  RenderObject* loadTextButton = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_PREGAME_LOAD, "LOAD SAVE",
+      mainFont, &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255},
+      &(SDL_Color){230, 25, 25, 255});
+  loadTextButton->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX -
+       loadTextButton->data.texture.constRect.w) /
+      2;
+  loadTextButton->data.texture.constRect.y =
+      (app->screenHeight / app->scalingFactorY - 170);
+
+  RenderObject* startTextButton = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_PREGAME_START,
+      "START NEW GAME", mainFont, &(SDL_Point){0, 0},
+      &(SDL_Color){0, 255, 189, 200}, &(SDL_Color){230, 25, 25, 255});
+  startTextButton->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX -
+       startTextButton->data.texture.constRect.w) /
+      2;
+  startTextButton->data.texture.constRect.y =
+      (app->screenHeight / app->scalingFactorY - 100);
+
+  RenderObject* difficultyText = createRenderObject(
+      app->renderer, TEXT, 1, b_NONE, "DIFFICULTY", mainFont,
+      &(SDL_Point){0, seedInput->data.texture.constRect.y + 100},
+      &(SDL_Color){128, 128, 128, 255});
+
+  difficultyText->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX -
+       difficultyText->data.texture.constRect.w) /
+      2;
+
+  // player1 difficulty choice
+  RenderObject* Player1Diff = createRenderObject(
+      app->renderer, TEXT, 1, b_NONE, "Player 1: ", smallFont,
+      &(SDL_Point){30, difficultyText->data.texture.constRect.y + 100},
+      &(SDL_Color){128, 128, 128, 255});
+
+  Player1Diff->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX / 2 -
+       Player1Diff->data.texture.constRect.w) /
+      2;
+
+  // player
+  RenderObject* Player1Diff_p = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Player, "livin' man",
+      smallFont, &(SDL_Point){0, Player1Diff->data.texture.constRect.y + 50},
+      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
+
+  Player1Diff_p->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX / 2 -
+       Player1Diff_p->data.texture.constRect.w) /
+      2;
+
+  // easy diff
+  RenderObject* Player1Diff_bE = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Easy, "BOT1", smallFont,
+      &(SDL_Point){0, Player1Diff_p->data.texture.constRect.y + 50},
+      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
+
+  Player1Diff_bE->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX / 2 -
+       Player1Diff_bE->data.texture.constRect.w) /
+      2;
+
+  // normal diff
+  RenderObject* Player1Diff_bN = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Normal, "BOT2", smallFont,
+      &(SDL_Point){0, Player1Diff_bE->data.texture.constRect.y + 50},
+      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
+
+  Player1Diff_bN->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX / 2 -
+       Player1Diff_bN->data.texture.constRect.w) /
+      2;
+
+  // hard diff
+  RenderObject* Player1Diff_bH = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Hard, "BOT3", smallFont,
+      &(SDL_Point){0, Player1Diff_bN->data.texture.constRect.y + 50},
+      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
+
+  Player1Diff_bH->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX / 2 -
+       Player1Diff_bH->data.texture.constRect.w) /
+      2;
+
+  // player2 difficulty choice
+  RenderObject* Player2Diff = createRenderObject(
+      app->renderer, TEXT, 1, b_NONE, "Player 2:", smallFont,
+      &(SDL_Point){0, difficultyText->data.texture.constRect.y + 100},
+      &(SDL_Color){128, 128, 128, 255});
+
+  Player2Diff->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX * 3 / 2 -
+       Player2Diff->data.texture.constRect.w) /
+      2;
+
+  // player
+  RenderObject* Player2Diff_p = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Player, "livin' man",
+      smallFont, &(SDL_Point){0, Player2Diff->data.texture.constRect.y + 50},
+      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
+
+  Player2Diff_p->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX * 3 / 2 -
+       Player2Diff_p->data.texture.constRect.w) /
+      2;
+
+  // easy diff
+  RenderObject* Player2Diff_bE = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Easy, "BOT1", smallFont,
+      &(SDL_Point){0, Player2Diff_p->data.texture.constRect.y + 50},
+      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
+
+  Player2Diff_bE->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX * 3 / 2 -
+       Player2Diff_bE->data.texture.constRect.w) /
+      2;
+
+  // normal diff
+  RenderObject* Player2Diff_bN = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Normal, "BOT2", smallFont,
+      &(SDL_Point){0, Player2Diff_bE->data.texture.constRect.y + 50},
+      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
+
+  Player2Diff_bN->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX * 3 / 2 -
+       Player2Diff_bN->data.texture.constRect.w) /
+      2;
+
+  // hard diff
+  RenderObject* Player2Diff_bH = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Hard, "BOT3", smallFont,
+      &(SDL_Point){0, Player2Diff_bN->data.texture.constRect.y + 50},
+      &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
+
+  Player2Diff_bH->data.texture.constRect.x =
+      (app->screenWidth / app->scalingFactorX * 3 / 2 -
+       Player2Diff_bH->data.texture.constRect.w) /
+      2;
+
+  RenderObject* objectsArr[] = {
+      difficultyText, Player1Diff,    Player1Diff_p,  Player1Diff_bE,
+      Player1Diff_bN, Player1Diff_bH, Player2Diff,    Player2Diff_p,
+      Player2Diff_bE, Player2Diff_bN, Player2Diff_bH, seedText,
+      seedInput,      loadTextButton, startTextButton};
+
+  while (app->currState == PREGAME_SETTING) {
+    pollAllEvents(app);
+    SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
+    SDL_RenderClear(app->renderer);
+
+    // lines in the middle of the screen
+    SDL_SetRenderDrawColor(app->renderer, 128, 128, 128, 255);
+    SDL_RenderDrawLine(
+        app->renderer, 0,
+        (difficultyText->data.texture.constRect.y - 10) * app->scalingFactorY,
+        app->screenWidth,
+        (difficultyText->data.texture.constRect.y - 10) * app->scalingFactorY);
+    SDL_RenderDrawLine(
+        app->renderer, 0,
+        (difficultyText->data.texture.constRect.y + 90) * app->scalingFactorY,
+        app->screenWidth,
+        (difficultyText->data.texture.constRect.y + 90) * app->scalingFactorY);
+    SDL_RenderDrawLine(
+        app->renderer, app->screenWidth / 2,
+        (difficultyText->data.texture.constRect.y + 90) * app->scalingFactorY,
+        app->screenWidth / 2,
+        (loadTextButton->data.texture.constRect.y - 10) * app->scalingFactorY);
+    SDL_RenderDrawLine(
+        app->renderer, 0,
+        (loadTextButton->data.texture.constRect.y - 10) * app->scalingFactorY,
+        app->screenWidth,
+        (loadTextButton->data.texture.constRect.y - 10) * app->scalingFactorY);
+    //
+
+    renderTextures(app, objectsArr, sizeof(objectsArr) / sizeof(*objectsArr),
+                   SDL_TRUE);
+
+    SDL_RenderPresent(app->renderer);
+    SDL_Delay(16);
+  }
+
+  memcpy(temp, seedInput->data.textInputLine.savedText,
+         seedInput->data.textInputLine.maxInputChars);
+  SDL_DestroyTexture(seedInput->data.textInputLine.textTexture);
+  TTF_CloseFont(smallFont);
+  TTF_CloseFont(mainFont);
+  freeRenderObject(seedText);
+  freeRenderObject(startTextButton);
+  freeRenderObject(loadTextButton);
+  freeRenderObject(Player1Diff);
+  freeRenderObject(Player1Diff_p);
+  freeRenderObject(Player1Diff_bE);
+  freeRenderObject(Player1Diff_bN);
+  freeRenderObject(Player1Diff_bH);
+  freeRenderObject(Player2Diff);
+  freeRenderObject(Player2Diff_p);
+  freeRenderObject(Player2Diff_bE);
+  freeRenderObject(Player2Diff_bN);
+  freeRenderObject(Player2Diff_bH);
+  freeRenderObject(difficultyText);
+  free(seedInput);
+
+  if (app->currState == LOAD) {
+    app->currState = PLAY;
+    playMain(app, 1000000001u);
+    return;
+  }
+
+  if (app->currState == PLAY) {
+    if (*temp != '\0') {
+      playMain(app, (uint32_t)SDL_atoi(temp));
+      return;
+    } else {
+      playMain(app, 1000000000u);
+      return;
+    }
+  }
+
+  return;
 }
