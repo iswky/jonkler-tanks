@@ -24,7 +24,7 @@ static void renderPlayer(App* app, int32_t y, PlayerScore currPlayer,
       createTextTexture(app->renderer, font, placeText, r, g, b, a);
   SDL_Texture* playerName =
       createTextTexture(app->renderer, font, currPlayer.name, r, g, b, a);
-  sprintf(temp, "%d", currPlayer.score);
+  snprintf(temp, sizeof(temp), "%d", currPlayer.score);
   SDL_Texture* playerScore =
       createTextTexture(app->renderer, font, temp, r, g, b, a);
 
@@ -60,7 +60,7 @@ static void loadLeaderboardToArray(PlayerScore* leaderboard) {
 
   char* basePath = SDL_GetBasePath();
 
-  sprintf(temp, "%sdata/leaderboard", basePath);
+  snprintf(temp, sizeof(temp), "%sdata/leaderboard", basePath);
   free(basePath);
 
   FILE* file = fopen(temp, "r");
@@ -88,7 +88,7 @@ static int32_t findPlaceInLeaderboard(int32_t score) {
 
   char* basePath = SDL_GetBasePath();
 
-  sprintf(temp, "%sdata/leaderboard", basePath);
+  snprintf(temp, sizeof(temp), "%sdata/leaderboard", basePath);
   free(basePath);
 
   FILE* file = fopen(temp, "r");
@@ -123,7 +123,7 @@ static void addToLeaderBoard(const char* name, int32_t score) {
 
   char* basePath = SDL_GetBasePath();
 
-  sprintf(temp, "%sdata/leaderboard", basePath);
+  snprintf(temp, sizeof(temp), "%sdata/leaderboard", basePath);
   free(basePath);
 
   FILE* file = fopen(temp, "r");
@@ -342,8 +342,8 @@ void leaderboardAddMain(App* app) {
 
   RenderObject* scoreLabel = NULL;
   if (app->winner != 3) {
-    sprintf(temp, "SCORE: %d",
-            app->winnerScore == -1337 ? 0 : app->winnerScore);
+    snprintf(temp, sizeof(temp), "SCORE: %d",
+             app->winnerScore == -1337 ? 0 : app->winnerScore);
     scoreLabel = createCenteredText(app, temp, mainFont, 150, COLOR_GRAY);
   }
 
@@ -374,7 +374,8 @@ void leaderboardAddMain(App* app) {
                     400, 50},
         15, 9, smallFont);
 
-    sprintf(temp, "YOU'RE RANKED #%d on the leaderboard", placeInTable);
+    snprintf(temp, sizeof(temp), "YOU'RE RANKED #%d on the leaderboard",
+             placeInTable);
 
     placeLabel = createRenderObject(app->renderer, TEXT, 0, b_NONE, temp,
                                     smallFont, &(SDL_Point){0, 0},

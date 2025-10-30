@@ -11,7 +11,7 @@
 void clearSave(App* app) {
   char temp[256];
 
-  sprintf(temp, "%sdata/autosave", app->basePath);
+  snprintf(temp, sizeof(temp), "%sdata/autosave", app->basePath);
   FILE* file = fopen(temp, "w");
   if (file == NULL) {
     log_error("error while creating saves/autosave file");
@@ -25,7 +25,7 @@ void saveCurrentState(App* app, Player* firstPlayer, Player* secondPlayer,
                       uint32_t seed) {
   char temp[256];
 
-  sprintf(temp, "%sdata/autosave", app->basePath);
+  snprintf(temp, sizeof(temp), "%sdata/autosave", app->basePath);
   FILE* file = fopen(temp, "w");
   if (file == NULL) {
     log_error("error while creating saves/autosave file");

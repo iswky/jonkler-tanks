@@ -64,7 +64,7 @@ static SDL_Texture* saveRenderMapToTexture(SDL_Renderer* renderer,
 // main game loop
 static void playMain(App* app, uint32_t SEED) {
   char temp[256];
-  sprintf(temp, "%smedia/fonts/PixeloidSans.ttf", app->basePath);
+  snprintf(temp, sizeof(temp), "%smedia/fonts/PixeloidSans.ttf", app->basePath);
   TTF_Font* smallFont = loadFont(temp, 30);
 
   uint32_t mapSeed;
@@ -396,8 +396,9 @@ static void playMain(App* app, uint32_t SEED) {
   int32_t oldScorePlayer2 = secondPlayer.score;
   int32_t oldWeapon = app->currWeapon;
 
-  sprintf(temp, "Moves left: %d Gun angle: %02d Firing power: %02d ",
-          oldMovesLeft, (int32_t)oldAngle, oldFiringPower);
+  snprintf(temp, sizeof(temp),
+           "Moves left: %d Gun angle: %02d Firing power: %02d ", oldMovesLeft,
+           (int32_t)oldAngle, oldFiringPower);
 
   if (app->currWeapon == -1) {
     app->currWeapon = getAllowedNumber(app);
@@ -425,14 +426,14 @@ static void playMain(App* app, uint32_t SEED) {
       &(SDL_Point){10, app->screenHeight / app->scalingFactorY - 40},
       &(SDL_Color){255, 255, 255, 255});
 
-  sprintf(temp, "SCORE: %4d", firstPlayer.score);
+  snprintf(temp, sizeof(temp), "SCORE: %4d", firstPlayer.score);
   RenderObject* playerScore1 = createRenderObject(
       app->renderer, TEXT, 1, b_NONE, temp, smallFont,
       &(SDL_Point){10, betmentAvatar->data.texture.constRect.y +
                            betmentAvatar->data.texture.constRect.h + 10},
       &(SDL_Color){168, 0, 0, 255});
 
-  sprintf(temp, "SCORE: %4d", secondPlayer.score);
+  snprintf(temp, sizeof(temp), "SCORE: %4d", secondPlayer.score);
   RenderObject* playerScore2 = createRenderObject(
       app->renderer, TEXT, 1, b_NONE, temp, smallFont,
       &(SDL_Point){0, betmentAvatar->data.texture.constRect.y +
@@ -592,8 +593,9 @@ static void playMain(App* app, uint32_t SEED) {
       oldX = app->currPlayer->x;
       oldWeapon = app->currWeapon;
 
-      sprintf(temp, "Moves left: %d Gun angle: %02d Firing power: %02d ",
-              oldMovesLeft, (int32_t)oldAngle, oldFiringPower);
+      snprintf(temp, sizeof(temp),
+               "Moves left: %d Gun angle: %02d Firing power: %02d ",
+               oldMovesLeft, (int32_t)oldAngle, oldFiringPower);
 
       while (app->currWeapon == -1) {
         app->currWeapon = getAllowedNumber(app);
@@ -687,7 +689,7 @@ static void playMain(App* app, uint32_t SEED) {
 
       oldScorePlayer1 = firstPlayer.score;
 
-      sprintf(temp, "SCORE: %4d", oldScorePlayer1);
+      snprintf(temp, sizeof(temp), "SCORE: %4d", oldScorePlayer1);
 
       playerScore1->data.texture.texture =
           createTextTexture(app->renderer, smallFont, temp, 168, 0, 0, 255);
@@ -714,7 +716,7 @@ static void playMain(App* app, uint32_t SEED) {
 
       oldScorePlayer2 = secondPlayer.score;
 
-      sprintf(temp, "SCORE: %4d", oldScorePlayer2);
+      snprintf(temp, sizeof(temp), "SCORE: %4d", oldScorePlayer2);
 
       playerScore2->data.texture.texture =
           createTextTexture(app->renderer, smallFont, temp, 0, 168, 107, 255);
@@ -804,10 +806,11 @@ void preGameMain(App* app) {
 
   char temp[256];
 
-  sprintf(temp, "%smedia/fonts/PixeloidSans.ttf", app->basePath);
+  snprintf(temp, sizeof(temp), "%smedia/fonts/PixeloidSans.ttf", app->basePath);
   TTF_Font* smallFont = loadFont(temp, 30);
 
-  sprintf(temp, "%smedia/fonts/PixeloidSans-Bold.ttf", app->basePath);
+  snprintf(temp, sizeof(temp), "%smedia/fonts/PixeloidSans-Bold.ttf",
+           app->basePath);
   TTF_Font* mainFont = loadFont(temp, 60);
 
   RenderObject* seedText =

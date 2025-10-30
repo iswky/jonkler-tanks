@@ -18,13 +18,14 @@ const SDL_Color COLOR_BLUE = {0, 216, 255, 255};
 // fonts
 TTF_Font* loadMainFont(App* app, int32_t size) {
   char temp[256];
-  sprintf(temp, "%smedia/fonts/PixeloidSans-Bold.ttf", app->basePath);
+  snprintf(temp, sizeof(temp), "%smedia/fonts/PixeloidSans-Bold.ttf",
+           app->basePath);
   return loadFont(temp, size);
 }
 
 TTF_Font* loadSmallFont(App* app, int32_t size) {
   char temp[256];
-  sprintf(temp, "%smedia/fonts/PixeloidSans.ttf", app->basePath);
+  snprintf(temp, sizeof(temp), "%smedia/fonts/PixeloidSans.ttf", app->basePath);
   return loadFont(temp, size);
 }
 

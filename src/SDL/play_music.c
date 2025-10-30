@@ -22,7 +22,8 @@ void playMusic() {
     return;
   }
 
-  sprintf(musicPath, "%smedia/music/menu_theme.mp3", basePath);  // wav or mp3
+  snprintf(musicPath, sizeof(musicPath), "%smedia/music/menu_theme.mp3",
+           basePath);  // wav or mp3
   SDL_free(basePath);
 
   Mix_Music* backgroundMusic = Mix_LoadMUS(musicPath);

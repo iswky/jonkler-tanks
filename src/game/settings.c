@@ -26,7 +26,7 @@ inline static uint8_t createFolder(char* name, uint32_t mode) {
 void saveSettings(App* app) {
   char temp[256];
 
-  sprintf(temp, "%sdata/config.cfg", app->basePath);
+  snprintf(temp, sizeof(temp), "%sdata/config.cfg", app->basePath);
 
   FILE* file = fopen(temp, "w");
   if (file == NULL) {
@@ -48,12 +48,12 @@ void saveSettings(App* app) {
 void readSettings(App* app) {
   char temp[256];
 
-  sprintf(temp, "%sdata", app->basePath);
+  snprintf(temp, sizeof(temp), "%sdata", app->basePath);
   if (createFolder(temp, 0755) == 0) {
     log_warn("data folder wasn't found and was created successfully! :)");
   }
 
-  sprintf(temp, "%sdata/config.cfg", app->basePath);
+  snprintf(temp, sizeof(temp), "%sdata/config.cfg", app->basePath);
 
   FILE* file = fopen(temp, "r");
   if (file == NULL) {

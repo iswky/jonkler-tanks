@@ -112,7 +112,7 @@ inline static int32_t SDL_Initialise(App* app) {
 inline static void loadAllSounds(App* app) {
   char temp[256];
 
-  sprintf(temp, "%smedia/music/gunshot.wav", app->basePath);
+  snprintf(temp, sizeof(temp), "%smedia/music/gunshot.wav", app->basePath);
 
   app->sounds[0] = Mix_LoadWAV(temp);
   if (!app->sounds[0]) {
@@ -120,7 +120,7 @@ inline static void loadAllSounds(App* app) {
   }
   log_info("loaded %s", temp);
 
-  sprintf(temp, "%smedia/music/win.wav", app->basePath);
+  snprintf(temp, sizeof(temp), "%smedia/music/win.wav", app->basePath);
 
   app->sounds[1] = Mix_LoadWAV(temp);
   if (!app->sounds[1]) {
@@ -128,7 +128,8 @@ inline static void loadAllSounds(App* app) {
   }
   log_info("loaded %s", temp);
 
-  sprintf(temp, "%smedia/music/cl_goblin_crying.wav", app->basePath);
+  snprintf(temp, sizeof(temp), "%smedia/music/cl_goblin_crying.wav",
+           app->basePath);
 
   app->sounds[2] = Mix_LoadWAV(temp);
   if (!app->sounds[2]) {
@@ -182,13 +183,14 @@ inline static void startMusic(const App* app) {
 #ifndef DEBUG
 inline static void initCursor(App* app) {
   char temp[256];
-  sprintf(temp, "%smedia/imgs/cursor32.png", app->basePath);
+  snprintf(temp, sizeof(temp), "%smedia/imgs/cursor32.png", app->basePath);
   // loading cursor
   SDL_Surface* cursorSurface = IMG_Load(temp);
   app->cursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
   SDL_SetCursor(app->cursor);
 
-  sprintf(temp, "%smedia/imgs/cursor32Triggered.png", app->basePath);
+  snprintf(temp, sizeof(temp), "%smedia/imgs/cursor32Triggered.png",
+           app->basePath);
   // loading triggered cursor
   SDL_Surface* cursorTriggeredSurface = IMG_Load(temp);
   app->cursorTriggered = SDL_CreateColorCursor(cursorTriggeredSurface, 0, 0);

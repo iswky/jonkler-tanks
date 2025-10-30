@@ -116,7 +116,7 @@ RenderObject* createRenderObject(SDL_Renderer* render,
     // getting absoulte path
     char temp[256];
     char* basePath = SDL_GetBasePath();
-    sprintf(temp, "%s%s", basePath, path);
+    snprintf(temp, sizeof(temp), "%s%s", basePath, path);
     free(basePath);
 
     SDL_Texture* imgTexture = createImgTexture(render, temp);
@@ -183,7 +183,7 @@ RenderObject* createRenderObject(SDL_Renderer* render,
 
     char temp[256];
     char* basePath = SDL_GetBasePath();
-    sprintf(temp, "%s%s", basePath, path);
+    snprintf(temp, sizeof(temp), "%s%s", basePath, path);
 
     SDL_Texture* texture = createImgTexture(render, temp);
 
