@@ -25,6 +25,9 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
                         const int32_t collision2R, const int32_t collision3R,
                         RenderObject* projectile);
 
+SDL_bool PointInRotatedRect(const SDL_Rect* rect, const SDL_Point* point,
+                            float degrees);
+
 void smoothChangeAngle(Player* player, int32_t endAngle, enum State* currState,
                        SDL_bool* recalcBulletPath);
 void smoothChangePower(Player* player, int32_t endPower, enum State* currState,

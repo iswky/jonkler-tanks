@@ -7,7 +7,7 @@ struct RenderObject;
 
 typedef struct {
   struct RenderObject* obstacleObject;
-  uint32_t health;
+  int32_t health;
 } obstacleStruct;
 
 #endif

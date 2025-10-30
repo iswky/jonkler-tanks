@@ -143,6 +143,23 @@ int32_t getAllowedNumber(App* app) {
   return value;
 }
 
+SDL_bool PointInRotatedRect(const SDL_Rect* rect, const SDL_Point* point,
+                            float degrees) {
+  if (!rect || !point) return SDL_FALSE;
+  float rad = degrees * M_PI / 180.0f;
+  float cos_a = cosf(rad);
+  float sin_a = sinf(rad);
+  float cx = rect->x + rect->w * 0.5f;
+  float cy = rect->y + rect->h * 0.5f;
+  float dx = point->x - cx;
+  float dy = point->y - cy;
+  float rot_x = dx * cos_a - dy * sin_a;
+  float rot_y = dx * sin_a + dy * cos_a;
+  float hw = rect->w * 0.5f;
+  float hh = rect->h * 0.5f;
+  return (rot_x >= -hw && rot_x <= hw && rot_y >= -hh && rot_y <= hh);
+}
+
 void smoothChangeAngle(Player* player, int32_t endAngle, enum State* currState,
                        SDL_bool* recalcBulletPath) {
   if ((int32_t)player->gunAngle > endAngle) {
@@ -188,17 +205,16 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
     for (; i != 45; ++i) {
       // trying to move forward
       for (int j = 0; j < MAXSTONES; j++) {
-        if (obstacle[j].health == 0 || !isFirstPlayer) {
+        if (obstacle[j].health == 0) {
           continue;
         }
         if ((app->currPlayer->tankObj->data.texture.constRect.x +
              app->currPlayer->tankObj->data.texture.constRect.w - 5) >=
-            obstacle[j].obstacleObject->data.texture.constRect.x) {
+                obstacle[j].obstacleObject->data.texture.constRect.x &&
+            isFirstPlayer) {
           if (i) {
             app->currPlayer->movesLeft--;
           }
-          recalcPlayerPos(app, app->currPlayer, heightMap, 1,
-                          (isFirstPlayer == SDL_TRUE) ? 5 : 8);
           return 2;
         }
       }
@@ -215,8 +231,10 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
 
       recalcPlayerPos(app, app->currPlayer, heightMap, 1,
                       (isFirstPlayer == SDL_TRUE) ? 5 : 8);
+
       SDL_Delay(16);
     }
+
     // if we moved at least a 1 px
     if (i) {
       app->currPlayer->movesLeft--;
@@ -226,16 +244,18 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
     for (; i != 45; ++i) {
       // trying to move forward
       for (int j = 0; j < MAXSTONES; j++) {
-        if (obstacle[j].health == 0 || isFirstPlayer) {
+        if (obstacle[j].health == 0) {
           continue;
         }
         if (app->currPlayer->tankObj->data.texture.constRect.x <=
-            obstacle[j].obstacleObject->data.texture.constRect.x + 100) {
+                obstacle[j].obstacleObject->data.texture.constRect.x +
+                    101 *
+                        cos(DEGTORAD(
+                            obstacle[j].obstacleObject->data.texture.angle)) &&
+            !isFirstPlayer) {
           if (i) {
             app->currPlayer->movesLeft--;
           }
-          recalcPlayerPos(app, app->currPlayer, heightMap, 1,
-                          (isFirstPlayer == SDL_TRUE) ? 5 : 8);
           return 2;
         }
       }

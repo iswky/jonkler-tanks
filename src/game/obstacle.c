@@ -45,7 +45,11 @@ RenderObject* createCloud(App* app, int32_t* heightmap, int32_t startPos,
                              app->scalingFactorY});
   }
   obstacles[MAXSTONES + currCloudCnt].obstacleObject = res;
-  obstacles[MAXSTONES + currCloudCnt].health = 1;
+  if (obstacles[MAXSTONES + currCloudCnt].health < 0) {
+    obstacles[MAXSTONES + currCloudCnt].health += 1337;
+  } else {
+    obstacles[MAXSTONES + currCloudCnt].health = 1;
+  }
 
   return res;
 }
@@ -56,7 +60,12 @@ RenderObject* createStone(App* app, int32_t* heightmap, int32_t startPos,
   int x = getRandomValue(startPos, endPos);
   RenderObject* res = renderStoneWithAngle(app, heightmap, x);
   obstacles[currStoneCnt].obstacleObject = res;
-  obstacles[currStoneCnt].health = 3;
+  if (obstacles[currStoneCnt].health < 0) {
+    // if was loaded -> restoring health
+    obstacles[currStoneCnt].health += 1337;
+  } else {
+    obstacles[currStoneCnt].health = 3;
+  }
   return res;
 }
 
@@ -99,7 +108,8 @@ SDL_bool checkObstacleCollisions(uint32_t currX, uint32_t currY) {
     SDL_Rect obstacleRect = {
         .x = obstacleX, .y = obstacleY, .h = obstacleH, .w = obstacleW};
 
-    if (SDL_PointInRect(&(SDL_Point){currX, currY}, &(obstacleRect))) {
+    if (PointInRotatedRect(&(obstacleRect), &(SDL_Point){currX, currY},
+                           obstacles[i].obstacleObject->data.texture.angle)) {
       obstacles[i].health--;
       if (obstacles[i].health == 0) {
         // hiding destroyed objects

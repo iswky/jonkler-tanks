@@ -7,6 +7,8 @@
 #include <stdio.h>
 
 #include "log/log.h"
+#include "obstacle.h"
+#include "obstacle_struct.h"
 
 void clearSave(App* app) {
   char temp[256];
@@ -61,6 +63,18 @@ void saveCurrentState(App* app, Player* firstPlayer, Player* secondPlayer,
     fprintf(file, "%d\n", heightMap[i]);
   }
 
+  fprintf(file, "ALL:%d\n", MAXSTONES + MAXCLOUDS);
+  for (uint32_t i = 0; i < MAXSTONES + MAXCLOUDS; ++i) {
+    if (obstacles[i].obstacleObject == NULL) {
+      fprintf(file, "nope\n");
+    } else {
+      fprintf(file, "x:%d,y:%d,h:%d\n",
+              obstacles[i].obstacleObject->data.texture.constRect.x,
+              obstacles[i].obstacleObject->data.texture.constRect.y,
+              obstacles[i].health);
+    }
+  }
+
   fclose(file);
 }
 
@@ -70,7 +84,7 @@ int32_t loadSavedState(App* app, Player* firstPlayer, Player* secondPlayer,
                        int32_t* heightMap, uint32_t* seed) {
   char strTemp[256];
 
-  sprintf(strTemp, "%sdata/autosave", app->basePath);
+  snprintf(strTemp, sizeof(strTemp), "%sdata/autosave", app->basePath);
 
   FILE* file = fopen(strTemp, "r");
   if (file == NULL) {
@@ -152,6 +166,27 @@ int32_t loadSavedState(App* app, Player* firstPlayer, Player* secondPlayer,
     if (!fscanf(file, "%d\n", heightMap + i)) return 1;
   }
 
+  if (!fscanf(file, "ALL:%d\n", &temp)) return 1;
+
+  if (temp != MAXSTONES + MAXCLOUDS) return 2;
+  // log_fatal("123");
+  // int32_t xTemp, yTemp, hTemp;
+  // char tempStr[256];
+  // for (int32_t i = 0; i < MAXSTONES + MAXCLOUDS; ++i) {
+  //   if (fgets(tempStr, sizeof(tempStr), file) != NULL) {
+  //     if (strcmp(tempStr, "nope")) {
+  //       obstacles[i].health = 0;
+  //       obstacles[i].obstacleObject = NULL;
+  //     } else {
+  //       sscanf(tempStr, "x:%d,y:%d,h:%d", &xTemp, &yTemp, &hTemp);
+  //       obstacles[i].health = hTemp - 1337;
+  //       obstacles[i].obstacleObject->data.texture.constRect.x = xTemp;
+  //       obstacles[i].obstacleObject->data.texture.constRect.y = yTemp;
+  //     }
+  //   } else {
+  //     return 1;
+  //   }
+  // }
   fclose(file);
   return 0;
 }
