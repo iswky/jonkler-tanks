@@ -356,22 +356,25 @@ static void playMain(App* app, uint32_t SEED) {
   // creating trees with some probability of apearing
   //
   RenderObject* tree1 = createTree(app, heightMap, 100, 150, 10);
-  RenderObject* tree2 = createTree(app, heightMap, 400, 600, 20);
-  RenderObject* tree3 = createTree(app, heightMap, 400, 600, 20);
-  RenderObject* tree4 = createTree(app, heightMap, 400, 600, 20);
+  RenderObject* tree2 = createTree(app, heightMap, 350, 425, 20);
+  RenderObject* tree3 = createTree(app, heightMap, 475, 500, 20);
+  RenderObject* tree4 = createTree(app, heightMap, 525, 540, 20);
   RenderObject* tree5 = createTree(app, heightMap, 850, 950, 10);
 
-  RenderObject* cloud1 = createCloud(app, heightMap, 100, 200, 10);
-  RenderObject* cloud2 = createCloud(app, heightMap, 250, 400, 10);
-  RenderObject* cloud3 = createCloud(app, heightMap, 450, 600, 10);
-  RenderObject* cloud4 = createCloud(app, heightMap, 650, 800, 10);
-  // 999 yeah
-  RenderObject* cloud5 = createCloud(app, heightMap, 850, 950, 10);
+  uint32_t currCnt = 0;
+  // creating clouds
+  RenderObject* cloud1 = createCloud(app, heightMap, 100, 200, 10, currCnt++);
+  RenderObject* cloud2 = createCloud(app, heightMap, 250, 400, 10, currCnt++);
+  RenderObject* cloud3 = createCloud(app, heightMap, 450, 600, 10, currCnt++);
+  RenderObject* cloud4 = createCloud(app, heightMap, 650, 800, 10, currCnt++);
+  RenderObject* cloud5 = createCloud(app, heightMap, 850, 950, 10, currCnt++);
 
+  currCnt = 0;
   // creating stones
-  RenderObject* stone1 = createStone(app, heightMap, 200, 300);
-  RenderObject* stone2 = createStone(
-      app, heightMap, 600, app->screenWidth / app->scalingFactorX - 250);
+  RenderObject* stone1 = createStone(app, heightMap, 200, 300, currCnt++);
+  RenderObject* stone2 =
+      createStone(app, heightMap, 600,
+                  app->screenWidth / app->scalingFactorX - 250, currCnt++);
 
   recalcPlayerPos(app, &firstPlayer, heightMap, 0, 5);
   recalcPlayerPos(app, &secondPlayer, heightMap, 0, 8);

@@ -29,8 +29,8 @@ static RenderObject* renderStoneWithAngle(App* app, int32_t* heightmap,
 
 // create a single cloud with 1 hp and prob. (1-probability)
 RenderObject* createCloud(App* app, int32_t* heightmap, int32_t startPos,
-                          int32_t endPos, int32_t probability) {
-  static uint32_t currCloudsCnt = 0;
+                          int32_t endPos, int32_t probability,
+                          uint32_t currCloudCnt) {
   int imMrKrabsAndILikeMoney = getRandomValue(0, 100);
   RenderObject* res = NULL;
 
@@ -44,22 +44,19 @@ RenderObject* createCloud(App* app, int32_t* heightmap, int32_t startPos,
                          heightmap[(int32_t)((x + 54) * app->scalingFactorX)] /
                              app->scalingFactorY});
   }
-  obstacles[MAXSTONES + currCloudsCnt].obstacleObject = res;
-  obstacles[MAXSTONES + currCloudsCnt].health = 1;
-  currCloudsCnt++;
+  obstacles[MAXSTONES + currCloudCnt].obstacleObject = res;
+  obstacles[MAXSTONES + currCloudCnt].health = 1;
 
   return res;
 }
 
 // create a single stone with 3 hp
 RenderObject* createStone(App* app, int32_t* heightmap, int32_t startPos,
-                          int32_t endPos) {
-  static uint32_t currStonesCnt = 0;
+                          int32_t endPos, uint32_t currStoneCnt) {
   int x = getRandomValue(startPos, endPos);
   RenderObject* res = renderStoneWithAngle(app, heightmap, x);
-  obstacles[currStonesCnt].obstacleObject = res;
-  obstacles[currStonesCnt].health = 3;
-  currStonesCnt++;
+  obstacles[currStoneCnt].obstacleObject = res;
+  obstacles[currStoneCnt].health = 3;
   return res;
 }
 

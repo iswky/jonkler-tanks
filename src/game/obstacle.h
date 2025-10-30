@@ -8,10 +8,11 @@
 #define MAXCLOUDS 5
 
 RenderObject* createCloud(App* app, int32_t* heightmap, int32_t startPos,
-                          int32_t endPos, int32_t probability);
+                          int32_t endPos, int32_t probability,
+                          uint32_t currCloudCnt);
 
 RenderObject* createStone(App* app, int32_t* heightmap, int32_t startPos,
-                          int32_t endPos);
+                          int32_t endPos, uint32_t currStoneCnt);
 
 RenderObject* createTree(App* app, int32_t* heightmap, int32_t startPos,
                          int32_t endPos, int32_t probability);
