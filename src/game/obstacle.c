@@ -24,32 +24,23 @@ static RenderObject* fall(App* app, int32_t* heightmap, int32_t x) {
   return object;
 }
 
-//generate count clouds, coordination_x and create render object for clouds
-void createClouds(App* app, RenderObject* objectsArr[],
-                  SDL_bool* flag_regencloud, int32_t* count_cloud, int32_t* x,
-                  int32_t* heightmap) {
-  // *count_cloud = getRandomValue(0, 6);
-  // log_debug("count cloud = %d", *count_cloud);
-  // for (int i = 0; i < *count_cloud; i++) {
-  //   x[i] = getRandomValue(100, app->screenWidth - 100);
-  // }
+RenderObject* createCloud(App* app, int32_t* heightmap, int32_t startPos,
+                          int32_t endPos, int32_t probability) {
+  int imMrKrabsAndILikeMoney = getRandomValue(0, 100);
+  RenderObject* res = NULL;
 
-  // if (*count_cloud == 0) {
-  //   *flag_regencloud = true;
-  //   return;
-  // }
-  // for (int i = 0; i < *count_cloud; i++) {
-  //   objectsArr[i] = createRenderObject(
-  //       app->renderer, TEXTURE, 1, b_NONE, "media/imgs/cloud.png",
-  //       &(SDL_Point){x[i],
-  //                    -250 + app->screenHeight / app->scalingFactorY -
-  //                        heightmap[(int32_t)(x[i] * app->scalingFactorX)] /
-  //                            app->scalingFactorY});
-  //   x[i] = x[i] + 1;
-  //   if (x[i] > app->screenWidth) {
-  //     *flag_regencloud = true;
-  //   }
-  // }
+  if (imMrKrabsAndILikeMoney > probability) {
+    int x = getRandomValue(startPos, endPos);
+
+    res = createRenderObject(
+        app->renderer, TEXTURE, 1, b_NONE, "media/imgs/cloud.png",
+        &(SDL_Point){x,
+                     -300 + app->screenHeight / app->scalingFactorY -
+                         heightmap[(int32_t)((x + 54) * app->scalingFactorX)] /
+                             app->scalingFactorY});
+  }
+
+  return res;
 }
 
 RenderObject* createStone(App* app, int32_t* heightmap, int32_t startPos,

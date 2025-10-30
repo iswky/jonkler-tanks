@@ -359,28 +359,14 @@ static void playMain(App* app, uint32_t SEED) {
   RenderObject* tree2 = createTree(app, heightMap, 400, 600, 20);
   RenderObject* tree3 = createTree(app, heightMap, 400, 600, 20);
   RenderObject* tree4 = createTree(app, heightMap, 400, 600, 20);
-  RenderObject* tree5 = createTree(
-      app, heightMap, 800, app->screenWidth / app->scalingFactorX - 100, 10);
+  RenderObject* tree5 = createTree(app, heightMap, 850, 999, 10);
 
-  // creating clouds
-  struct objCloud {
-    int32_t count;
-    int32_t x[5];
-  };
-  struct objCloud clouds = {0};
-
-  RenderObject* cloud1 = NULL;
-  RenderObject* cloud2 = NULL;
-  RenderObject* cloud3 = NULL;
-  RenderObject* cloud4 = NULL;
-  RenderObject* cloud5 = NULL;
-  RenderObject* cloudArr[] = {
-      cloud1, cloud2, cloud3, cloud4, cloud5,
-  };
-
-  SDL_bool REMOVETHISSHIT;
-  createClouds(app, cloudArr, &REMOVETHISSHIT, &clouds.count, clouds.x,
-               heightMap);
+  RenderObject* cloud1 = createCloud(app, heightMap, 100, 200, 30);
+  RenderObject* cloud2 = createCloud(app, heightMap, 250, 400, 30);
+  RenderObject* cloud3 = createCloud(app, heightMap, 450, 600, 30);
+  RenderObject* cloud4 = createCloud(app, heightMap, 650, 800, 30);
+  // 999 yeah
+  RenderObject* cloud5 = createCloud(app, heightMap, 850, 999, 30);
 
   // creating stones
   RenderObject* stone1 = createStone(app, heightMap, 200, 300);
@@ -532,6 +518,11 @@ static void playMain(App* app, uint32_t SEED) {
       tree5,
       stone1,
       stone2,
+      cloud1,
+      cloud2,
+      cloud3,
+      cloud4,
+      cloud5,
       bulletPath,
       spreadArea,
       speedLabelObject,
