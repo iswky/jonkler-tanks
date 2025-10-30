@@ -235,7 +235,7 @@ void settingsMain(App* app) {
     pollAllEvents(app);
     // new texture if volume changed
     if (app->settings.currentVolume != prevVolume) {
-      Mix_VolumeMusic(app->settings.currentVolume);
+      Mix_MasterVolume(app->settings.currentVolume);
       prevVolume = app->settings.currentVolume;
     }
 
