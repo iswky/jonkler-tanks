@@ -188,13 +188,17 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
     for (; i != 45; ++i) {
       // trying to move forward
       for (int j = 0; j < MAXSTONES; j++) {
+        if (obstacle[j].health == 0 || !isFirstPlayer) {
+          continue;
+        }
         if ((app->currPlayer->tankObj->data.texture.constRect.x +
              app->currPlayer->tankObj->data.texture.constRect.w - 5) >=
-                obstacle[j].obstacleObject->data.texture.constRect.x &&
-            obstacle[j].health != 0) {
+            obstacle[j].obstacleObject->data.texture.constRect.x) {
           if (i) {
             app->currPlayer->movesLeft--;
           }
+          recalcPlayerPos(app, app->currPlayer, heightMap, 1,
+                          (isFirstPlayer == SDL_TRUE) ? 5 : 8);
           return 2;
         }
       }
@@ -221,13 +225,17 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
     int32_t i = 0;
     for (; i != 45; ++i) {
       // trying to move forward
-      for (int j = 0; j < 4; j++) {
+      for (int j = 0; j < MAXSTONES; j++) {
+        if (obstacle[j].health == 0 || isFirstPlayer) {
+          continue;
+        }
         if (app->currPlayer->tankObj->data.texture.constRect.x <=
-                obstacle[j].obstacleObject->data.texture.constRect.x + 100 &&
-            obstacle[j].health != 0) {
+            obstacle[j].obstacleObject->data.texture.constRect.x + 100) {
           if (i) {
             app->currPlayer->movesLeft--;
           }
+          recalcPlayerPos(app, app->currPlayer, heightMap, 1,
+                          (isFirstPlayer == SDL_TRUE) ? 5 : 8);
           return 2;
         }
       }
@@ -236,18 +244,6 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
           app->currPlayer->movesLeft--;
         }
         return 2;
-      }
-
-      int32_t currPos = app->currPlayer->tankObj->data.texture.constRect.x *
-                        app->scalingFactorX;
-      int32_t currAngle =
-          RADTODEG(atan2(heightMap[currPos + 10] - heightMap[currPos], 10));
-
-      if (currAngle < -60) {
-        if (i) {
-          app->currPlayer->movesLeft--;
-        }
-        return 1;
       }
 
       recalcPlayerPos(app, app->currPlayer, heightMap, -1,
