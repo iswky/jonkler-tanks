@@ -10,7 +10,7 @@
 #include "../SDL/event_handlers.h"
 #include "../SDL/ui_helpers.h"
 
-void helpMain(App* app) {
+static void helpMainInit(App* app, helpMainObjects* objs) {
   // load fonts
   TTF_Font* titleFont = loadMainFont(app, 60);
   TTF_Font* rulesFont = loadMainFont(app, 20);
@@ -19,7 +19,7 @@ void helpMain(App* app) {
   // create title and back button
   RenderObject* rulesTextObj =
       createCenteredText(app, "RULES", titleFont, 24 + 5, COLOR_WHITE);
-  RenderObject* returnArrowObj =
+  objs->returnArrowObj =
       createBackButton(app, titleFont, rulesTextObj->data.texture.constRect.y);
 
   // rules text
@@ -124,17 +124,17 @@ void helpMain(App* app) {
                            aboutTextObj_4->data.texture.constRect.h + 5},
       &(SDL_Color){255, 255, 255, 255});
 
-  RenderObject* objectsArr[] = {rulesTextObj_1, rulesTextObj_2, rulesTextObj_3,
-                                returnArrowObj, rulesTextObj_4, rulesTextObj_5,
-                                rulesTextObj_6, rulesTextObj_7, rulesTextObj_8,
-                                rulesTextObj_9, rulesTextObj,   aboutTextObj,
-                                aboutTextObj_1, aboutTextObj_2, aboutTextObj_3,
-                                aboutTextObj_4, aboutTextObj_5};
+  RenderObject* objectsArr[] = {
+      rulesTextObj_1, rulesTextObj_2, rulesTextObj_3, objs->returnArrowObj,
+      rulesTextObj_4, rulesTextObj_5, rulesTextObj_6, rulesTextObj_7,
+      rulesTextObj_8, rulesTextObj_9, rulesTextObj,   aboutTextObj,
+      aboutTextObj_1, aboutTextObj_2, aboutTextObj_3, aboutTextObj_4,
+      aboutTextObj_5};
 
-  SDL_Texture* textTexture = SDL_CreateTexture(
-      app->renderer, SDL_PIXELFORMAT_BGRA8888, SDL_TEXTUREACCESS_TARGET,
-      app->screenWidth, app->screenHeight);
-  SDL_SetRenderTarget(app->renderer, textTexture);
+  objs->textTexture = SDL_CreateTexture(app->renderer, SDL_PIXELFORMAT_BGRA8888,
+                                        SDL_TEXTUREACCESS_TARGET,
+                                        app->screenWidth, app->screenHeight);
+  SDL_SetRenderTarget(app->renderer, objs->textTexture);
   SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 0);
   SDL_RenderClear(app->renderer);
 
@@ -189,27 +189,40 @@ void helpMain(App* app) {
   freeRenderObject(aboutTextObj_4);
   freeRenderObject(aboutTextObj_5);
 
-  objectsArr[0] = returnArrowObj;
+  TTF_CloseFont(titleFont);
+  TTF_CloseFont(rulesFont);
+  TTF_CloseFont(aboutFont);
+}
+
+inline static void helpMainLoop(App* app, helpMainObjects* objs) {
+  SDL_RenderCopy(app->renderer, objs->textTexture, NULL, NULL);
+}
+
+inline static void helpMainClear(helpMainObjects* objs) {
+  freeRenderObject(objs->returnArrowObj);
+  SDL_DestroyTexture(objs->textTexture);
+}
+
+void helpMain(App* app) {
+  helpMainObjects objs = {0};
+
+  helpMainInit(app, &objs);
+
+  RenderObject* objectsArr[] = {objs.returnArrowObj};
   while (app->currState == HELP) {
     pollAllEvents(app);
     // filling up the background with black color and clearing render
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);
 
-    SDL_RenderCopy(app->renderer, textTexture, NULL, NULL);
+    helpMainLoop(app, &objs);
 
     renderTextures(app, objectsArr, 1, SDL_TRUE);
 
     // rendering
     SDL_RenderPresent(app->renderer);
-
     SDL_Delay(16);
   }
 
-  freeRenderObject(returnArrowObj);
-  SDL_DestroyTexture(textTexture);
-
-  TTF_CloseFont(titleFont);
-  TTF_CloseFont(rulesFont);
-  TTF_CloseFont(aboutFont);
+  helpMainClear(&objs);
 }

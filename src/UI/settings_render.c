@@ -10,224 +10,228 @@
 #include "../SDL/event_handlers.h"
 #include "../SDL/ui_helpers.h"
 #include "../game/settings.h"
-#include "log/log.h"
 
-void settingsMain(App* app) {
-  Mix_VolumeMusic(app->settings.currentVolume);  // set volume
-
+static void settingsMainInit(App* app, settingsMainObjects* objs) {
   // load fonts
-  TTF_Font* mainFont = loadMainFont(app, 40);
-  TTF_Font* titleFont = loadMainFont(app, 50);
-  if (!mainFont || !titleFont) {
-    log_error("error loading fonts");
-    return;
-  }
-
+  objs->mainFont = loadMainFont(app, 40);
+  objs->titleFont = loadMainFont(app, 50);
   // create title
-  RenderObject* settingsTextObj =
-      createCenteredText(app, "SETTINGS", titleFont, 20, COLOR_WHITE);
-
+  objs->settingsTextObj =
+      createCenteredText(app, "SETTINGS", objs->titleFont, 20, COLOR_WHITE);
   // create section labels
   int32_t leftSectionX =
       getCenteredX(app, app->screenWidth / app->scalingFactorX / 2);
   int32_t rightSectionX =
       getCenteredX(app, app->screenWidth / app->scalingFactorX / 2) +
       app->screenWidth / app->scalingFactorX / 2;
-
-  RenderObject* videoTextObj = createLeftAlignedText(
-      app, "VIDEO", mainFont, leftSectionX, 100, COLOR_WHITE);
-  RenderObject* soundTextObj = createLeftAlignedText(
-      app, "SOUND", mainFont, leftSectionX,
+  objs->videoTextObj = createLeftAlignedText(app, "VIDEO", objs->mainFont,
+                                             leftSectionX, 100, COLOR_WHITE);
+  objs->soundTextObj = createLeftAlignedText(
+      app, "SOUND", objs->mainFont, leftSectionX,
       app->screenHeight / app->scalingFactorY / 3 + 10, COLOR_WHITE);
-  RenderObject* weaponsTextObj = createLeftAlignedText(
-      app, "WEAPONS", mainFont, rightSectionX, 100, COLOR_WHITE);
-
+  objs->weaponsTextObj = createLeftAlignedText(app, "WEAPONS", objs->mainFont,
+                                               rightSectionX, 100, COLOR_WHITE);
   // Center headers within their halves
   int32_t wTmp, hTmp;
   int32_t leftCenterX = app->screenWidth / app->scalingFactorX / 4;
   int32_t rightCenterX = app->screenWidth / app->scalingFactorX * 3 / 4;
-
-  SDL_QueryTexture(videoTextObj->data.texture.texture, NULL, NULL, &wTmp,
+  SDL_QueryTexture(objs->videoTextObj->data.texture.texture, NULL, NULL, &wTmp,
                    &hTmp);
-  videoTextObj->data.texture.constRect.x = leftCenterX - wTmp / 2;
-
-  SDL_QueryTexture(soundTextObj->data.texture.texture, NULL, NULL, &wTmp,
+  objs->videoTextObj->data.texture.constRect.x = leftCenterX - wTmp / 2;
+  SDL_QueryTexture(objs->soundTextObj->data.texture.texture, NULL, NULL, &wTmp,
                    &hTmp);
-  soundTextObj->data.texture.constRect.x = leftCenterX - wTmp / 2;
-
-  SDL_QueryTexture(weaponsTextObj->data.texture.texture, NULL, NULL, &wTmp,
-                   &hTmp);
-  weaponsTextObj->data.texture.constRect.x = rightCenterX - wTmp / 2;
-
+  objs->soundTextObj->data.texture.constRect.x = leftCenterX - wTmp / 2;
+  SDL_QueryTexture(objs->weaponsTextObj->data.texture.texture, NULL, NULL,
+                   &wTmp, &hTmp);
+  objs->weaponsTextObj->data.texture.constRect.x = rightCenterX - wTmp / 2;
   // volume label
-  int32_t volumeY = soundTextObj->data.texture.constRect.y +
-                    soundTextObj->data.texture.constRect.h + 10;
-  RenderObject* volumeTextObj = createLeftAlignedText(
-      app, "Volume:", mainFont, leftSectionX, volumeY, COLOR_GRAY);
-  SDL_QueryTexture(volumeTextObj->data.texture.texture, NULL, NULL, &wTmp,
+  int32_t volumeY = objs->soundTextObj->data.texture.constRect.y +
+                    objs->soundTextObj->data.texture.constRect.h + 10;
+  objs->volumeTextObj = createLeftAlignedText(
+      app, "Volume:", objs->mainFont, leftSectionX, volumeY, COLOR_GRAY);
+  SDL_QueryTexture(objs->volumeTextObj->data.texture.texture, NULL, NULL, &wTmp,
                    &hTmp);
-  volumeTextObj->data.texture.constRect.x = leftCenterX - wTmp / 2;
-
+  objs->volumeTextObj->data.texture.constRect.x = leftCenterX - wTmp / 2;
   // back button
-  RenderObject* returnArrowObj = createBackButton(
-      app, titleFont, settingsTextObj->data.texture.constRect.y);
-
+  objs->returnArrowObj = createBackButton(
+      app, objs->titleFont, objs->settingsTextObj->data.texture.constRect.y);
   // volume slider
-  RenderObject* volumeSliderObj = createRenderObject(
+  objs->volumeSliderObj = createRenderObject(
       app->renderer, SLIDER, 1, s_VOLUME,
       &(SDL_Rect){.x = 30,
-                  .y = volumeTextObj->data.texture.constRect.y +
-                       volumeTextObj->data.texture.constRect.h + 20,
+                  .y = objs->volumeTextObj->data.texture.constRect.y +
+                       objs->volumeTextObj->data.texture.constRect.h + 20,
                   .w = 300,
                   .h = 50});
   // Center slider within left half
-  volumeSliderObj->data.texture.constRect.x =
-      leftCenterX - volumeSliderObj->data.texture.constRect.w / 2;
-
+  objs->volumeSliderObj->data.texture.constRect.x =
+      leftCenterX - objs->volumeSliderObj->data.texture.constRect.w / 2;
   // volume increment/decrement triangles
-  RenderObject* volumeDecrTriangleObj = createRenderObject(
+  objs->volumeDecrTriangleObj = createRenderObject(
       app->renderer, TRIANGLE | CAN_BE_TRIGGERED, 1, bT_DECREMENT_VOLUME,
-      &(SDL_Point){volumeSliderObj->data.texture.constRect.x - 30,
-                   volumeSliderObj->data.texture.constRect.y +
-                       volumeSliderObj->data.texture.constRect.h / 2},
-      &(SDL_Point){volumeSliderObj->data.texture.constRect.x - 5,
-                   volumeSliderObj->data.texture.constRect.y + 10},
-      &(SDL_Point){volumeSliderObj->data.texture.constRect.x - 5,
-                   volumeSliderObj->data.texture.constRect.y +
-                       volumeSliderObj->data.texture.constRect.h - 10},
+      &(SDL_Point){objs->volumeSliderObj->data.texture.constRect.x - 30,
+                   objs->volumeSliderObj->data.texture.constRect.y +
+                       objs->volumeSliderObj->data.texture.constRect.h / 2},
+      &(SDL_Point){objs->volumeSliderObj->data.texture.constRect.x - 5,
+                   objs->volumeSliderObj->data.texture.constRect.y + 10},
+      &(SDL_Point){objs->volumeSliderObj->data.texture.constRect.x - 5,
+                   objs->volumeSliderObj->data.texture.constRect.y +
+                       objs->volumeSliderObj->data.texture.constRect.h - 10},
       &(SDL_Color){128, 128, 128, 255}, &(SDL_Color){230, 25, 25, 255});
-
-  RenderObject* volumeIncrTriangleObj = createRenderObject(
+  objs->volumeIncrTriangleObj = createRenderObject(
       app->renderer, TRIANGLE | CAN_BE_TRIGGERED, 1, bT_INCREMENT_VOLUME,
-      &(SDL_Point){volumeSliderObj->data.texture.constRect.x +
-                       volumeSliderObj->data.texture.constRect.w + 30,
-                   volumeSliderObj->data.texture.constRect.y +
-                       volumeSliderObj->data.texture.constRect.h / 2},
-      &(SDL_Point){volumeSliderObj->data.texture.constRect.x +
-                       volumeSliderObj->data.texture.constRect.w + 5,
-                   volumeSliderObj->data.texture.constRect.y + 10},
-      &(SDL_Point){volumeSliderObj->data.texture.constRect.x +
-                       volumeSliderObj->data.texture.constRect.w + 5,
-                   volumeSliderObj->data.texture.constRect.y +
-                       volumeSliderObj->data.texture.constRect.h - 10},
+      &(SDL_Point){objs->volumeSliderObj->data.texture.constRect.x +
+                       objs->volumeSliderObj->data.texture.constRect.w + 30,
+                   objs->volumeSliderObj->data.texture.constRect.y +
+                       objs->volumeSliderObj->data.texture.constRect.h / 2},
+      &(SDL_Point){objs->volumeSliderObj->data.texture.constRect.x +
+                       objs->volumeSliderObj->data.texture.constRect.w + 5,
+                   objs->volumeSliderObj->data.texture.constRect.y + 10},
+      &(SDL_Point){objs->volumeSliderObj->data.texture.constRect.x +
+                       objs->volumeSliderObj->data.texture.constRect.w + 5,
+                   objs->volumeSliderObj->data.texture.constRect.y +
+                       objs->volumeSliderObj->data.texture.constRect.h - 10},
       &(SDL_Color){128, 128, 128, 255}, &(SDL_Color){230, 25, 25, 255});
-
   //
-
-  RenderObject* smallBulletLabel = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_W1, "small bullet", mainFont,
-      &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255},
+  objs->smallBulletLabel = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_W1, "small bullet",
+      objs->mainFont, &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255},
       &(SDL_Color){0, 216, 255, 255});
-  smallBulletLabel->data.texture.constRect.x =
+  objs->smallBulletLabel->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX * 3 / 2 -
-       smallBulletLabel->data.texture.constRect.w) /
+       objs->smallBulletLabel->data.texture.constRect.w) /
       2;
-  smallBulletLabel->data.texture.constRect.y = 175;
-
-  RenderObject* bigBulletLabel = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_W2, "BIG BULLET", mainFont,
-      &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255},
+  objs->smallBulletLabel->data.texture.constRect.y = 175;
+  objs->bigBulletLabel = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_W2, "BIG BULLET",
+      objs->mainFont, &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255},
       &(SDL_Color){0, 100, 255, 255});
-  bigBulletLabel->data.texture.constRect.x =
+  objs->bigBulletLabel->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX * 3 / 2 -
-       bigBulletLabel->data.texture.constRect.w) /
+       objs->bigBulletLabel->data.texture.constRect.w) /
       2;
-  bigBulletLabel->data.texture.constRect.y = 250;
-
-  RenderObject* smallBoomLabel = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_W3, "small boom", mainFont,
-      &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255},
+  objs->bigBulletLabel->data.texture.constRect.y = 250;
+  objs->smallBoomLabel = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_W3, "small boom",
+      objs->mainFont, &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255},
       &(SDL_Color){230, 25, 25, 255});
-  smallBoomLabel->data.texture.constRect.x =
+  objs->smallBoomLabel->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX * 3 / 2 -
-       smallBoomLabel->data.texture.constRect.w) /
+       objs->smallBoomLabel->data.texture.constRect.w) /
       2;
-  smallBoomLabel->data.texture.constRect.y = 325;
-
-  RenderObject* bigBoomLabel = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_W4, "BIG BOOM", mainFont,
-      &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255},
+  objs->smallBoomLabel->data.texture.constRect.y = 325;
+  objs->bigBoomLabel = createRenderObject(
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_W4, "BIG BOOM",
+      objs->mainFont, &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255},
       &(SDL_Color){248, 0, 0, 255});
-  bigBoomLabel->data.texture.constRect.x =
+  objs->bigBoomLabel->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX * 3 / 2 -
-       bigBoomLabel->data.texture.constRect.w) /
+       objs->bigBoomLabel->data.texture.constRect.w) /
       2;
-  bigBoomLabel->data.texture.constRect.y = 400;
-
+  objs->bigBoomLabel->data.texture.constRect.y = 400;
   // checkbox textures
-  SDL_Texture* checkboxText =
-      createTextTexture(app->renderer, mainFont, "[ ]", 128, 128, 128,
+  objs->checkboxText =
+      createTextTexture(app->renderer, objs->mainFont, "[ ]", 128, 128, 128,
                         255);  // checkbox (unchecked)
-  SDL_Texture* checkboxCheckedText =
-      createTextTexture(app->renderer, mainFont, "[X]", 128, 128, 128,
+  objs->checkboxCheckedText =
+      createTextTexture(app->renderer, objs->mainFont, "[X]", 128, 128, 128,
                         255);  // checkbox (checked)
-
   // surfaces for bttns
   SDL_Rect checkboxRect;
   //
-  SDL_QueryTexture(checkboxText, NULL, NULL, &checkboxRect.w, &checkboxRect.h);
-
+  SDL_QueryTexture(objs->checkboxText, NULL, NULL, &checkboxRect.w,
+                   &checkboxRect.h);
   // Fullscreen label
-  RenderObject* fullscreenTextObj = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "Fullscreen", mainFont,
+  objs->fullscreenTextObj = createRenderObject(
+      app->renderer, TEXT, 1, b_NONE, "Fullscreen", objs->mainFont,
       &(SDL_Point){30, 20}, &(SDL_Color){128, 128, 128, 255});
-
-  SDL_QueryTexture(fullscreenTextObj->data.texture.texture, NULL, NULL, &wTmp,
-                   &hTmp);
-  fullscreenTextObj->data.texture.constRect.x =
+  SDL_QueryTexture(objs->fullscreenTextObj->data.texture.texture, NULL, NULL,
+                   &wTmp, &hTmp);
+  objs->fullscreenTextObj->data.texture.constRect.x =
       leftCenterX - wTmp / 2 - checkboxRect.w / 2;
-  fullscreenTextObj->data.texture.constRect.y =
-      videoTextObj->data.texture.constRect.y +
-      videoTextObj->data.texture.constRect.h + 10;
+  objs->fullscreenTextObj->data.texture.constRect.y =
+      objs->videoTextObj->data.texture.constRect.y +
+      objs->videoTextObj->data.texture.constRect.h + 10;
   //
-
-  checkboxRect.x = fullscreenTextObj->data.texture.constRect.x +
-                   fullscreenTextObj->data.texture.constRect.w + 10;
-  checkboxRect.y = fullscreenTextObj->data.texture.constRect.y;
-
-  RenderObject* controlsText = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "CONTROLS", mainFont,
+  checkboxRect.x = objs->fullscreenTextObj->data.texture.constRect.x +
+                   objs->fullscreenTextObj->data.texture.constRect.w + 10;
+  checkboxRect.y = objs->fullscreenTextObj->data.texture.constRect.y;
+  objs->controlsText = createRenderObject(
+      app->renderer, TEXT, 1, b_NONE, "CONTROLS", objs->mainFont,
       &(SDL_Point){0, app->screenHeight / app->scalingFactorY / 3 * 2 + 5},
       &(SDL_Color){255, 255, 255, 255});
-  controlsText->data.texture.constRect.x =
+  objs->controlsText->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX -
-       controlsText->data.texture.constRect.w) /
+       objs->controlsText->data.texture.constRect.w) /
       2;
-
-  RenderObject* controls1Text = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "W/S: change power   ↑/↓: change angle",
-      mainFont,
-      &(SDL_Point){10, controlsText->data.texture.constRect.y +
-                           controlsText->data.texture.constRect.h + 5},
+  objs->controls1Text = createRenderObject(
+      app->renderer, TEXT, 1, b_NONE, "W/S: change power ↑/↓: change angle",
+      objs->mainFont,
+      &(SDL_Point){10, objs->controlsText->data.texture.constRect.y +
+                           objs->controlsText->data.texture.constRect.h + 5},
       &(SDL_Color){128, 128, 128, 255});
-
-  RenderObject* controls2Text = createRenderObject(
-      app->renderer, TEXT, 1, b_NONE, "←/→: move tank          space: shoot",
-      mainFont,
-      &(SDL_Point){10, controls1Text->data.texture.constRect.y +
-                           controls1Text->data.texture.constRect.h + 5},
+  objs->controls2Text = createRenderObject(
+      app->renderer, TEXT, 1, b_NONE, "←/→: move tank space: shoot",
+      objs->mainFont,
+      &(SDL_Point){10, objs->controls1Text->data.texture.constRect.y +
+                           objs->controls1Text->data.texture.constRect.h + 5},
       &(SDL_Color){128, 128, 128, 255});
-
-  RenderObject checkboxFullscreen = {
-      .data.texture.texture =
-          app->settings.isFullscreen ? checkboxCheckedText : checkboxText,
-      .data.texture.triggeredTexture =
-          app->settings.isFullscreen ? checkboxCheckedText : checkboxText,
+  objs->checkboxFullscreen = (RenderObject){
+      .data.texture.texture = app->settings.isFullscreen
+                                  ? objs->checkboxCheckedText
+                                  : objs->checkboxText,
+      .data.texture.triggeredTexture = app->settings.isFullscreen
+                                           ? objs->checkboxCheckedText
+                                           : objs->checkboxText,
       .data.texture.constRect = checkboxRect,
       .data.texture.scaleRect = checkboxRect,
       .canBeTriggered = SDL_TRUE,
       .Zpos = 1,
       .buttonName = b_CHECKBOX_FULLSCREEN,
   };
+  objs->prevVolume = app->settings.currentVolume;
 
+  TTF_CloseFont(objs->mainFont);
+  TTF_CloseFont(objs->titleFont);
+}
+
+inline static void settingsMainClear(settingsMainObjects* objs) {
+  freeRenderObject(objs->soundTextObj);
+  freeRenderObject(objs->settingsTextObj);
+  freeRenderObject(objs->returnArrowObj);
+  freeRenderObject(objs->weaponsTextObj);
+  freeRenderObject(objs->fullscreenTextObj);
+  freeRenderObject(objs->videoTextObj);
+  freeRenderObject(objs->volumeSliderObj);
+  freeRenderObject(objs->volumeTextObj);
+  freeRenderObject(objs->smallBulletLabel);
+  freeRenderObject(objs->bigBulletLabel);
+  freeRenderObject(objs->smallBoomLabel);
+  freeRenderObject(objs->bigBoomLabel);
+  freeRenderObject(objs->controls1Text);
+  freeRenderObject(objs->controls2Text);
+
+  SDL_DestroyTexture(objs->checkboxCheckedText);
+  SDL_DestroyTexture(objs->checkboxText);
+}
+
+void settingsMain(App* app) {
+  Mix_VolumeMusic(app->settings.currentVolume);  // set volume
+
+  settingsMainObjects objs = {0};
+
+  settingsMainInit(app, &objs);
   // render arr
   RenderObject* objectsArr[] = {
-      &checkboxFullscreen,   soundTextObj,          settingsTextObj,
-      returnArrowObj,        smallBulletLabel,      bigBulletLabel,
-      smallBoomLabel,        bigBoomLabel,          weaponsTextObj,
-      fullscreenTextObj,     videoTextObj,          volumeSliderObj,
-      volumeIncrTriangleObj, volumeDecrTriangleObj, volumeTextObj,
-      controlsText,          controls1Text,         controls2Text};
+      &objs.checkboxFullscreen,   objs.soundTextObj,
+      objs.settingsTextObj,       objs.returnArrowObj,
+      objs.smallBulletLabel,      objs.bigBulletLabel,
+      objs.smallBoomLabel,        objs.bigBoomLabel,
+      objs.weaponsTextObj,        objs.fullscreenTextObj,
+      objs.videoTextObj,          objs.volumeSliderObj,
+      objs.volumeIncrTriangleObj, objs.volumeDecrTriangleObj,
+      objs.volumeTextObj,         objs.controlsText,
+      objs.controls1Text,         objs.controls2Text};
 
   int32_t prevVolume = app->settings.currentVolume;
 
@@ -248,18 +252,18 @@ void settingsMain(App* app) {
     SDL_SetRenderDrawColor(app->renderer, 255, 255, 255, 255);
     // vertical line in the middle
     SDL_RenderDrawLine(app->renderer, app->screenWidth / 2,
-                       (settingsTextObj->data.texture.constRect.y +
-                        settingsTextObj->data.texture.constRect.h + 10) *
+                       (objs.settingsTextObj->data.texture.constRect.y +
+                        objs.settingsTextObj->data.texture.constRect.h + 10) *
                            app->scalingFactorY,
                        app->screenWidth / 2, app->screenHeight * 2. / 3);
     // horizontal line under the title
     SDL_RenderDrawLine(app->renderer, 0,
-                       (settingsTextObj->data.texture.constRect.y +
-                        settingsTextObj->data.texture.constRect.h + 10) *
+                       (objs.settingsTextObj->data.texture.constRect.y +
+                        objs.settingsTextObj->data.texture.constRect.h + 10) *
                            app->scalingFactorY,
                        app->screenWidth,
-                       (settingsTextObj->data.texture.constRect.y +
-                        settingsTextObj->data.texture.constRect.h + 10) *
+                       (objs.settingsTextObj->data.texture.constRect.y +
+                        objs.settingsTextObj->data.texture.constRect.h + 10) *
                            app->scalingFactorY);
     // horizontal line in the left part n1
     SDL_RenderDrawLine(app->renderer, 0, app->screenHeight / 3,
@@ -270,10 +274,11 @@ void settingsMain(App* app) {
 
     if (!app->settings.isFullscreen) {
       objectsArr[0]->data.texture.texture =
-          objectsArr[0]->data.texture.triggeredTexture = checkboxText;
+          objectsArr[0]->data.texture.triggeredTexture = objs.checkboxText;
     } else {
       objectsArr[0]->data.texture.texture =
-          objectsArr[0]->data.texture.triggeredTexture = checkboxCheckedText;
+          objectsArr[0]->data.texture.triggeredTexture =
+              objs.checkboxCheckedText;
     }
 
     renderTextures(app, objectsArr, sizeof(objectsArr) / sizeof(*objectsArr),
@@ -283,27 +288,7 @@ void settingsMain(App* app) {
     SDL_Delay(16);
   }
 
-  // clear bttns if exit
-  freeRenderObject(soundTextObj);
-  freeRenderObject(settingsTextObj);
-  freeRenderObject(returnArrowObj);
-  freeRenderObject(weaponsTextObj);
-  freeRenderObject(fullscreenTextObj);
-  freeRenderObject(videoTextObj);
-  freeRenderObject(volumeSliderObj);
-  freeRenderObject(volumeTextObj);
-  freeRenderObject(smallBulletLabel);
-  freeRenderObject(bigBulletLabel);
-  freeRenderObject(smallBoomLabel);
-  freeRenderObject(bigBoomLabel);
-  freeRenderObject(controls1Text);
-  freeRenderObject(controls2Text);
-
-  SDL_DestroyTexture(checkboxCheckedText);
-  SDL_DestroyTexture(checkboxText);
-
-  TTF_CloseFont(mainFont);
-  TTF_CloseFont(titleFont);
+  settingsMainClear(&objs);
 
   // saving settings
   saveSettings(app);

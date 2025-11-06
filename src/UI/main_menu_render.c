@@ -15,19 +15,25 @@
 #include "../math/physics.h"
 #include "log/log.h"
 
-void mainMenu(App* app) {
-  RenderObject* logoObject = createRenderObject(
-      app->renderer, TEXTURE, 2, b_NONE, "media/imgs/logo.png", NULL);
-  logoObject->data.texture.constRect.x =
+inline static void mainMenuInit(App* app, mainMenuObjects* objs) {
+  objs->logoObject = createRenderObject(app->renderer, TEXTURE, 2, b_NONE,
+                                        "media/imgs/logo.png", NULL);
+  objs->logoObject->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX -
-       logoObject->data.texture.constRect.w) /
+       objs->logoObject->data.texture.constRect.w) /
       2;
+}
+
+void mainMenu(App* app) {
+  mainMenuObjects objs = {0};
+
+  mainMenuInit(app, &objs);
 
   // inversed height
   double height = app->screenHeight / 2.;
   double velocity = 1000;
 
-  RenderObject* objectsArr[] = {logoObject};
+  RenderObject* objectsArr[] = {objs.logoObject};
 
   // output 'dropping' logo
   while (simulateFall_1Step(&height, &velocity) != -1 &&
@@ -46,7 +52,7 @@ void mainMenu(App* app) {
   }
 
   if (app->currState == EXIT) {
-    freeRenderObject(logoObject);
+    freeRenderObject(objs.logoObject);
     SDL_Cleanup(app);
     exit(0);
   }
@@ -59,46 +65,64 @@ void mainMenu(App* app) {
   log_info("current state: MENU");
 
   // func will wait untill user do some interactions
-  menuRenderLoop(app, logoObject);
+  menuRenderLoop(app, objs.logoObject);
 
   log_info("success completed state: MENU");
 
   // going back to mainLoop
 }
 
-void menuRenderLoop(App* app, RenderObject* logo) {
-  // loading main font
+inline static void menuRenderLoopInit(App* app, menuRenderLoopObjects* objs) {
   TTF_Font* menuButtonsFont = loadMainFont(app, 80);
 
   // create icon buttons
   int32_t iconY = 6 + ((!app->settings.isFullscreen) ? 24 : 0);
-  RenderObject* infoButtonObj = createRenderObject(
+  objs->infoButtonObj = createRenderObject(
       app->renderer, TEXTURE | CAN_BE_TRIGGERED, 1, b_HELP,
       "media/imgs/helpIco.png",
       &(SDL_Point){app->screenWidth / app->scalingFactorX - 55, iconY});
 
-  RenderObject* leaderboardObj = createRenderObject(
+  objs->leaderboardObj = createRenderObject(
       app->renderer, TEXTURE | CAN_BE_TRIGGERED, 1, b_LEADERBOARDS,
       "media/imgs/trophy.png",
       &(SDL_Point){app->screenWidth / app->scalingFactorX - 55, iconY + 60});
 
   // create menu buttons
-  RenderObject* playTextObj = createCenteredButton(
-      app, "PLAY", menuButtonsFont, 404, COLOR_GRAY, COLOR_RED, b_PLAY);
+  objs->playTextObj = createCenteredButton(app, "PLAY", menuButtonsFont, 404,
+                                           COLOR_GRAY, COLOR_RED, b_PLAY);
 
   // calculate position for settings button
-  int32_t settingsY = 404 + playTextObj->data.texture.constRect.h;
-  RenderObject* settingsTextObj =
+  int32_t settingsY = 404 + objs->playTextObj->data.texture.constRect.h;
+  objs->settingsTextObj =
       createCenteredButton(app, "SETTINGS", menuButtonsFont, settingsY,
                            COLOR_GRAY, COLOR_RED, b_SETTINGS);
 
   // calculate position for quit button
-  int32_t quitY = settingsY + settingsTextObj->data.texture.constRect.h;
-  RenderObject* quitTextObj = createCenteredButton(
-      app, "QUIT", menuButtonsFont, quitY, COLOR_GRAY, COLOR_RED, b_QUIT);
+  int32_t quitY = settingsY + objs->settingsTextObj->data.texture.constRect.h;
+  objs->quitTextObj = createCenteredButton(app, "QUIT", menuButtonsFont, quitY,
+                                           COLOR_GRAY, COLOR_RED, b_QUIT);
+
+  TTF_CloseFont(menuButtonsFont);
+}
+
+inline static void menuRenderLoopClear(menuRenderLoopObjects* objs,
+                                       RenderObject* logo) {
+  freeRenderObject(objs->playTextObj);
+  freeRenderObject(objs->settingsTextObj);
+  freeRenderObject(objs->quitTextObj);
+  freeRenderObject(objs->infoButtonObj);
+  freeRenderObject(objs->leaderboardObj);
+  freeRenderObject(logo);
+}
+
+void menuRenderLoop(App* app, RenderObject* logo) {
+  menuRenderLoopObjects objs = {0};
+  menuRenderLoopInit(app, &objs);
+
   // creting objects arr
-  RenderObject* objectsArr[] = {leaderboardObj,  infoButtonObj, playTextObj,
-                                settingsTextObj, quitTextObj,   logo};
+  RenderObject* objectsArr[] = {objs.leaderboardObj, objs.infoButtonObj,
+                                objs.playTextObj,    objs.settingsTextObj,
+                                objs.quitTextObj,    logo};
 
   uint32_t rgbOffset = 0;
   while (app->currState == MENU) {
@@ -121,16 +145,5 @@ void menuRenderLoop(App* app, RenderObject* logo) {
     SDL_Delay(16);
   }
 
-  // closing font
-  TTF_CloseFont(menuButtonsFont);
-  //
-
-  // destroying textures
-  freeRenderObject(playTextObj);
-  freeRenderObject(settingsTextObj);
-  freeRenderObject(quitTextObj);
-  freeRenderObject(logo);
-  freeRenderObject(infoButtonObj);
-  freeRenderObject(leaderboardObj);
-  //
+  menuRenderLoopClear(&objs, logo);
 }
