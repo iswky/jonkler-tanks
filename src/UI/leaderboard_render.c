@@ -180,8 +180,9 @@ static void addToLeaderBoard(const char* name, int32_t score) {
   fclose(file);
 }
 
-void leaderboardMain(App* app, const char* name) {
-  // loading fonts
+///////////////////////////////////////////////////////////////////////////
+static void leaderboardMainInit(App* app, const char* name,
+                                leaderboardMainObjects* objs) {
   TTF_Font* smallFont = loadSmallFont(app, 30);
   TTF_Font* mainFont = loadMainFont(app, 60);
 
@@ -190,7 +191,7 @@ void leaderboardMain(App* app, const char* name) {
   }
 
   // creating labels
-  RenderObject* leaderboardLabel =
+  objs->leaderboardLabel =
       createCenteredText(app, "LEADERBOARD", mainFont, 20, COLOR_WHITE);
 
   // creating column headers
@@ -202,34 +203,40 @@ void leaderboardMain(App* app, const char* name) {
       getCenteredX(app, app->screenWidth / app->scalingFactorX / 2) +
       app->screenWidth / app->scalingFactorX / 2;
 
-  RenderObject* placeLabel = createLeftAlignedText(app, "PLACE", smallFont,
-                                                   leftColX, 150, COLOR_WHITE);
+  objs->placeLabel = createLeftAlignedText(app, "PLACE", smallFont, leftColX,
+                                           150, COLOR_WHITE);
   // Recalculate X to match row positioning using logical (unscaled) coords
   int32_t tmpW, tmpH;
-  SDL_QueryTexture(placeLabel->data.texture.texture, NULL, NULL, &tmpW, &tmpH);
-  placeLabel->data.texture.constRect.x =
+  SDL_QueryTexture(objs->placeLabel->data.texture.texture, NULL, NULL, &tmpW,
+                   &tmpH);
+  objs->placeLabel->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX / 2 - tmpW) / 2;
-  placeLabel->data.texture.scaleRect.x = placeLabel->data.texture.constRect.x;
-  RenderObject* nameLabel = createLeftAlignedText(app, "NAME", smallFont,
-                                                  centerColX, 150, COLOR_WHITE);
-  SDL_QueryTexture(nameLabel->data.texture.texture, NULL, NULL, &tmpW, &tmpH);
-  nameLabel->data.texture.constRect.x =
+  objs->placeLabel->data.texture.scaleRect.x =
+      objs->placeLabel->data.texture.constRect.x;
+  objs->nameLabel = createLeftAlignedText(app, "NAME", smallFont, centerColX,
+                                          150, COLOR_WHITE);
+  SDL_QueryTexture(objs->nameLabel->data.texture.texture, NULL, NULL, &tmpW,
+                   &tmpH);
+  objs->nameLabel->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX - tmpW) / 2;
-  nameLabel->data.texture.scaleRect.x = nameLabel->data.texture.constRect.x;
-  RenderObject* scoreLabel = createLeftAlignedText(app, "SCORE", smallFont,
-                                                   rightColX, 150, COLOR_WHITE);
-  SDL_QueryTexture(scoreLabel->data.texture.texture, NULL, NULL, &tmpW, &tmpH);
-  scoreLabel->data.texture.constRect.x =
+  objs->nameLabel->data.texture.scaleRect.x =
+      objs->nameLabel->data.texture.constRect.x;
+  objs->scoreLabel = createLeftAlignedText(app, "SCORE", smallFont, rightColX,
+                                           150, COLOR_WHITE);
+  SDL_QueryTexture(objs->scoreLabel->data.texture.texture, NULL, NULL, &tmpW,
+                   &tmpH);
+  objs->scoreLabel->data.texture.constRect.x =
       (app->screenWidth / app->scalingFactorX * 3 / 2 - tmpW) / 2;
-  scoreLabel->data.texture.scaleRect.x = scoreLabel->data.texture.constRect.x;
+  objs->scoreLabel->data.texture.scaleRect.x =
+      objs->scoreLabel->data.texture.constRect.x;
 
   PlayerScore leaderboardArray[10] = {0};
   loadLeaderboardToArray(leaderboardArray);
 
-  SDL_Texture* leaderboard = SDL_CreateTexture(
-      app->renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
-      app->screenWidth, app->screenHeight);
-  SDL_SetRenderTarget(app->renderer, leaderboard);
+  objs->leaderboard = SDL_CreateTexture(app->renderer, SDL_PIXELFORMAT_RGBA8888,
+                                        SDL_TEXTUREACCESS_TARGET,
+                                        app->screenWidth, app->screenHeight);
+  SDL_SetRenderTarget(app->renderer, objs->leaderboard);
   SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 0);
   SDL_RenderClear(app->renderer);
 
@@ -256,11 +263,65 @@ void leaderboardMain(App* app, const char* name) {
 
   SDL_SetRenderTarget(app->renderer, NULL);
 
-  RenderObject* returnArrowObj = createBackButton(
-      app, mainFont, leaderboardLabel->data.texture.constRect.y);
+  objs->returnArrowObj = createBackButton(
+      app, mainFont, objs->leaderboardLabel->data.texture.constRect.y);
 
-  RenderObject* objectsArr[] = {returnArrowObj, leaderboardLabel, placeLabel,
-                                nameLabel, scoreLabel};
+  TTF_CloseFont(smallFont);
+  TTF_CloseFont(mainFont);
+}
+
+inline static void leaderboardMainLoop(App* app, leaderboardMainObjects* objs) {
+  SDL_RenderCopy(app->renderer, objs->leaderboard, NULL, NULL);
+
+  SDL_SetRenderDrawColor(app->renderer, 255, 255, 255, 255);
+  // underscoring place label
+  SDL_RenderDrawLine(
+      app->renderer,
+      objs->placeLabel->data.texture.scaleRect.x - 3 * app->scalingFactorX,
+      objs->placeLabel->data.texture.scaleRect.y +
+          objs->placeLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY,
+      objs->placeLabel->data.texture.scaleRect.x +
+          objs->placeLabel->data.texture.scaleRect.w,
+      objs->placeLabel->data.texture.scaleRect.y +
+          objs->placeLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY);
+  // underscoring score label
+  SDL_RenderDrawLine(
+      app->renderer,
+      objs->scoreLabel->data.texture.scaleRect.x - 3 * app->scalingFactorX,
+      objs->scoreLabel->data.texture.scaleRect.y +
+          objs->scoreLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY,
+      objs->scoreLabel->data.texture.scaleRect.x +
+          objs->scoreLabel->data.texture.scaleRect.w,
+      objs->scoreLabel->data.texture.scaleRect.y +
+          objs->scoreLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY);
+  // underscoring name label
+  SDL_RenderDrawLine(
+      app->renderer,
+      objs->nameLabel->data.texture.scaleRect.x - 3 * app->scalingFactorX,
+      objs->nameLabel->data.texture.scaleRect.y +
+          objs->nameLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY,
+      objs->nameLabel->data.texture.scaleRect.x +
+          objs->nameLabel->data.texture.scaleRect.w,
+      objs->nameLabel->data.texture.scaleRect.y +
+          objs->nameLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY);
+}
+
+inline static void leaderboardMainClear(leaderboardMainObjects* objs) {
+  freeRenderObject(objs->leaderboardLabel);
+  freeRenderObject(objs->placeLabel);
+  freeRenderObject(objs->nameLabel);
+  freeRenderObject(objs->scoreLabel);
+  freeRenderObject(objs->returnArrowObj);
+  SDL_DestroyTexture(objs->leaderboard);
+}
+
+void leaderboardMain(App* app, const char* name) {
+  leaderboardMainObjects objs = {0};
+  leaderboardMainInit(app, name, &objs);
+
+  RenderObject* objectsArr[] = {objs.returnArrowObj, objs.leaderboardLabel,
+                                objs.placeLabel, objs.nameLabel,
+                                objs.scoreLabel};
 
   while (app->currState == LEADERBOARD) {
     pollAllEvents(app);
@@ -268,42 +329,10 @@ void leaderboardMain(App* app, const char* name) {
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);
 
-    SDL_RenderCopy(app->renderer, leaderboard, NULL, NULL);
-
     renderTextures(app, objectsArr, sizeof(objectsArr) / sizeof(*objectsArr),
                    SDL_TRUE);
 
-    SDL_SetRenderDrawColor(app->renderer, 255, 255, 255, 255);
-    // underscoring place label
-    SDL_RenderDrawLine(
-        app->renderer,
-        placeLabel->data.texture.scaleRect.x - 3 * app->scalingFactorX,
-        placeLabel->data.texture.scaleRect.y +
-            placeLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY,
-        placeLabel->data.texture.scaleRect.x +
-            placeLabel->data.texture.scaleRect.w,
-        placeLabel->data.texture.scaleRect.y +
-            placeLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY);
-    // underscoring score label
-    SDL_RenderDrawLine(
-        app->renderer,
-        scoreLabel->data.texture.scaleRect.x - 3 * app->scalingFactorX,
-        scoreLabel->data.texture.scaleRect.y +
-            scoreLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY,
-        scoreLabel->data.texture.scaleRect.x +
-            scoreLabel->data.texture.scaleRect.w,
-        scoreLabel->data.texture.scaleRect.y +
-            scoreLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY);
-    // underscoring name label
-    SDL_RenderDrawLine(
-        app->renderer,
-        nameLabel->data.texture.scaleRect.x - 3 * app->scalingFactorX,
-        nameLabel->data.texture.scaleRect.y +
-            nameLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY,
-        nameLabel->data.texture.scaleRect.x +
-            nameLabel->data.texture.scaleRect.w,
-        nameLabel->data.texture.scaleRect.y +
-            nameLabel->data.texture.scaleRect.h + 3 * app->scalingFactorY);
+    leaderboardMainLoop(app, &objs);
 
     // rendering
     SDL_RenderPresent(app->renderer);
@@ -311,16 +340,11 @@ void leaderboardMain(App* app, const char* name) {
     SDL_Delay(16);
   }
 
-  freeRenderObject(leaderboardLabel);
-  freeRenderObject(placeLabel);
-  freeRenderObject(nameLabel);
-  freeRenderObject(scoreLabel);
-  freeRenderObject(returnArrowObj);
-  SDL_DestroyTexture(leaderboard);
+  leaderboardMainClear(&objs);
 }
 
-void leaderboardAddMain(App* app) {
-  // loading fonts
+//////////////////////////////////////////////////////////////////////////
+static void leaderboardAddMainInit(App* app, leaderboardAddMainObjects* objs) {
   TTF_Font* smallFont = loadSmallFont(app, 30);
   TTF_Font* mainFont = loadMainFont(app, 60);
 
@@ -337,54 +361,53 @@ void leaderboardAddMain(App* app) {
     strcpy(temp, "NO ONE WON!!!");
   }
 
-  RenderObject* wonLabel =
-      createCenteredText(app, temp, mainFont, 60, COLOR_GRAY);
+  objs->wonLabel = createCenteredText(app, temp, mainFont, 60, COLOR_GRAY);
 
-  RenderObject* scoreLabel = NULL;
+  objs->scoreLabel = NULL;
   if (app->winner != 3) {
     snprintf(temp, sizeof(temp), "SCORE: %d",
              app->winnerScore == -1337 ? 0 : app->winnerScore);
-    scoreLabel = createCenteredText(app, temp, mainFont, 150, COLOR_GRAY);
+    objs->scoreLabel = createCenteredText(app, temp, mainFont, 150, COLOR_GRAY);
   }
 
-  RenderObject* enterNameLabel = NULL;
+  objs->enterNameLabel = NULL;
 
-  RenderObject* nameInput = NULL;
+  objs->nameInput = NULL;
 
-  RenderObject* placeLabel = NULL;
+  objs->placeLabel = NULL;
 
-  int32_t placeInTable = findPlaceInLeaderboard(app->winnerScore);
+  objs->placeInTable = findPlaceInLeaderboard(app->winnerScore);
 
   // if player in the top 10 in the leaderboard
-  if (placeInTable != -1) {
-    enterNameLabel = createRenderObject(
+  if (objs->placeInTable != -1) {
+    objs->enterNameLabel = createRenderObject(
         app->renderer, TEXT, 0, b_NONE, "Enter ur name:", smallFont,
         &(SDL_Point){0, 0}, &(SDL_Color){128, 128, 128, 255});
-    enterNameLabel->data.texture.constRect.x =
+    objs->enterNameLabel->data.texture.constRect.x =
         (app->screenWidth / app->scalingFactorX -
-         enterNameLabel->data.texture.constRect.w) /
+         objs->enterNameLabel->data.texture.constRect.w) /
         2;
-    enterNameLabel->data.texture.constRect.y = 300;
+    objs->enterNameLabel->data.texture.constRect.y = 300;
 
-    nameInput = createRenderObject(
+    objs->nameInput = createRenderObject(
         app->renderer, TEXT_INPUT, 1, bTI_NAME,
-        &(SDL_Rect){enterNameLabel->data.texture.constRect.x - 80,
-                    enterNameLabel->data.texture.constRect.y +
-                        enterNameLabel->data.texture.constRect.h,
+        &(SDL_Rect){objs->enterNameLabel->data.texture.constRect.x - 80,
+                    objs->enterNameLabel->data.texture.constRect.y +
+                        objs->enterNameLabel->data.texture.constRect.h,
                     400, 50},
         15, 9, smallFont);
 
     snprintf(temp, sizeof(temp), "YOU'RE RANKED #%d on the leaderboard",
-             placeInTable);
+             objs->placeInTable);
 
-    placeLabel = createRenderObject(app->renderer, TEXT, 0, b_NONE, temp,
-                                    smallFont, &(SDL_Point){0, 0},
-                                    &(SDL_Color){128, 128, 128, 255});
-    placeLabel->data.texture.constRect.x =
+    objs->placeLabel = createRenderObject(app->renderer, TEXT, 0, b_NONE, temp,
+                                          smallFont, &(SDL_Point){0, 0},
+                                          &(SDL_Color){128, 128, 128, 255});
+    objs->placeLabel->data.texture.constRect.x =
         (app->screenWidth / app->scalingFactorX -
-         placeLabel->data.texture.constRect.w) /
+         objs->placeLabel->data.texture.constRect.w) /
         2;
-    placeLabel->data.texture.constRect.y = 250;
+    objs->placeLabel->data.texture.constRect.y = 250;
   }
 
   RenderObject* continueButton = createRenderObject(
@@ -397,8 +420,35 @@ void leaderboardAddMain(App* app) {
       2;
   continueButton->data.texture.constRect.y = 670;
 
-  RenderObject* objectsArr[] = {wonLabel,  scoreLabel, enterNameLabel,
-                                nameInput, placeLabel, continueButton};
+  TTF_CloseFont(smallFont);
+  TTF_CloseFont(mainFont);
+}
+
+inline static void leaderboardAddMainClear(App* app,
+                                           leaderboardAddMainObjects* objs,
+                                           char* temp) {
+  if (objs->placeInTable != -1) {
+    strcpy(temp, objs->nameInput->data.textInputLine.savedText);
+    freeRenderObject(objs->enterNameLabel);
+    SDL_DestroyTexture(objs->nameInput->data.textInputLine.textTexture);
+    free(objs->nameInput);
+    freeRenderObject(objs->placeLabel);
+  } else {
+    memset(temp, 0x00, 256);
+  }
+
+  freeRenderObject(objs->wonLabel);
+  freeRenderObject(objs->scoreLabel);
+  freeRenderObject(objs->continueButton);
+}
+
+void leaderboardAddMain(App* app) {
+  leaderboardAddMainObjects objs = {0};
+  leaderboardAddMainInit(app, &objs);
+
+  RenderObject* objectsArr[] = {objs.wonLabel,       objs.scoreLabel,
+                                objs.enterNameLabel, objs.nameInput,
+                                objs.placeLabel,     objs.continueButton};
 
   while (app->currState == LEADERBOARD_ADD) {
     pollAllEvents(app);
@@ -415,19 +465,11 @@ void leaderboardAddMain(App* app) {
     SDL_Delay(16);
   }
 
-  if (placeInTable != -1) {
-    strcpy(temp, nameInput->data.textInputLine.savedText);
-    freeRenderObject(enterNameLabel);
-    SDL_DestroyTexture(nameInput->data.textInputLine.textTexture);
-    free(nameInput);
-    freeRenderObject(placeLabel);
-  } else {
-    memset(temp, 0x00, 256);
-  }
+  char temp[256];
 
-  freeRenderObject(wonLabel);
-  freeRenderObject(scoreLabel);
-  freeRenderObject(continueButton);
+  leaderboardAddMainClear(app, &objs, temp);
 
   leaderboardMain(app, temp);
 }
+
+/////////////////////////////////////////////////////////////////////////////
