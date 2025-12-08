@@ -17,6 +17,7 @@ struct paramsStruct {
   SDL_bool* regenMap;
   SDL_bool* recalcBulletPath;
   SDL_bool* hideBulletPath;
+  SDL_bool* isSpinning;
   struct UpdateConditions* updateConditions;
   uint32_t mapSeed;
 };
@@ -81,6 +82,13 @@ struct playMainObjects {
   RenderObject* p1ShieldIcon;
   RenderObject* p2DoubleDmgIcon;
   RenderObject* p2ShieldIcon;
+
+  RenderObject* eventSpinText;
+  SDL_bool showEventSpin;
+  SDL_bool resultShown;
+  SDL_bool isSpinning;
+  uint32_t eventSpinStartTime;
+  Player* oldCurrPlayer;
 };
 
 typedef struct PreGameMainObjects {
