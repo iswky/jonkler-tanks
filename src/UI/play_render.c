@@ -22,6 +22,26 @@
 #include "../math/rand.h"
 #include "log/log.h"
 
+enum RandomEvent {
+  EVENT_NONE = 0,
+  EVENT_SHIELD,
+  EVENT_DOUBLE_DAMAGE,
+  EVENT_BROKEN_WEAPON,
+};
+
+static enum RandomEvent generateRandomEvent(void) {
+  int32_t roll = getRandomValue(1, 100);
+  if (roll <= 55) {
+    return EVENT_NONE;
+  } else if (roll <= 70) {
+    return EVENT_SHIELD;
+  } else if (roll <= 85) {
+    return EVENT_DOUBLE_DAMAGE;
+  } else {
+    return EVENT_BROKEN_WEAPON;
+  }
+}
+
 static void playMain(App* app, uint32_t SEED);
 
 static void renderMap(SDL_Renderer* renderer, int32_t* heightmap,
@@ -65,6 +85,85 @@ static SDL_Texture* saveRenderMapToTexture(SDL_Renderer* renderer,
 //////////////////////////////////////////////////////////////////////
 static void playMainLoop(App* app, struct playMainObjects* objs) {
   char temp[256];
+
+  if (app->currPlayer != objs->oldCurrPlayer) {
+    objs->oldCurrPlayer = app->currPlayer;
+    objs->showEventSpin = SDL_TRUE;
+    objs->resultShown = SDL_FALSE;
+    objs->eventSpinStartTime = SDL_GetTicks();
+    objs->isSpinning = SDL_TRUE;
+    objs->eventSpinText->disableRendering = SDL_FALSE;
+
+    app->currPlayer->buffs.isDoubleDamage = SDL_FALSE;
+    app->currPlayer->buffs.isShielded = SDL_FALSE;
+    app->currPlayer->buffs.weaponIsBroken = SDL_FALSE;
+  }
+
+  if (objs->isSpinning) {
+    uint32_t currentTime = SDL_GetTicks();
+    uint32_t elapsed = currentTime - objs->eventSpinStartTime;
+    const uint32_t EVENT_SPIN_DURATION = 1500;  // 1.5 seconds
+
+    if (elapsed < EVENT_SPIN_DURATION) {
+      if (objs->showEventSpin) {
+        SDL_DestroyTexture(objs->eventSpinText->data.texture.texture);
+        objs->eventSpinText->data.texture.texture = createTextTexture(
+            app->renderer, objs->smallFont, "Spinning...", 255, 255, 0, 255);
+        SDL_QueryTexture(objs->eventSpinText->data.texture.texture, NULL, NULL,
+                         &objs->eventSpinText->data.texture.constRect.w,
+                         &objs->eventSpinText->data.texture.constRect.h);
+        objs->eventSpinText->data.texture.constRect.x =
+            (app->screenWidth / app->scalingFactorX -
+             objs->eventSpinText->data.texture.constRect.w) /
+            2;
+        objs->eventSpinText->disableRendering = SDL_FALSE;
+        objs->showEventSpin = SDL_FALSE;
+      }
+    } else if (elapsed < EVENT_SPIN_DURATION + 1000) {
+      if (!objs->resultShown) {
+        enum RandomEvent currentEvent = generateRandomEvent();
+        const char* eventText = "";
+        SDL_Color eventColor = {255, 255, 255, 255};
+        switch (currentEvent) {
+          case EVENT_NONE:
+            eventText = "No event";
+            eventColor = (SDL_Color){128, 128, 128, 255};
+            break;
+          case EVENT_SHIELD:
+            eventText = "Shield activated!";
+            eventColor = (SDL_Color){0, 255, 255, 255};
+            app->currPlayer->buffs.isShielded = SDL_TRUE;
+            break;
+          case EVENT_DOUBLE_DAMAGE:
+            eventText = "Double damage!";
+            eventColor = (SDL_Color){255, 0, 0, 255};
+            app->currPlayer->buffs.isDoubleDamage = SDL_TRUE;
+            break;
+          case EVENT_BROKEN_WEAPON:
+            eventText = "Weapon broken!";
+            eventColor = (SDL_Color){255, 165, 0, 255};
+            app->currPlayer->buffs.weaponIsBroken = SDL_TRUE;
+            break;
+        }
+        SDL_DestroyTexture(objs->eventSpinText->data.texture.texture);
+        objs->eventSpinText->data.texture.texture = createTextTexture(
+            app->renderer, objs->smallFont, eventText, eventColor.r,
+            eventColor.g, eventColor.b, eventColor.a);
+        SDL_QueryTexture(objs->eventSpinText->data.texture.texture, NULL, NULL,
+                         &objs->eventSpinText->data.texture.constRect.w,
+                         &objs->eventSpinText->data.texture.constRect.h);
+        objs->eventSpinText->data.texture.constRect.x =
+            (app->screenWidth / app->scalingFactorX -
+             objs->eventSpinText->data.texture.constRect.w) /
+            2;
+        objs->resultShown = SDL_TRUE;
+      }
+    } else {
+      objs->eventSpinText->disableRendering = SDL_TRUE;
+      objs->isSpinning = SDL_FALSE;
+      objs->resultShown = SDL_FALSE;
+    }
+  }
 
   // regenin' map if needed
   if (objs->regenMap) {
@@ -243,6 +342,7 @@ inline static void playMainClear(App* app, struct playMainObjects* objs) {
   freeRenderObject(objs->p1ShieldIcon);
   freeRenderObject(objs->p2DoubleDmgIcon);
   freeRenderObject(objs->p2ShieldIcon);
+  freeRenderObject(objs->eventSpinText);
   freeRenderObject(objs->bulletPath);
   freeRenderObject(objs->spreadArea);
   freeRenderObject(objs->speedLabelObject);
@@ -340,13 +440,13 @@ static void playMain(App* app, uint32_t SEED) {
       x2 = app->screenWidth / app->scalingFactorX - 44 - 20;
       app->timesPlayed = 0;
     }
-    // default buffs state (enabled by default)
-    objs->firstPlayer.buffs.weaponIsBroken = SDL_TRUE;
+    // default buffs state (disabled by default)
+    objs->firstPlayer.buffs.weaponIsBroken = SDL_FALSE;
     objs->firstPlayer.buffs.isDoubleDamage = SDL_FALSE;
     objs->firstPlayer.buffs.isShielded = SDL_FALSE;
-    objs->secondPlayer.buffs.weaponIsBroken = SDL_TRUE;
-    objs->secondPlayer.buffs.isDoubleDamage = SDL_TRUE;
-    objs->secondPlayer.buffs.isShielded = SDL_TRUE;
+    objs->secondPlayer.buffs.weaponIsBroken = SDL_FALSE;
+    objs->secondPlayer.buffs.isDoubleDamage = SDL_FALSE;
+    objs->secondPlayer.buffs.isShielded = SDL_FALSE;
     // height map will contain the 'base' for map (for rendering different
     // colors)
     objs->gameMap = saveRenderMapToTexture(app->renderer, app->screenWidth,
@@ -522,6 +622,7 @@ static void playMain(App* app, uint32_t SEED) {
         .recalcBulletPath = &objs->recalcBulletPath,
         .updateConditions = &objs->updateConditions,
         .hideBulletPath = &objs->hideBulletPath,
+        .isSpinning = &objs->isSpinning,
         .mapSeed = objs->mapSeed,
     };
     // creating trees with some probability of apearing
@@ -649,6 +750,24 @@ static void playMain(App* app, uint32_t SEED) {
           app->screenWidth / app->scalingFactorX -
           objs->currentPlayerInfo->data.texture.constRect.w - 10;
     }
+
+    // Random event spin display
+    objs->eventSpinText = createRenderObject(
+        app->renderer, TEXT, 1, b_NONE, "Spinning...", objs->smallFont,
+        &(SDL_Point){0, 0}, &(SDL_Color){255, 255, 0, 255});
+    objs->eventSpinText->data.texture.constRect.x =
+        (app->screenWidth / app->scalingFactorX -
+         objs->eventSpinText->data.texture.constRect.w) /
+        2;
+    objs->eventSpinText->data.texture.constRect.y = 150;
+    objs->eventSpinText->disableRendering = SDL_TRUE;
+
+    // Initialize random events fields
+    objs->showEventSpin = SDL_FALSE;
+    objs->resultShown = SDL_FALSE;
+    objs->isSpinning = SDL_FALSE;
+    objs->eventSpinStartTime = 0;
+    objs->oldCurrPlayer = app->currPlayer;
   }
 
   RenderObject* objectsArr[] = {
@@ -685,6 +804,7 @@ static void playMain(App* app, uint32_t SEED) {
       objs->spreadArea,
       objs->speedLabelObject,
       objs->directionIconObject,
+      objs->eventSpinText,
   };
 
   while (app->currState == PLAY) {
