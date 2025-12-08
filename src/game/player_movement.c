@@ -451,6 +451,7 @@ int32_t playerMove(void* data) {
     SDL_bool* regenMap;
     SDL_bool* recalcBulletPath;
     SDL_bool* hideBulletPath;
+    SDL_bool* isSpinning;
     struct UpdateConditions* updateConditions;
     uint32_t mapSeed;
   };
@@ -466,6 +467,7 @@ int32_t playerMove(void* data) {
   SDL_bool* regenMap = params->regenMap;
   SDL_bool* recalcBulletPath = params->recalcBulletPath;
   SDL_bool* hideBulletPath = params->hideBulletPath;
+  SDL_bool* isSpinning = params->isSpinning;
   uint32_t mapSeed = params->mapSeed;
   struct UpdateConditions* updateConditions = params->updateConditions;
 
@@ -473,6 +475,8 @@ int32_t playerMove(void* data) {
     SDL_Delay(16);
     // skipping if player is in animation
     if (app->currPlayer->inAnimation) continue;
+    // blocking input during event spin
+    if (*isSpinning) continue;
     // each player shot 12 times => game is over rn
     if (app->timesPlayed >= 24) {
       SDL_Delay(1500);
