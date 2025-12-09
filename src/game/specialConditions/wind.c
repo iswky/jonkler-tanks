@@ -80,7 +80,7 @@ void updateWind(App* app) {
 }
 
 // function returns wind strange in range [*p_min, *p_max]
-void getWindRange(App* app, int* p_min, int* p_max) {
+void getWindRange(App* app, int32_t* p_min, int32_t* p_max) {
   if (p_min == NULL || p_max == NULL) {
     return;
   }
