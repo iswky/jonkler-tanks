@@ -1,6 +1,8 @@
 #ifndef WIND_STRUCT_H
 #define WIND_STRUCT_H
 
+#include <stdint.h>
+
 // struct describing possible wind directions
 // excluding S and N cuz it would be strange
 // when bullet flies straight down or up
@@ -20,8 +22,8 @@ typedef struct {
   struct RenderObject* directionIcon;
   struct RenderObject* speedLabel;
   struct {
-    int min;
-    int max;
+    int32_t min;
+    int32_t max;
   } windStrengthRange;
 } Wind;
 
