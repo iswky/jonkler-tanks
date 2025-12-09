@@ -2,7 +2,7 @@
 
 ## Key Functions for Bot Implementation
 
-The bot in Jonkler Tanks is implemented through the `botMain` function, which is called when a bot is active in the game. This function is where the bot's behavior logic should be defined. **Also checkout `src/game/bot.c` and `src/game/math.c` for more details**. Below are the key functions available for controlling the bot:
+The bot in Jonkler Tanks is implemented through the `botMain` function, which is called when a bot is active in the game. This function is where the bot's behavior logic should be defined. **Also checkout `src/game/bot.c` and `src/game/math.c` and many others for more details**. Below are the key functions available for controlling the bot:
 
 1. **shoot**  
    Performs a shot. Use this function to enable the bot to attack.
@@ -35,10 +35,13 @@ The bot in Jonkler Tanks is implemented through the `botMain` function, which is
    - Choose the optimal angle and power for shots.
    - Move to dodge shots or take advantageous positions.
 
-2. **Implement Logic in `botMain`**  
-   In the `botMain` function, define the bot's core logic. For example:
+2. **Implement Logic in `bot(1/2/3)Main`**  
+   In the `bot(1/2/3)Main` function, define the bot's core logic. For example:
    - Use `calcHitPosition` to check where the projectile will land with current parameters.
    - Call `smoothChangeAngle` and `smoothChangePower` to adjust the angle and power of the shot.
    - Use `smoothMove` to move the tank.
    - Call `shoot` when the bot is ready to fire.
    - Call `recalcPlayerPos` after any map changes (e.g., after a shot).
+   - Call `getWindRange` to get current wind possible strength range.
+   - Call `getWindDir` to get current wind dir.
+   Bot main loop functions r in `src/game/customBots/bot(1/2/3).(c/h)` 

@@ -565,14 +565,14 @@ static void playMain(App* app, uint32_t SEED) {
         case b_P1Player:
           objs->firstPlayer.type = MONKE;
           break;
-        case b_P1Easy:
-          objs->firstPlayer.type = EASY;
+        case b_P1BOT1:
+          objs->firstPlayer.type = BOT1;
           break;
-        case b_P1Normal:
-          objs->firstPlayer.type = NORMAL;
+        case b_P1BOT2:
+          objs->firstPlayer.type = BOT2;
           break;
-        case b_P1Hard:
-          objs->firstPlayer.type = HARD;
+        case b_P1BOT3:
+          objs->firstPlayer.type = BOT3;
           break;
         default:
           break;
@@ -589,14 +589,14 @@ static void playMain(App* app, uint32_t SEED) {
         case b_P2Player:
           objs->secondPlayer.type = MONKE;
           break;
-        case b_P2Easy:
-          objs->secondPlayer.type = EASY;
+        case b_P2BOT1:
+          objs->secondPlayer.type = BOT1;
           break;
-        case b_P2Normal:
-          objs->secondPlayer.type = NORMAL;
+        case b_P2BOT2:
+          objs->secondPlayer.type = BOT2;
           break;
-        case b_P2Hard:
-          objs->secondPlayer.type = HARD;
+        case b_P2BOT3:
+          objs->secondPlayer.type = BOT3;
           break;
         default:
           break;
@@ -918,7 +918,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // easy diff
   objs->Player1Diff_bE = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Easy, "BOT1", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1BOT1, "BOT1", smallFont,
       &(SDL_Point){0, objs->Player1Diff_p->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
@@ -929,7 +929,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // normal diff
   objs->Player1Diff_bN = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Normal, "BOT2", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1BOT2, "BOT2", smallFont,
       &(SDL_Point){0, objs->Player1Diff_bE->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
@@ -940,7 +940,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // hard diff
   objs->Player1Diff_bH = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Hard, "BOT3", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1BOT3, "BOT3", smallFont,
       &(SDL_Point){0, objs->Player1Diff_bN->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
@@ -974,7 +974,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // easy diff
   objs->Player2Diff_bE = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Easy, "BOT1", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2BOT1, "BOT1", smallFont,
       &(SDL_Point){0, objs->Player2Diff_p->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
@@ -985,7 +985,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // normal diff
   objs->Player2Diff_bN = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Normal, "BOT2", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2BOT2, "BOT2", smallFont,
       &(SDL_Point){0, objs->Player2Diff_bE->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
@@ -996,7 +996,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // hard diff
   objs->Player2Diff_bH = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Hard, "BOT3", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2BOT3, "BOT3", smallFont,
       &(SDL_Point){0, objs->Player2Diff_bN->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 

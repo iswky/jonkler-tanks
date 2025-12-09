@@ -8,13 +8,19 @@
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
 
+#include <log/log.h>
+
 #include "../math/math.h"
 #include "../math/rand.h"
-#include "log/log.h"
 #include "obstacle.h"
 #include "player_movement.h"
 
-// this func decide what option is the best
+// custom bots should be included here
+#include "customBots/bot1.h"
+#include "customBots/bot2.h"
+#include "customBots/bot3.h"
+
+// BOT FUNC BEFORE ANY REWORKS
 static int32_t calcBestOption(App* app, Player* firstPlayer,
                               Player* secondPlayer, int32_t* heightMap,
                               RenderObject* projectile, RenderObject* explosion,
@@ -196,38 +202,15 @@ static int32_t calcBestOption(App* app, Player* firstPlayer,
   if (hitPos >= leftCorner && hitPos <= rightCorner && isHittableNearby) {
     log_info("[bot] bot found a move(nearby hit) to shoot at %d", hitPos);
 
-    if (playerType == NORMAL || playerType == EASY) {
-      if (isMissingShot) {
-        int32_t newAngle = app->currPlayer->gunAngle + getRandomValue(4, 7);
-        int32_t newPower = app->currPlayer->firingPower + getRandomValue(4, 7);
+    log_info("[bot] SHOOT!");
 
-        if (newAngle < 0) {
-          newAngle = 0;
-        } else if (newAngle > 120) {
-          newAngle = 120;
-        }
-        if (newPower < 1) {
-          newPower = 1;
-        }
-        if (newPower > 100) {
-          newPower = 100;
-        }
-
-        smoothChangeAngle(app->currPlayer, newAngle, &app->currState,
-                          recalcBulletPath);
-        smoothChangePower(app->currPlayer, newPower, &app->currState,
-                          recalcBulletPath);
-      }
-      log_info("[bot] SHOOT!");
-
-      shoot(app, firstPlayer, secondPlayer, projectile, explosion, heightMap,
-            regenMap);
-      recalcPlayerPos(app, firstPlayer, heightMap, 0, 5);
-      recalcPlayerPos(app, secondPlayer, heightMap, 0, 8);
-      return 0;
-    } else {
-      log_info("[bot] trying to find a better move!");
-    }
+    shoot(app, firstPlayer, secondPlayer, projectile, explosion, heightMap,
+          regenMap);
+    recalcPlayerPos(app, firstPlayer, heightMap, 0, 5);
+    recalcPlayerPos(app, secondPlayer, heightMap, 0, 8);
+    return 0;
+  } else {
+    log_info("[bot] trying to find a better move!");
   }
 
   log_info("[bot] bot found only a poopy doopy move to shoot at %d", hitPos);
@@ -329,26 +312,23 @@ void botMain(App* app, Player* player1, Player* player2, int32_t* heightMap,
   initGunAngle = 360 - normalizeAngle(initGunAngle);
 
   switch (playerType) {
-    case EASY:
-      while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, recalcBulletPath, 55,
-                            initGunAngle, playerType) &&
-             app->currState == PLAY);
+#ifdef BOT1_ADDED
+    case BOT1:
+      bot1Main();
       break;
-    case NORMAL:
-      while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, recalcBulletPath, 77,
-                            initGunAngle, playerType) &&
-             app->currState == PLAY);
+#endif
+#ifdef BOT2_ADDED
+    case BOT2:
+      bot2Main();
       break;
-    case HARD:
-      while (calcBestOption(app, player1, player2, heightMap, projectile,
-                            explosion, regenMap, recalcBulletPath, 90,
-                            initGunAngle, playerType) &&
-             app->currState == PLAY);
+#endif
+#ifdef BOT3_ADDED
+    case BOT3:
+      bot3Main();
       break;
+#endif
     default:
-      log_info("[bot] default actiton for bot");
+      log_info("[bot] default actiton for bot func");
       break;
   }
 }

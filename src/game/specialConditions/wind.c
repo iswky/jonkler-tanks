@@ -79,6 +79,10 @@ void updateWind(App* app) {
   updateWindSpeedLabel(app, wind->speedLabel, wind->windStrength);
 }
 
+enum WindDirection getWindDir(App* app) {
+  return app->globalConditions.wind.windDirection;
+}
+
 // function returns wind strange in range [*p_min, *p_max]
 void getWindRange(App* app, int32_t* p_min, int32_t* p_max) {
   if (p_min == NULL || p_max == NULL) {
