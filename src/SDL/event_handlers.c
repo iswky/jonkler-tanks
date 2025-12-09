@@ -113,15 +113,15 @@ static void LMBReleaseHandle(App* app) {
       wasTriggeredObjTriggered = SDL_TRUE;
       break;
     case b_P1Player:
-    case b_P1Easy:
-    case b_P1Normal:
-    case b_P1Hard:
+    case b_P1BOT1:
+    case b_P1BOT2:
+    case b_P1BOT3:
       app->p1Diff = app->buttonPosTriggered;
       break;
     case b_P2Player:
-    case b_P2Easy:
-    case b_P2Normal:
-    case b_P2Hard:
+    case b_P2BOT1:
+    case b_P2BOT2:
+    case b_P2BOT3:
       app->p2Diff = app->buttonPosTriggered;
       break;
     case b_W1:
