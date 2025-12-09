@@ -19,6 +19,10 @@ typedef struct {
 
   struct RenderObject* directionIcon;
   struct RenderObject* speedLabel;
+  struct {
+    int min;
+    int max;
+  } windStrengthRange;
 } Wind;
 
 #endif

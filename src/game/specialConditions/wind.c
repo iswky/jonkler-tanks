@@ -44,6 +44,13 @@ static void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
 
   maxWindSpeedLabel = MAX(ceil(windStrength) + getRandomValue(0, 1), 1);
 
+  if (minWindSpeedLabel == maxWindSpeedLabel) {
+    maxWindSpeedLabel++;
+  }
+
+  app->globalConditions.wind.windStrengthRange.min = minWindSpeedLabel;
+  app->globalConditions.wind.windStrengthRange.max = maxWindSpeedLabel;
+
   char temp[16];
   snprintf(temp, 16, "%d - %d m/s", minWindSpeedLabel % 20,
            maxWindSpeedLabel % 20);
@@ -63,11 +70,21 @@ static void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
 void updateWind(App* app) {
   Wind* wind = &app->globalConditions.wind;
 
-  wind->windStrength = getRandomValue(10, 100) / 10.;
+  const int windStrengthMult = 2;
+
+  wind->windStrength = (getRandomValue(10, 100) / 10.) * windStrengthMult;
   wind->windDirection = getRandomValue(0, 6);
 
   updateWindDirectionIcon(wind->directionIcon, wind->windDirection);
   updateWindSpeedLabel(app, wind->speedLabel, wind->windStrength);
+}
 
-  wind->windStrength *= 2;
+// function returns wind strange in range [*p_min, *p_max]
+void getWindRange(App* app, int* p_min, int* p_max) {
+  if (p_min == NULL || p_max == NULL) {
+    return;
+  }
+
+  *p_min = app->globalConditions.wind.windStrengthRange.min;
+  *p_max = app->globalConditions.wind.windStrengthRange.max;
 }
