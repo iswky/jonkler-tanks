@@ -154,6 +154,7 @@ typedef struct Player {
   double gunAngle;
   RenderObject* tankGunObj;
   int32_t score;
+  int32_t health;
 
   int32_t movesLeft;
 

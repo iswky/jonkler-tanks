@@ -15,6 +15,7 @@
 #include "log/log.h"
 #include "obstacle.h"
 #include "player_movement.h"
+#include "specialConditions/wind.h"
 
 #include "customBots/bot1.h"
 #include "customBots/bot2.h"

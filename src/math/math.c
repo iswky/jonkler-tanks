@@ -7,6 +7,8 @@
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
 
+#include <log/log.h>
+
 #include "../game/obstacle.h"
 #include "../game/obstacle_struct.h"
 #include "../game/player_movement.h"
@@ -84,7 +86,13 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
                         const SDL_Point* collision2,
                         const SDL_Point* collision3, const int32_t collision1R,
                         const int32_t collision2R, const int32_t collision3R,
-                        RenderObject* projectile) {
+                        RenderObject* projectile, double windStrength) {
+  double windAngleRad = DEGTORAD(normalizeAngle(
+      360 - app->globalConditions.wind.directionIcon->data.texture.angle));
+
+  double windStrengthX = windStrength * cos(windAngleRad);
+  double windStrengthY = windStrength * sin(windAngleRad);
+
   double angleRad = DEGTORAD(angle);
   double vx = initVel * cos(angleRad);
   double vy = initVel * sin(angleRad);
@@ -138,6 +146,12 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
         isInCircle(currXScaled, currYScaled, collision2, collision2R) ||
         isInCircle(currXScaled, currYScaled, collision3, collision3R)) {
       return -currXScaled;
+    }
+
+    // hit at obstacles
+    // res will be currXscaled_currYScaled
+    if (checkObstacleCollisions(currX, currY)) {
+      return currXScaled * 10000 + currYScaled;
     }
 
     // successful hit
@@ -221,7 +235,7 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
     for (; i != 45; ++i) {
       // trying to move forward
       for (int j = 0; j < MAXSTONES; j++) {
-        if (obstacle[j].health == 0) {
+        if (obstacle[j].obstacleObject == NULL || obstacle[j].health == 0) {
           continue;
         }
         if ((app->currPlayer->tankObj->data.texture.constRect.x +
@@ -260,12 +274,12 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
     for (; i != 45; ++i) {
       // trying to move forward
       for (int j = 0; j < MAXSTONES; j++) {
-        if (obstacle[j].health == 0) {
+        if (obstacle[j].obstacleObject == NULL || obstacle[j].health == 0) {
           continue;
         }
         if (app->currPlayer->tankObj->data.texture.constRect.x <=
                 obstacle[j].obstacleObject->data.texture.constRect.x +
-                    101 *
+                    120 *
                         cos(DEGTORAD(
                             obstacle[j].obstacleObject->data.texture.angle)) &&
             !isFirstPlayer) {
@@ -302,4 +316,60 @@ void getPositionAtSpecTime(SDL_FPoint* pos, double vx, double vy, double windVx,
   pos->y = vy * currTime - 0.5 * G * currTime * currTime + windVy * currTime;
 
   // printf("currTime: %lf, vy:%lf\n", currTime, vy - G * currTime);
+}
+
+int32_t findLineHeightIntersections(SDL_Point p1, SDL_Point p2,
+                                    int32_t* heightMap, int32_t width) {
+  int32_t x1 = p1.x, y1 = p1.y;
+  int32_t x2 = p2.x, y2 = p2.y;
+
+  // make sure x1 < x2
+  if (x1 > x2) {
+    int temp;
+    temp = x1;
+    x1 = x2;
+    x2 = temp;
+    temp = y1;
+    y1 = y2;
+    y2 = temp;
+  }
+
+  int32_t dx = x2 - x1;
+  int32_t dy = y2 - y1;
+
+  int32_t prevDiff = 0;
+  int32_t prevSet = 0;
+
+  for (int32_t x = x1; x <= x2 && x < width; x++) {
+    int32_t yLine = y1 + (int64_t)(dy) * (x - x1) / dx;
+    int32_t diff = yLine - heightMap[x];
+
+    // exact intersection
+    if (diff == 0) {
+      log_warn("EXACT: %d", x);
+      return x;
+    }
+
+    // sign change => crossing between x-1 and x
+    if (prevSet && ((diff > 0 && prevDiff < 0) || (diff < 0 && prevDiff > 0))) {
+      int32_t x0 = x - 1;
+      int32_t yLine0 = y1 + (int64_t)dy * (x0 - x1) / dx;
+
+      int32_t h0 = heightMap[x0];
+
+      int32_t approxX;
+      if (yLine == yLine0) {
+        approxX = x;
+      } else {
+        approxX = x0 + (h0 - yLine0) * (int64_t)(x - x0) / (yLine - yLine0);
+      }
+
+      log_warn("approx: %d", approxX);
+      return approxX;
+    }
+
+    prevDiff = diff;
+    prevSet = 1;
+  }
+  return -1;
 }
