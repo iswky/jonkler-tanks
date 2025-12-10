@@ -122,17 +122,96 @@ static void findShelter(App* app, int32_t* heightMap, Player* currPlayer,
     shelter = STONE;
   }
 
+  const int movingQuantum = 45;
+
   if (shelter == STONE) {
     //  if curr shelter is STONE we re just simply moving towards it
+    int currDistance;
+    if (isFirstPlayer) {
+      currDistance =
+          shelterPos.x - (app->currPlayer->tankObj->data.texture.constRect.x +
+                          app->currPlayer->tankObj->data.texture.constRect.w);
+    } else {
+      currDistance =
+          app->currPlayer->tankObj->data.texture.constRect.x - shelterPos.x;
+    }
     while (
-        smoothMove(app, isFirstPlayer, !isFirstPlayer, heightMap, obstacles)) {
-      ;
+        currDistance >= movingQuantum &&
+        !smoothMove(app, isFirstPlayer, isFirstPlayer, heightMap, obstacles)) {
+      if (isFirstPlayer) {
+        currDistance =
+            shelterPos.x - (app->currPlayer->tankObj->data.texture.constRect.x +
+                            app->currPlayer->tankObj->data.texture.constRect.w);
+      } else {
+        currDistance =
+            app->currPlayer->tankObj->data.texture.constRect.x - shelterPos.x;
+      }
     }
   } else if (shelter == CLOUD) {
     // If its a cloud, we try to hide beneath it a lil lefter(left player)
     // or righter(right player)
-    // according to my super math calculations it will be about 83 px
+    // according to my super math calculations it will be about 120 px
     if (isFirstPlayer) {
+      int playerShouldBeHereX = shelterPos.x - 120;
+      int dx = app->currPlayer->tankObj->data.texture.constRect.x -
+               playerShouldBeHereX;
+      if (abs(dx) < movingQuantum) {
+        return;
+      }
+      SDL_bool isMovingRight = SDL_TRUE;
+
+      if (dx < 0) {
+        isMovingRight = SDL_FALSE;
+      }
+
+      dx = abs(dx);
+
+      if (abs(dx) < movingQuantum) {
+        return;
+      }
+
+      if (!isMovingRight &&
+          app->currPlayer->tankObj->data.texture.constRect.x <= 10) {
+        return;
+      }
+
+      // dx / movingQuantum = amount of steps required to move tank beneath the cloud
+      for (int i = 0; i < (int)ceil(dx * 1. / movingQuantum); ++i) {
+        if (smoothMove(app, isFirstPlayer, isMovingRight, heightMap,
+                       obstacles)) {
+          return;
+        }
+      }
+    } else {
+      int playerShouldBeHereX = shelterPos.x + 30;
+      int dx = playerShouldBeHereX -
+               (app->currPlayer->tankObj->data.texture.constRect.x +
+                currPlayer->tankObj->data.texture.constRect.w);
+
+      if (abs(dx) < movingQuantum) {
+        return;
+      }
+      SDL_bool isMovingRight = SDL_FALSE;
+      if (dx < 0) {
+        isMovingRight = SDL_TRUE;
+      }
+      dx = abs(dx);
+
+      if (isMovingRight &&
+          app->currPlayer->tankObj->data.texture.constRect.x + 50 >=
+              app->screenWidth) {
+        return;
+      }
+
+      log_warn("SECOND WANNA MOVE %d TIMES, right: %d", dx / movingQuantum,
+               isMovingRight);
+
+      for (int i = 0; i < (int)ceil(dx * 1. / movingQuantum); ++i) {
+        if (smoothMove(app, isFirstPlayer, isMovingRight, heightMap,
+                       obstacles)) {
+          return;
+        }
+      }
     }
   }
 }

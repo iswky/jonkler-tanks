@@ -220,7 +220,7 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
     for (; i != 45; ++i) {
       // trying to move forward
       for (int j = 0; j < MAXSTONES; j++) {
-        if (obstacle[j].health == 0) {
+        if (obstacle[j].obstacleObject == NULL || obstacle[j].health == 0) {
           continue;
         }
         if ((app->currPlayer->tankObj->data.texture.constRect.x +
@@ -259,14 +259,11 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
     for (; i != 45; ++i) {
       // trying to move forward
       for (int j = 0; j < MAXSTONES; j++) {
-        if (obstacle[j].health == 0) {
+        if (obstacle[j].obstacleObject == NULL || obstacle[j].health == 0) {
           continue;
         }
         if (app->currPlayer->tankObj->data.texture.constRect.x <=
-                obstacle[j].obstacleObject->data.texture.constRect.x +
-                    101 *
-                        cos(DEGTORAD(
-                            obstacle[j].obstacleObject->data.texture.angle)) &&
+                obstacle[j].obstacleObject->data.texture.constRect.x + 120 &&
             !isFirstPlayer) {
           if (i) {
             app->currPlayer->movesLeft--;
@@ -356,4 +353,5 @@ int32_t findLineHeightIntersections(SDL_Point p1, SDL_Point p2,
     prevDiff = diff;
     prevSet = 1;
   }
+  return -1;
 }
