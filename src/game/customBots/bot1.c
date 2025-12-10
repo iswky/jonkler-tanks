@@ -136,7 +136,7 @@ static void findShelter(App* app, int32_t* heightMap, Player* currPlayer,
           app->currPlayer->tankObj->data.texture.constRect.x - shelterPos.x;
     }
     while (
-        currDistance >= movingQuantum &&
+        currDistance >= movingQuantum / 2 &&
         !smoothMove(app, isFirstPlayer, isFirstPlayer, heightMap, obstacles)) {
       if (isFirstPlayer) {
         currDistance =

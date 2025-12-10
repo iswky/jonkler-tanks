@@ -359,6 +359,11 @@ inline static void playMainClear(App* app, struct playMainObjects* objs) {
   freeRenderObject(objs->cloud3);
   freeRenderObject(objs->cloud4);
   freeRenderObject(objs->cloud5);
+  freeRenderObject(objs->cloud6);
+  freeRenderObject(objs->cloud7);
+  freeRenderObject(objs->cloud8);
+  freeRenderObject(objs->cloud9);
+  freeRenderObject(objs->cloud10);
 
   TTF_CloseFont(objs->smallFont);
   SDL_DestroyTexture(objs->gameMap);
@@ -635,10 +640,16 @@ static void playMain(App* app, uint32_t SEED) {
     uint32_t currCnt = 0;
     // creating clouds
     objs->cloud1 = createCloud(app, objs->heightMap, 150, 200, 10, currCnt++);
-    objs->cloud2 = createCloud(app, objs->heightMap, 250, 400, 10, currCnt++);
-    objs->cloud3 = createCloud(app, objs->heightMap, 450, 600, 10, currCnt++);
-    objs->cloud4 = createCloud(app, objs->heightMap, 600, 800, 10, currCnt++);
-    objs->cloud5 = createCloud(app, objs->heightMap, 800, 830, 10, currCnt++);
+    objs->cloud2 = createCloud(app, objs->heightMap, 200, 350, 10, currCnt++);
+    objs->cloud3 = createCloud(app, objs->heightMap, 350, 500, 10, currCnt++);
+    objs->cloud4 = createCloud(app, objs->heightMap, 500, 650, 10, currCnt++);
+    objs->cloud5 = createCloud(app, objs->heightMap, 650, 800, 10, currCnt++);
+    objs->cloud6 = createCloud(app, objs->heightMap, 200, 350, 10, currCnt++);
+    objs->cloud7 = createCloud(app, objs->heightMap, 650, 800, 10, currCnt++);
+    objs->cloud8 = createCloud(app, objs->heightMap, 250, 600, 0, currCnt++);
+    objs->cloud9 = createCloud(app, objs->heightMap, 250, 600, 0, currCnt++);
+    objs->cloud10 = createCloud(app, objs->heightMap, 250, 600, 0, currCnt++);
+
     currCnt = 0;
     // creating stones
     objs->stone1 = createStone(app, objs->heightMap, 200, 300, currCnt++);
@@ -794,6 +805,11 @@ static void playMain(App* app, uint32_t SEED) {
       objs->cloud3,
       objs->cloud4,
       objs->cloud5,
+      objs->cloud6,
+      objs->cloud7,
+      objs->cloud8,
+      objs->cloud9,
+      objs->cloud10,
       objs->playerScore1,
       objs->playerScore2,
       objs->p1DoubleDmgIcon,

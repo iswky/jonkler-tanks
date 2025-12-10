@@ -263,7 +263,10 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
           continue;
         }
         if (app->currPlayer->tankObj->data.texture.constRect.x <=
-                obstacle[j].obstacleObject->data.texture.constRect.x + 120 &&
+                obstacle[j].obstacleObject->data.texture.constRect.x +
+                    120 *
+                        cos(DEGTORAD(
+                            obstacle[j].obstacleObject->data.texture.angle)) &&
             !isFirstPlayer) {
           if (i) {
             app->currPlayer->movesLeft--;

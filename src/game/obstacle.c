@@ -42,7 +42,8 @@ RenderObject* createCloud(App* app, int32_t* heightmap, int32_t startPos,
     res = createRenderObject(
         app->renderer, TEXTURE, 1, b_NONE, "media/imgs/cloud.png",
         &(SDL_Point){x,
-                     -200 + app->screenHeight / app->scalingFactorY -
+                     -getRandomValue(200, 400) +
+                         app->screenHeight / app->scalingFactorY -
                          heightmap[(int32_t)((x + 54) * app->scalingFactorX)] /
                              app->scalingFactorY});
   }
