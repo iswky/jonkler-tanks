@@ -113,7 +113,9 @@ SDL_bool checkObstacleCollisions(uint32_t currX, uint32_t currY) {
 
     if (PointInRotatedRect(&(obstacleRect), &(SDL_Point){currX, currY},
                            obstacles[i].obstacleObject->data.texture.angle)) {
-      if (obstacles[i].health-- == 0) {
+      // decrease health first, then check if it reached 0
+      obstacles[i].health--;
+      if (obstacles[i].health == 0) {
         // hiding destroyed objects
         obstacles[i].obstacleObject->disableRendering = SDL_TRUE;
       }

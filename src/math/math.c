@@ -7,8 +7,6 @@
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
 
-#include <log/log.h>
-
 #include "../game/obstacle.h"
 #include "../game/obstacle_struct.h"
 #include "../game/player_movement.h"
@@ -96,36 +94,20 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
   double dt = 1. / 60;
   double currTime = 0.0;
 
-  SDL_FPoint relativePos = {
-      .x = 0.0f,
-      .y = 0.0f,
-  };
-
-  double windAngleRad = DEGTORAD(normalizeAngle(
-      360 - app->globalConditions.wind.directionIcon->data.texture.angle));
-  double windStrength = app->globalConditions.wind.windStrength;
-  double windStrengthX = windStrength * cos(windAngleRad);
-  double windStrengthY = windStrength * sin(windAngleRad);
-
   int32_t currX = (int32_t)initPos->x;
   int32_t currY = (int32_t)initPos->y;
 
   // while we dont hit the ground
   while (app->currState == PLAY) {
     currTime += dt;
-
-    getPositionAtSpecTime(&relativePos, vx, vy, windStrengthX, windStrengthY,
-                          currTime);
     double dy =
         currY - initPos->y - (vy * currTime - 0.5 * G * currTime * currTime);
     double dx = currX - initPos->x + vx * currTime;
 
     projectile->data.texture.angle = 360 - atan2(dy, dx) * 180.0 / M_PI;
 
-    // currX = initPos->x + vx * currTime;
-    // currY = initPos->y - (vy * currTime - 0.5 * G * currTime * currTime);
-    currX = initPos->x + relativePos.x;
-    currY = initPos->y - relativePos.y;
+    currX = initPos->x + vx * currTime;
+    currY = initPos->y - (vy * currTime - 0.5 * G * currTime * currTime);
 
     int32_t currXScaled = currX * app->scalingFactorX;
     int32_t currYScaled = currY * app->scalingFactorY;
@@ -140,11 +122,6 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
         isInCircle(currXScaled, currYScaled, collision2, collision2R) ||
         isInCircle(currXScaled, currYScaled, collision3, collision3R)) {
       return -currXScaled;
-    }
-    // hit at obstacles
-    // res will be currXscaled_currYScaled
-    if (checkObstacleCollisions(currX, currY)) {
-      return currXScaled * 10000 + currYScaled;
     }
 
     // successful hit
@@ -300,17 +277,32 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
   if (isRight) {
     int32_t i = 0;
     for (; i != 45; ++i) {
-      // check collision with stones using proper rectangle collision detection
+      // check collision BEFORE moving - predict future position
+      int32_t xOffset = (isFirstPlayer == SDL_TRUE) ? 5 : 8;
+      int32_t futureX = app->currPlayer->tankObj->data.texture.constRect.x + 1;
+      double futureAngle =
+          360 - getAngle((futureX + xOffset) * app->scalingFactorX, heightMap,
+                         20 * app->scalingFactorX);
+      // recalcPlayerPos always uses x + 5 for Y calculation, even for second player
+      int32_t futureY =
+          -27 + app->screenHeight / app->scalingFactorY -
+          heightMap[(int32_t)((futureX + 5) * app->scalingFactorX)] /
+              app->scalingFactorY;
+
+      SDL_Rect futureTankRect =
+          app->currPlayer->tankObj->data.texture.constRect;
+      futureTankRect.x = futureX;
+      futureTankRect.y = futureY;
+
+      // check collision with stones using predicted position
       for (int j = 0; j < MAXSTONES; j++) {
         if (obstacle[j].health == 0 || obstacle[j].obstacleObject == NULL) {
-        if (obstacle[j].obstacleObject == NULL || obstacle[j].health == 0) {
           continue;
         }
 
-        // use proper rotated rectangle collision detection
+        // use proper rotated rectangle collision detection with future position
         if (RotatedRectIntersect(
-                &app->currPlayer->tankObj->data.texture.constRect,
-                app->currPlayer->tankObj->data.texture.angle,
+                &futureTankRect, futureAngle,
                 &obstacle[j].obstacleObject->data.texture.constRect,
                 obstacle[j].obstacleObject->data.texture.angle)) {
           if (i) {
@@ -320,8 +312,8 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
         }
       }
 
-      if ((app->currPlayer->tankObj->data.texture.constRect.x +
-           app->currPlayer->tankObj->data.texture.constRect.w - 2) *
+      // check screen bounds
+      if ((futureX + app->currPlayer->tankObj->data.texture.constRect.w - 2) *
               app->scalingFactorX >=
           app->screenWidth) {
         if (i) {
@@ -330,8 +322,8 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
         return 2;
       }
 
-      recalcPlayerPos(app, app->currPlayer, heightMap, 1,
-                      (isFirstPlayer == SDL_TRUE) ? 5 : 8);
+      // only move if no collision detected
+      recalcPlayerPos(app, app->currPlayer, heightMap, 1, xOffset);
 
       SDL_Delay(16);
     }
@@ -343,27 +335,34 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
   } else {
     int32_t i = 0;
     for (; i != 45; ++i) {
-      // check collision with stones using proper rectangle collision detection
+      // check collision BEFORE moving - predict future position
+      int32_t xOffset = (isFirstPlayer == SDL_TRUE) ? 5 : 8;
+      int32_t futureX = app->currPlayer->tankObj->data.texture.constRect.x - 1;
+      double futureAngle =
+          360 - getAngle((futureX + xOffset) * app->scalingFactorX, heightMap,
+                         20 * app->scalingFactorX);
+      // recalcPlayerPos always uses x + 5 for Y calculation, even for second player
+      int32_t futureY =
+          -27 + app->screenHeight / app->scalingFactorY -
+          heightMap[(int32_t)((futureX + 5) * app->scalingFactorX)] /
+              app->scalingFactorY;
+
+      SDL_Rect futureTankRect =
+          app->currPlayer->tankObj->data.texture.constRect;
+      futureTankRect.x = futureX;
+      futureTankRect.y = futureY;
+
+      // check collision with stones using predicted position
       for (int j = 0; j < MAXSTONES; j++) {
         if (obstacle[j].health == 0 || obstacle[j].obstacleObject == NULL) {
           continue;
         }
 
-        // use proper rotated rectangle collision detection
+        // use proper rotated rectangle collision detection with future position
         if (RotatedRectIntersect(
-                &app->currPlayer->tankObj->data.texture.constRect,
-                app->currPlayer->tankObj->data.texture.angle,
+                &futureTankRect, futureAngle,
                 &obstacle[j].obstacleObject->data.texture.constRect,
                 obstacle[j].obstacleObject->data.texture.angle)) {
-        if (obstacle[j].obstacleObject == NULL || obstacle[j].health == 0) {
-          continue;
-        }
-        if (app->currPlayer->tankObj->data.texture.constRect.x <=
-                obstacle[j].obstacleObject->data.texture.constRect.x +
-                    120 *
-                        cos(DEGTORAD(
-                            obstacle[j].obstacleObject->data.texture.angle)) &&
-            !isFirstPlayer) {
           if (i) {
             app->currPlayer->movesLeft--;
           }
@@ -371,15 +370,16 @@ int32_t smoothMove(App* app, SDL_bool isFirstPlayer, SDL_bool isRight,
         }
       }
 
-      if (app->currPlayer->tankObj->data.texture.constRect.x <= 2) {
+      // check screen bounds
+      if (futureX <= 2) {
         if (i) {
           app->currPlayer->movesLeft--;
         }
         return 2;
       }
 
-      recalcPlayerPos(app, app->currPlayer, heightMap, -1,
-                      (isFirstPlayer == SDL_TRUE) ? 5 : 8);
+      // only move if no collision detected
+      recalcPlayerPos(app, app->currPlayer, heightMap, -1, xOffset);
       SDL_Delay(16);
     }
     // if we moved at least a 1 px
@@ -398,60 +398,4 @@ void getPositionAtSpecTime(SDL_FPoint* pos, double vx, double vy, double windVx,
   pos->y = vy * currTime - 0.5 * G * currTime * currTime + windVy * currTime;
 
   // printf("currTime: %lf, vy:%lf\n", currTime, vy - G * currTime);
-}
-
-int32_t findLineHeightIntersections(SDL_Point p1, SDL_Point p2,
-                                    int32_t* heightMap, int32_t width) {
-  int32_t x1 = p1.x, y1 = p1.y;
-  int32_t x2 = p2.x, y2 = p2.y;
-
-  // make sure x1 < x2
-  if (x1 > x2) {
-    int temp;
-    temp = x1;
-    x1 = x2;
-    x2 = temp;
-    temp = y1;
-    y1 = y2;
-    y2 = temp;
-  }
-
-  int32_t dx = x2 - x1;
-  int32_t dy = y2 - y1;
-
-  int32_t prevDiff = 0;
-  int32_t prevSet = 0;
-
-  for (int32_t x = x1; x <= x2 && x < width; x++) {
-    int32_t yLine = y1 + (int64_t)(dy) * (x - x1) / dx;
-    int32_t diff = yLine - heightMap[x];
-
-    // exact intersection
-    if (diff == 0) {
-      log_warn("EXACT: %d", x);
-      return x;
-    }
-
-    // sign change => crossing between x-1 and x
-    if (prevSet && ((diff > 0 && prevDiff < 0) || (diff < 0 && prevDiff > 0))) {
-      int32_t x0 = x - 1;
-      int32_t yLine0 = y1 + (int64_t)dy * (x0 - x1) / dx;
-
-      int32_t h0 = heightMap[x0];
-
-      int32_t approxX;
-      if (yLine == yLine0) {
-        approxX = x;
-      } else {
-        approxX = x0 + (h0 - yLine0) * (int64_t)(x - x0) / (yLine - yLine0);
-      }
-
-      log_warn("approx: %d", approxX);
-      return approxX;
-    }
-
-    prevDiff = diff;
-    prevSet = 1;
-  }
-  return -1;
 }
