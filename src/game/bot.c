@@ -238,9 +238,6 @@ void botMain(App* app, Player* player1, Player* player2, int32_t* heightMap,
   // normalizing just to be sure its in [0;2pi) and now its counterclockwise
   initGunAngle = 360 - normalizeAngle(initGunAngle);
 
-  // while (theQueensGambit(app, player1, player2, heightMap, projectile,
-  //                         explosion, regenMap, recalcBulletPath, 90) &&
-  //          app->currState == PLAY);
   if (app->currState == PLAY) { 
     switch (playerType) {
   #ifdef BOT1_ADDED

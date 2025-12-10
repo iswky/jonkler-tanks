@@ -86,13 +86,7 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
                         const SDL_Point* collision2,
                         const SDL_Point* collision3, const int32_t collision1R,
                         const int32_t collision2R, const int32_t collision3R,
-                        RenderObject* projectile, double windStrength) {
-  double windAngleRad = DEGTORAD(normalizeAngle(
-      360 - app->globalConditions.wind.directionIcon->data.texture.angle));
-
-  double windStrengthX = windStrength * cos(windAngleRad);
-  double windStrengthY = windStrength * sin(windAngleRad);
-
+                        RenderObject* projectile) {
   double angleRad = DEGTORAD(angle);
   double vx = initVel * cos(angleRad);
   double vy = initVel * sin(angleRad);
@@ -147,7 +141,6 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
         isInCircle(currXScaled, currYScaled, collision3, collision3R)) {
       return -currXScaled;
     }
-
     // hit at obstacles
     // res will be currXscaled_currYScaled
     if (checkObstacleCollisions(currX, currY)) {

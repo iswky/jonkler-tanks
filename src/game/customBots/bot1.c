@@ -353,7 +353,7 @@ void bot1Main(App* app, Player* firstPlayer, Player* secondPlayer,
   int32_t hitPos =
       calcHitPosition(&currPos, initVel, initGunAngle, heightMap, app,
                       &collisionP1, &collisionP2, &collisionP3, collisionP1R,
-                      collisionP2R, collisionP3R, projectile, windStrength);
+                      collisionP2R, collisionP3R, projectile);
 
   log_info("[bot1] curr hit pos is at %d", hitPos);
 }
