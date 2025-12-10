@@ -559,7 +559,8 @@ static void playMain(App* app, uint32_t SEED) {
     // setting up the 'default' settings
     if (!wasLoaded) {
       log_info("using default settings for players!");
-      objs->firstPlayer.movesLeft = 9;
+      objs->firstPlayer.movesLeft = 30;
+      objs->firstPlayer.health = 100;
       objs->firstPlayer.gunAngle = 0.0;
       objs->firstPlayer.firingPower = 30;
       objs->firstPlayer.tankAngle = anglePlayer1;
@@ -582,7 +583,8 @@ static void playMain(App* app, uint32_t SEED) {
         default:
           break;
       }
-      objs->secondPlayer.movesLeft = 9;
+      objs->secondPlayer.movesLeft = 30;
+      objs->secondPlayer.health = 100;
       objs->secondPlayer.gunAngle = 0.0;
       objs->secondPlayer.firingPower = 30;
       objs->secondPlayer.tankAngle = anglePlayer2;
@@ -701,14 +703,14 @@ static void playMain(App* app, uint32_t SEED) {
         app->renderer, TEXT, 1, b_NONE, temp, objs->smallFont,
         &(SDL_Point){10, app->screenHeight / app->scalingFactorY - 40},
         &(SDL_Color){255, 255, 255, 255});
-    snprintf(temp, sizeof(temp), "SCORE: %4d", objs->firstPlayer.score);
+    snprintf(temp, sizeof(temp), "HEALTH: %3d", objs->firstPlayer.health);
     objs->playerScore1 = createRenderObject(
         app->renderer, TEXT, 1, b_NONE, temp, objs->smallFont,
         &(SDL_Point){10, objs->betmentAvatar->data.texture.constRect.y +
                              objs->betmentAvatar->data.texture.constRect.h +
                              10},
         &(SDL_Color){168, 0, 0, 255});
-    snprintf(temp, sizeof(temp), "SCORE: %4d", objs->secondPlayer.score);
+    snprintf(temp, sizeof(temp), "HEALTH: %3d", objs->secondPlayer.health);
     objs->playerScore2 = createRenderObject(
         app->renderer, TEXT, 1, b_NONE, temp, objs->smallFont,
         &(SDL_Point){0, objs->betmentAvatar->data.texture.constRect.y +
@@ -716,7 +718,7 @@ static void playMain(App* app, uint32_t SEED) {
         &(SDL_Color){0, 168, 107, 255});
     objs->playerScore2->data.texture.constRect.x =
         app->screenWidth / app->scalingFactorX -
-        objs->playerScore2->data.texture.constRect.w - 30;
+        objs->playerScore2->data.texture.constRect.w - 10;
     // Buff icons under SCORE (double damage, then shield) for both players
     objs->p1DoubleDmgIcon =
         createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
