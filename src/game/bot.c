@@ -245,8 +245,8 @@ void botMain(App* app, Player* player1, Player* player2, int32_t* heightMap,
     switch (playerType) {
   #ifdef BOT1_ADDED
       case BOT1:
-        justSimpleBot(app, player1, player2, heightMap, projectile,
-                  explosion, regenMap, recalcBulletPath, 90);
+        bot1Main(app, player1, player2, heightMap, projectile, explosion,
+               regenMap, recalcBulletPath, initGunAngle);
         break;
   #endif
   #ifdef BOT2_ADDED
