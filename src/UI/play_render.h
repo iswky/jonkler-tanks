@@ -61,6 +61,11 @@ struct playMainObjects {
   RenderObject* cloud3;
   RenderObject* cloud4;
   RenderObject* cloud5;
+  RenderObject* cloud6;
+  RenderObject* cloud7;
+  RenderObject* cloud8;
+  RenderObject* cloud9;
+  RenderObject* cloud10;
   RenderObject* stone1;
   RenderObject* stone2;
 
@@ -74,6 +79,8 @@ struct playMainObjects {
   int32_t oldScorePlayer1;
   int32_t oldScorePlayer2;
   int32_t oldWeapon;
+  int32_t oldHealthPlayer1;
+  int32_t oldHealthPlayer2;
 
   RenderObject* currentPlayerInfo;
   RenderObject* playerScore1;

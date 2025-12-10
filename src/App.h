@@ -1,8 +1,8 @@
 #ifndef APP_H
 #define APP_H
 
-#include "game/specialConditions/windStruct.h"
 #include "game/specialConditions/buffsStruct.h"
+#include "game/specialConditions/windStruct.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -27,10 +27,10 @@ enum State {
 enum PlayerType {
   // real player
   MONKE = 0,
-  // bots diffs
-  EASY,
-  NORMAL,
-  HARD,
+  // different bots
+  BOT1,
+  BOT2,
+  BOT3,
 };
 
 enum Button {
@@ -64,13 +64,13 @@ enum Button {
   RIGHT_GUN = 2001,
   // difficulty choice button
   b_P1Player = 2100,
-  b_P1Easy,
-  b_P1Normal,
-  b_P1Hard,
+  b_P1BOT1,
+  b_P1BOT2,
+  b_P1BOT3,
   b_P2Player,
-  b_P2Easy,
-  b_P2Normal,
-  b_P2Hard,
+  b_P2BOT1,
+  b_P2BOT2,
+  b_P2BOT3,
   // weapons choice button
   b_W1 = 2200,
   b_W2,
@@ -154,6 +154,7 @@ typedef struct Player {
   double gunAngle;
   RenderObject* tankGunObj;
   int32_t score;
+  int32_t health;
 
   int32_t movesLeft;
 

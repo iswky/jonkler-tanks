@@ -45,6 +45,7 @@ void saveCurrentState(App* app, Player* firstPlayer, Player* secondPlayer,
   fprintf(file, "tar:%d\n", isFirstTarget);
 
   fprintf(file, "t1s:%d\n", firstPlayer->score);
+  fprintf(file, "t1h:%d\n", firstPlayer->health);
   fprintf(file, "t1x:%d\n", firstPlayer->tankObj->data.texture.constRect.x);
   fprintf(file, "t1t:%d\n", firstPlayer->type);
   fprintf(file, "t1ml:%d\n", firstPlayer->movesLeft);
@@ -52,6 +53,7 @@ void saveCurrentState(App* app, Player* firstPlayer, Player* secondPlayer,
   fprintf(file, "t1gp:%d\n", firstPlayer->firingPower);
 
   fprintf(file, "t2s:%d\n", secondPlayer->score);
+  fprintf(file, "t2h:%d\n", secondPlayer->health);
   fprintf(file, "t2x:%d\n", secondPlayer->tankObj->data.texture.constRect.x);
   fprintf(file, "t2t:%d\n", secondPlayer->type);
   fprintf(file, "t2ml:%d\n", secondPlayer->movesLeft);
@@ -121,6 +123,9 @@ int32_t loadSavedState(App* app, Player* firstPlayer, Player* secondPlayer,
   if (!fscanf(file, "t1s:%d\n", &temp)) return 1;
   firstPlayer->score = temp;
 
+  if (!fscanf(file, "t1h:%d\n", &temp)) return 1;
+  firstPlayer->health = temp;
+
   if (!fscanf(file, "t1x:%d\n", &temp)) return 1;
   firstPlayer->x = temp;
 
@@ -140,6 +145,9 @@ int32_t loadSavedState(App* app, Player* firstPlayer, Player* secondPlayer,
 
   if (!fscanf(file, "t2s:%d\n", &temp)) return 1;
   secondPlayer->score = temp;
+
+  if (!fscanf(file, "t2h:%d\n", &temp)) return 1;
+  secondPlayer->health = temp;
 
   if (!fscanf(file, "t2x:%d\n", &temp)) return 1;
   secondPlayer->x = temp;
@@ -169,24 +177,6 @@ int32_t loadSavedState(App* app, Player* firstPlayer, Player* secondPlayer,
   if (!fscanf(file, "ALL:%d\n", &temp)) return 1;
 
   if (temp != MAXSTONES + MAXCLOUDS) return 2;
-  // log_fatal("123");
-  // int32_t xTemp, yTemp, hTemp;
-  // char tempStr[256];
-  // for (int32_t i = 0; i < MAXSTONES + MAXCLOUDS; ++i) {
-  //   if (fgets(tempStr, sizeof(tempStr), file) != NULL) {
-  //     if (strcmp(tempStr, "nope")) {
-  //       obstacles[i].health = 0;
-  //       obstacles[i].obstacleObject = NULL;
-  //     } else {
-  //       sscanf(tempStr, "x:%d,y:%d,h:%d", &xTemp, &yTemp, &hTemp);
-  //       obstacles[i].health = hTemp - 1337;
-  //       obstacles[i].obstacleObject->data.texture.constRect.x = xTemp;
-  //       obstacles[i].obstacleObject->data.texture.constRect.y = yTemp;
-  //     }
-  //   } else {
-  //     return 1;
-  //   }
-  // }
   fclose(file);
   return 0;
 }

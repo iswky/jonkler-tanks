@@ -1,25 +1,4 @@
-#include "bot.h"
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_thread.h>
-#include <SDL2/SDL_timer.h>
-#include <SDL2/SDL_ttf.h>
-
-#include <float.h>
-#include <math.h>
-
-#include "../math/math.h"
-#include "../math/rand.h"
-#include "log/log.h"
-#include "obstacle.h"
-#include "player_movement.h"
-#include "specialConditions/wind.h"
-
-#include "customBots/bot1.h"
-#include "customBots/bot2.h"
-#include "customBots/bot3.h"
+#include "bot3.h"
 
 static Player* whoIsEnenmy(Player* currPlayer, Player* firstPlayer, Player* secondPlayer)
 {
@@ -127,7 +106,7 @@ static void setWeaponStats(
   }
 }
 
-static int32_t justSimpleBot(
+void theGothGambit(
   App* app,
   Player* firstPlayer,
   Player* secondPlayer,
@@ -180,7 +159,7 @@ static int32_t justSimpleBot(
 
   SDL_bool isFinded = SDL_FALSE;
 
-  for (int32_t angle = 0; angle <= 120; ++angle) {
+  for (int32_t angle = 120; angle >= 0; --angle) {
     double currAngle = app->currPlayer->tankGunObj->data.texture.angle;
 
     if (app->currPlayer == secondPlayer) currAngle += 180 + angle;
@@ -205,7 +184,7 @@ static int32_t justSimpleBot(
               regenMap);
         recalcPlayerPos(app, firstPlayer, heightMap, 0, 5);
         recalcPlayerPos(app, secondPlayer, heightMap, 0, 8);
-        return 0;
+        return;
       }
       
     }
@@ -219,49 +198,5 @@ static int32_t justSimpleBot(
         regenMap);
   recalcPlayerPos(app, firstPlayer, heightMap, 0, 5);
   recalcPlayerPos(app, secondPlayer, heightMap, 0, 8);
-  return 0;
-}
-
-void botMain(App* app, Player* player1, Player* player2, int32_t* heightMap,
-             RenderObject* projectile, RenderObject* explosion,
-             SDL_bool* regenMap, SDL_bool* recalcBulletPath,
-             enum PlayerType playerType) {
-  double initGunAngle = app->currPlayer->tankGunObj->data.texture.angle;
-
-  // calculating angle specifically for a current player
-  if (app->currPlayer == player2) {
-    initGunAngle += 180 - app->currPlayer->tankGunObj->data.texture.angleAlt;
-  } else {
-    initGunAngle += app->currPlayer->tankGunObj->data.texture.angleAlt;
-  }
-
-  // normalizing just to be sure its in [0;2pi) and now its counterclockwise
-  initGunAngle = 360 - normalizeAngle(initGunAngle);
-
-  if (app->currState == PLAY) { 
-    switch (playerType) {
-  #ifdef BOT1_ADDED
-      case BOT1:
-        bot1Main(app, player1, player2, heightMap, projectile, explosion,
-               regenMap, recalcBulletPath, initGunAngle);
-        break;
-  #endif
-  #ifdef BOT2_ADDED
-      case BOT2:
-        justSimpleBot(app, player1, player2, heightMap, projectile,
-                  explosion, regenMap, recalcBulletPath, 90);
-        break;
-  #endif
-  #ifdef BOT3_ADDED
-      case BOT3:
-        theGothGambit(app, player1, player2, heightMap, projectile,
-                          explosion, regenMap, recalcBulletPath, 90);
-        break;
-  #endif
-      default:
-        justSimpleBot(app, player1, player2, heightMap, projectile,
-                          explosion, regenMap, recalcBulletPath, 90);
-        break;
-    }
-  }
+  return;
 }

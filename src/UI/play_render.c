@@ -209,13 +209,18 @@ static void playMainLoop(App* app, struct playMainObjects* objs) {
       objs->oldX != app->currPlayer->x ||
       objs->oldScorePlayer1 != objs->firstPlayer.score ||
       objs->oldScorePlayer2 != objs->secondPlayer.score ||
-      app->currWeapon != objs->oldWeapon) {
+      app->currWeapon != objs->oldWeapon ||
+      objs->oldHealthPlayer1 != objs->firstPlayer.score ||
+      objs->oldHealthPlayer2 != objs->secondPlayer.score) {
     SDL_DestroyTexture(objs->currentPlayerInfo->data.texture.texture);
     objs->oldAngle = app->currPlayer->gunAngle;
     objs->oldMovesLeft = app->currPlayer->movesLeft;
     objs->oldFiringPower = app->currPlayer->firingPower;
     objs->oldX = app->currPlayer->x;
     objs->oldWeapon = app->currWeapon;
+    objs->oldHealthPlayer1 = objs->firstPlayer.score;
+    objs->oldHealthPlayer2 = objs->secondPlayer.score;
+
     snprintf(temp, sizeof(temp),
              "Moves left: %d Gun angle: %02d Firing power: %02d ",
              objs->oldMovesLeft, (int32_t)objs->oldAngle, objs->oldFiringPower);
@@ -269,10 +274,12 @@ static void playMainLoop(App* app, struct playMainObjects* objs) {
       objs->arrow->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
     }
   }
-  if (objs->oldScorePlayer1 != objs->firstPlayer.score) {
+
+  if (objs->oldHealthPlayer1 != objs->firstPlayer.health) {
     SDL_DestroyTexture(objs->playerScore1->data.texture.texture);
-    objs->oldScorePlayer1 = objs->firstPlayer.score;
-    snprintf(temp, sizeof(temp), "SCORE: %4d", objs->oldScorePlayer1);
+    objs->oldHealthPlayer1 =
+        objs->firstPlayer.health > 0 ? objs->firstPlayer.health : 0;
+    snprintf(temp, sizeof(temp), "HEALTH: %4d", objs->oldHealthPlayer1);
     objs->playerScore1->data.texture.texture =
         createTextTexture(app->renderer, objs->smallFont, temp, 168, 0, 0, 255);
     SDL_QueryTexture(objs->playerScore1->data.texture.texture, NULL, NULL,
@@ -290,10 +297,11 @@ static void playMainLoop(App* app, struct playMainObjects* objs) {
     objs->p1ShieldIcon->data.texture.constRect.y =
         objs->p1DoubleDmgIcon->data.texture.constRect.y;
   }
-  if (objs->oldScorePlayer2 != objs->secondPlayer.score) {
+  if (objs->oldHealthPlayer2 != objs->secondPlayer.health) {
     SDL_DestroyTexture(objs->playerScore2->data.texture.texture);
-    objs->oldScorePlayer2 = objs->secondPlayer.score;
-    snprintf(temp, sizeof(temp), "SCORE: %4d", objs->oldScorePlayer2);
+    objs->oldHealthPlayer1 =
+        objs->secondPlayer.health > 0 ? objs->secondPlayer.health : 0;
+    snprintf(temp, sizeof(temp), "HEALTH: %4d", objs->oldHealthPlayer2);
     objs->playerScore2->data.texture.texture = createTextTexture(
         app->renderer, objs->smallFont, temp, 0, 168, 107, 255);
     SDL_QueryTexture(objs->playerScore2->data.texture.texture, NULL, NULL,
@@ -359,12 +367,19 @@ inline static void playMainClear(App* app, struct playMainObjects* objs) {
   freeRenderObject(objs->cloud3);
   freeRenderObject(objs->cloud4);
   freeRenderObject(objs->cloud5);
+  freeRenderObject(objs->cloud6);
+  freeRenderObject(objs->cloud7);
+  freeRenderObject(objs->cloud8);
+  freeRenderObject(objs->cloud9);
+  freeRenderObject(objs->cloud10);
 
   TTF_CloseFont(objs->smallFont);
   SDL_DestroyTexture(objs->gameMap);
 
   free(objs->heightMap);
   free(objs->basedMap);
+
+  free(objs);
 }
 
 // main game loop
@@ -554,7 +569,8 @@ static void playMain(App* app, uint32_t SEED) {
     // setting up the 'default' settings
     if (!wasLoaded) {
       log_info("using default settings for players!");
-      objs->firstPlayer.movesLeft = 9;
+      objs->firstPlayer.movesLeft = 30;
+      objs->firstPlayer.health = 100;
       objs->firstPlayer.gunAngle = 0.0;
       objs->firstPlayer.firingPower = 30;
       objs->firstPlayer.tankAngle = anglePlayer1;
@@ -565,19 +581,20 @@ static void playMain(App* app, uint32_t SEED) {
         case b_P1Player:
           objs->firstPlayer.type = MONKE;
           break;
-        case b_P1Easy:
-          objs->firstPlayer.type = EASY;
+        case b_P1BOT1:
+          objs->firstPlayer.type = BOT1;
           break;
-        case b_P1Normal:
-          objs->firstPlayer.type = NORMAL;
+        case b_P1BOT2:
+          objs->firstPlayer.type = BOT2;
           break;
-        case b_P1Hard:
-          objs->firstPlayer.type = HARD;
+        case b_P1BOT3:
+          objs->firstPlayer.type = BOT3;
           break;
         default:
           break;
       }
-      objs->secondPlayer.movesLeft = 9;
+      objs->secondPlayer.movesLeft = 30;
+      objs->secondPlayer.health = 100;
       objs->secondPlayer.gunAngle = 0.0;
       objs->secondPlayer.firingPower = 30;
       objs->secondPlayer.tankAngle = anglePlayer2;
@@ -589,14 +606,14 @@ static void playMain(App* app, uint32_t SEED) {
         case b_P2Player:
           objs->secondPlayer.type = MONKE;
           break;
-        case b_P2Easy:
-          objs->secondPlayer.type = EASY;
+        case b_P2BOT1:
+          objs->secondPlayer.type = BOT1;
           break;
-        case b_P2Normal:
-          objs->secondPlayer.type = NORMAL;
+        case b_P2BOT2:
+          objs->secondPlayer.type = BOT2;
           break;
-        case b_P2Hard:
-          objs->secondPlayer.type = HARD;
+        case b_P2BOT3:
+          objs->secondPlayer.type = BOT3;
           break;
         default:
           break;
@@ -634,11 +651,17 @@ static void playMain(App* app, uint32_t SEED) {
     objs->tree5 = createTree(app, objs->heightMap, 850, 950, 10);
     uint32_t currCnt = 0;
     // creating clouds
-    objs->cloud1 = createCloud(app, objs->heightMap, 100, 200, 10, currCnt++);
-    objs->cloud2 = createCloud(app, objs->heightMap, 250, 400, 10, currCnt++);
-    objs->cloud3 = createCloud(app, objs->heightMap, 450, 600, 10, currCnt++);
-    objs->cloud4 = createCloud(app, objs->heightMap, 650, 800, 10, currCnt++);
-    objs->cloud5 = createCloud(app, objs->heightMap, 850, 950, 10, currCnt++);
+    objs->cloud1 = createCloud(app, objs->heightMap, 150, 200, 10, currCnt++);
+    objs->cloud2 = createCloud(app, objs->heightMap, 200, 350, 10, currCnt++);
+    objs->cloud3 = createCloud(app, objs->heightMap, 350, 500, 10, currCnt++);
+    objs->cloud4 = createCloud(app, objs->heightMap, 500, 650, 10, currCnt++);
+    objs->cloud5 = createCloud(app, objs->heightMap, 650, 800, 10, currCnt++);
+    objs->cloud6 = createCloud(app, objs->heightMap, 200, 350, 10, currCnt++);
+    objs->cloud7 = createCloud(app, objs->heightMap, 650, 800, 10, currCnt++);
+    objs->cloud8 = createCloud(app, objs->heightMap, 250, 600, 0, currCnt++);
+    objs->cloud9 = createCloud(app, objs->heightMap, 250, 600, 0, currCnt++);
+    objs->cloud10 = createCloud(app, objs->heightMap, 250, 600, 0, currCnt++);
+
     currCnt = 0;
     // creating stones
     objs->stone1 = createStone(app, objs->heightMap, 200, 300, currCnt++);
@@ -690,14 +713,14 @@ static void playMain(App* app, uint32_t SEED) {
         app->renderer, TEXT, 1, b_NONE, temp, objs->smallFont,
         &(SDL_Point){10, app->screenHeight / app->scalingFactorY - 40},
         &(SDL_Color){255, 255, 255, 255});
-    snprintf(temp, sizeof(temp), "SCORE: %4d", objs->firstPlayer.score);
+    snprintf(temp, sizeof(temp), "HEALTH: %3d", objs->firstPlayer.health);
     objs->playerScore1 = createRenderObject(
         app->renderer, TEXT, 1, b_NONE, temp, objs->smallFont,
         &(SDL_Point){10, objs->betmentAvatar->data.texture.constRect.y +
                              objs->betmentAvatar->data.texture.constRect.h +
                              10},
         &(SDL_Color){168, 0, 0, 255});
-    snprintf(temp, sizeof(temp), "SCORE: %4d", objs->secondPlayer.score);
+    snprintf(temp, sizeof(temp), "HEALTH: %3d", objs->secondPlayer.health);
     objs->playerScore2 = createRenderObject(
         app->renderer, TEXT, 1, b_NONE, temp, objs->smallFont,
         &(SDL_Point){0, objs->betmentAvatar->data.texture.constRect.y +
@@ -705,7 +728,7 @@ static void playMain(App* app, uint32_t SEED) {
         &(SDL_Color){0, 168, 107, 255});
     objs->playerScore2->data.texture.constRect.x =
         app->screenWidth / app->scalingFactorX -
-        objs->playerScore2->data.texture.constRect.w - 30;
+        objs->playerScore2->data.texture.constRect.w - 10;
     // Buff icons under SCORE (double damage, then shield) for both players
     objs->p1DoubleDmgIcon =
         createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
@@ -794,6 +817,11 @@ static void playMain(App* app, uint32_t SEED) {
       objs->cloud3,
       objs->cloud4,
       objs->cloud5,
+      objs->cloud6,
+      objs->cloud7,
+      objs->cloud8,
+      objs->cloud9,
+      objs->cloud10,
       objs->playerScore1,
       objs->playerScore2,
       objs->p1DoubleDmgIcon,
@@ -918,7 +946,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // easy diff
   objs->Player1Diff_bE = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Easy, "BOT1", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1BOT1, "BOT1", smallFont,
       &(SDL_Point){0, objs->Player1Diff_p->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
@@ -929,7 +957,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // normal diff
   objs->Player1Diff_bN = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Normal, "BOT2", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1BOT2, "BOT2", smallFont,
       &(SDL_Point){0, objs->Player1Diff_bE->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
@@ -940,7 +968,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // hard diff
   objs->Player1Diff_bH = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1Hard, "BOT3", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P1BOT3, "BOT3", smallFont,
       &(SDL_Point){0, objs->Player1Diff_bN->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
@@ -974,7 +1002,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // easy diff
   objs->Player2Diff_bE = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Easy, "BOT1", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2BOT1, "BOT1", smallFont,
       &(SDL_Point){0, objs->Player2Diff_p->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
@@ -985,7 +1013,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // normal diff
   objs->Player2Diff_bN = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Normal, "BOT2", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2BOT2, "BOT2", smallFont,
       &(SDL_Point){0, objs->Player2Diff_bE->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
@@ -996,7 +1024,7 @@ static void preGameMainInit(App* app, PreGameMainObjects* objs) {
 
   // hard diff
   objs->Player2Diff_bH = createRenderObject(
-      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2Hard, "BOT3", smallFont,
+      app->renderer, TEXT | CAN_BE_TRIGGERED, 1, b_P2BOT3, "BOT3", smallFont,
       &(SDL_Point){0, objs->Player2Diff_bN->data.texture.constRect.y + 50},
       &(SDL_Color){230, 230, 230, 255}, &(SDL_Color){230, 25, 25, 255});
 
