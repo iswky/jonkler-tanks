@@ -84,7 +84,13 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
                         const SDL_Point* collision2,
                         const SDL_Point* collision3, const int32_t collision1R,
                         const int32_t collision2R, const int32_t collision3R,
-                        RenderObject* projectile) {
+                        RenderObject* projectile, double windStrength,
+                        double windAngle) {
+  double windAngleRad = DEGTORAD(normalizeAngle(windAngle));
+
+  double windStrengthX = windStrength * cos(windAngleRad);
+  double windStrengthY = windStrength * sin(windAngleRad);
+
   double angleRad = DEGTORAD(angle);
   double vx = initVel * cos(angleRad);
   double vy = initVel * sin(angleRad);
@@ -106,8 +112,9 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
 
     projectile->data.texture.angle = 360 - atan2(dy, dx) * 180.0 / M_PI;
 
-    currX = initPos->x + vx * currTime;
-    currY = initPos->y - (vy * currTime - 0.5 * G * currTime * currTime);
+    currX = initPos->x + vx * currTime + windStrengthX * currTime;
+    currY = initPos->y - (vy * currTime - 0.5 * G * currTime * currTime +
+                          windStrengthY * currTime);
 
     int32_t currXScaled = currX * app->scalingFactorX;
     int32_t currYScaled = currY * app->scalingFactorY;
@@ -122,6 +129,12 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
         isInCircle(currXScaled, currYScaled, collision2, collision2R) ||
         isInCircle(currXScaled, currYScaled, collision3, collision3R)) {
       return -currXScaled;
+    }
+
+    // hit at obstacles
+    // res will be currXscaled_currYScaled
+    if (checkObstacleCollisions(currX, currY)) {
+      return currXScaled * 10000 + currYScaled;
     }
 
     // successful hit

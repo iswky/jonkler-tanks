@@ -20,10 +20,12 @@ void getPositionAtSpecTime(SDL_FPoint* pos, double vx, double vy, double windVx,
 
 int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
                         int32_t* heightMap, const App* app,
-                        const SDL_Point* collision1, const SDL_Point* collison2,
+                        const SDL_Point* collision1,
+                        const SDL_Point* collision2,
                         const SDL_Point* collision3, const int32_t collision1R,
                         const int32_t collision2R, const int32_t collision3R,
-                        RenderObject* projectile);
+                        RenderObject* projectile, double windStrength,
+                        double windAngle);
 
 SDL_bool PointInRotatedRect(const SDL_Rect* rect, const SDL_Point* point,
                             float degrees);

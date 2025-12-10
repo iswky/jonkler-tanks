@@ -3,6 +3,11 @@
 
 #define BOT1_ADDED
 
-void bot1Main();
+#include "../../App.h"
+
+void bot1Main(App* app, Player* firstPlayer, Player* secondPlayer,
+              int32_t* heightMap, RenderObject* projectile,
+              RenderObject* explosion, SDL_bool* regenMap,
+              SDL_bool* recalcBulletPath, double initGunAngle);
 
 #endif
