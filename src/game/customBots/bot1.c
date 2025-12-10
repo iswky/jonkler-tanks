@@ -19,6 +19,97 @@
 #include <stdio.h>
 #include <sys/types.h>
 
+// returning X coordinate of the nearest stone
+// or -1 if stone wasnt found
+static int32_t findNearestStone(SDL_bool commingFromLeft) {
+  int32_t res = -1;
+  if (!commingFromLeft) {
+    for (int32_t i = MAXSTONES - 1; i >= 0; --i) {
+      // skipping non existing objects or alredy destroyed objects
+      if (obstacles[i].obstacleObject == NULL || obstacles[i].health == 0) {
+        continue;
+      }
+
+      int obstacleX = obstacles[i].obstacleObject->data.texture.constRect.x;
+      int obstacleW = obstacles[i].obstacleObject->data.texture.constRect.w;
+
+      res = obstacleX;
+      res += obstacleW;
+      break;
+    }
+  } else {
+    for (int32_t i = 0; i < MAXSTONES; ++i) {
+      // skipping non existing objects or alredy destroyed objects
+      if (obstacles[i].obstacleObject == NULL || obstacles[i].health == 0) {
+        continue;
+      }
+
+      int obstacleX = obstacles[i].obstacleObject->data.texture.constRect.x;
+      res = obstacleX;
+      break;
+    }
+  }
+  return res;
+}
+
+// returning X coordinate of the nearest cloud
+// or -1 if no cloud was found
+static int32_t findNearestCloud(SDL_bool isFirstPlayer) {
+  int32_t res = -1;
+  if (!isFirstPlayer) {
+    for (int32_t i = MAXCLOUDS + MAXSTONES - 1; i >= MAXSTONES; --i) {
+      // skipping non existing objects or alredy destroyed objects
+      if (obstacles[i].obstacleObject == NULL || obstacles[i].health == 0) {
+        continue;
+      }
+
+      int obstacleX = obstacles[i].obstacleObject->data.texture.constRect.x;
+      int obstacleW = obstacles[i].obstacleObject->data.texture.constRect.w;
+
+      res = obstacleX;
+      res += obstacleW;
+      break;
+    }
+  } else {
+    for (int32_t i = MAXSTONES; i < MAXSTONES + MAXCLOUDS; ++i) {
+      // skipping non existing objects or alredy destroyed objects
+      if (obstacles[i].obstacleObject == NULL || obstacles[i].health == 0) {
+        continue;
+      }
+
+      int obstacleX = obstacles[i].obstacleObject->data.texture.constRect.x;
+      res = obstacleX;
+      break;
+    }
+  }
+  return res;
+}
+
+// returning best X position on a terrain with sharp rise (for left player)
+// or steep descent (for right player)
+// or -1 if no hiding spot was found
+static int32_t findNearestTerrainHidingSpot(SDL_bool isFirstPlayer) {}
+
+// func will find shelter (either under a cloud or behind a rock)
+static void findShelter(App* app, Player* currPlayer, SDL_bool isFirstPlayer) {
+  enum shelterType shelter;
+  int32_t shelterPos = findNearestStone(isFirstPlayer);
+  log_info("stone pos: %d (isFirst: %d)", shelterPos, isFirstPlayer);
+
+  // if stone was not found
+  if (shelterPos == -1) {
+    shelterPos = findNearestCloud(isFirstPlayer);
+    log_info("cloud pos: %d (isFirst: %d)", shelterPos, isFirstPlayer);
+
+    if (shelterPos == -1) {
+    } else {
+      shelter = CLOUD;
+    }
+  } else {
+    shelter = STONE;
+  }
+}
+
 void bot1Main(App* app, Player* firstPlayer, Player* secondPlayer,
               int32_t* heightMap, RenderObject* projectile,
               RenderObject* explosion, SDL_bool* regenMap,
@@ -150,17 +241,14 @@ void bot1Main(App* app, Player* firstPlayer, Player* secondPlayer,
   double windStrength =
       windStrengthMin + (windStrengthMax - windStrengthMin) / 2.;
 
-  // getting current wind angle
-  double windAngle = getWindAngle(app);
+  // 1. (!) firstly we should find shelter
+  findShelter(app, app->currPlayer, app->currPlayer == firstPlayer);
 
   // calculating initHitPosition
-  int32_t hitPos = calcHitPosition(
-      &currPos, initVel, initGunAngle, heightMap, app, &collisionP1,
-      &collisionP2, &collisionP3, collisionP1R, collisionP2R, collisionP3R,
-      projectile, windStrength, app->globalConditions.wind.windStrength);
+  int32_t hitPos =
+      calcHitPosition(&currPos, initVel, initGunAngle, heightMap, app,
+                      &collisionP1, &collisionP2, &collisionP3, collisionP1R,
+                      collisionP2R, collisionP3R, projectile, windStrength);
 
-  log_warn("curr hit pos is at %d", hitPos);
-  // if calculated hitPos is invalid
-  shoot(app, firstPlayer, secondPlayer, projectile, explosion, heightMap,
-        regenMap);
+  log_info("[bot1] curr hit pos is at %d", hitPos);
 }

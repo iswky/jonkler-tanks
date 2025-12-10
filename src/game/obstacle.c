@@ -5,6 +5,8 @@
 #include <SDL_rect.h>
 #include <stdbool.h>
 
+#include <log/log.h>
+
 #include "../SDL/SDL_render.h"
 #include "../math/math.h"
 #include "../math/rand.h"

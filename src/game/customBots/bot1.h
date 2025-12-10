@@ -5,6 +5,12 @@
 
 #include "../../App.h"
 
+enum shelterType {
+  STONE,
+  CLOUD,
+  TERRAIN,
+};
+
 void bot1Main(App* app, Player* firstPlayer, Player* secondPlayer,
               int32_t* heightMap, RenderObject* projectile,
               RenderObject* explosion, SDL_bool* regenMap,

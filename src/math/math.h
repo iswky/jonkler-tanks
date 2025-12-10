@@ -7,6 +7,7 @@
 #define DEGTORAD(x) ((x) * M_PI / 180.0)
 #define RADTODEG(x) ((x) * 180.0 / M_PI)
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
+#define AVG(x, y) ((x) + ((y) - (x)) / 2.)
 
 double getAngle(int32_t x, int32_t* heightMap, int32_t dx);
 SDL_Point getPixelScreenPosition(SDL_Point drawPos, SDL_Point center,
@@ -24,8 +25,7 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
                         const SDL_Point* collision2,
                         const SDL_Point* collision3, const int32_t collision1R,
                         const int32_t collision2R, const int32_t collision3R,
-                        RenderObject* projectile, double windStrength,
-                        double windAngle);
+                        RenderObject* projectile, double windStrength);
 
 SDL_bool PointInRotatedRect(const SDL_Rect* rect, const SDL_Point* point,
                             float degrees);

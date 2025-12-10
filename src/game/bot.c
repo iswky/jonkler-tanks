@@ -157,7 +157,7 @@ static int32_t calcBestOption(App* app, Player* firstPlayer,
   int32_t hitPos =
       calcHitPosition(&currPos, initVel, initGunAngle, heightMap, app,
                       &collisionP1, &collisionP2, &collisionP3, collisionP1R,
-                      collisionP2R, collisionP3R, projectile, windStrength, 0);
+                      collisionP2R, collisionP3R, projectile, windStrength);
 
   // if we hitted enemy in the tank (oh yeah, thats the best option)
   if (hitPos < -1) {
@@ -242,7 +242,7 @@ static int32_t calcBestOption(App* app, Player* firstPlayer,
       int32_t hitPos = calcHitPosition(
           &currPos, firingPower * velMultiplicator, currAngle, heightMap, app,
           &collisionP1, &collisionP2, &collisionP3, collisionP1R, collisionP2R,
-          collisionP3R, projectile, windStrength, 0);
+          collisionP3R, projectile, windStrength);
       // collision hit
       if (hitPos < -1) {
         if (!isFinded) {

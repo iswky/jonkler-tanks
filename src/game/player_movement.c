@@ -49,7 +49,6 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
   if (app->currPlayer->buffs.weaponIsBroken) {
     currGunAngle = addSpreadToCurrAngle(app->currWeapon, currGunAngle);
   }
-  // currGunAngle = addSpreadToCurrAngle(app->currWeapon, currGunAngle);
 
   // thats an init pos of a curr player tank
   SDL_Point tempPos;
