@@ -8,7 +8,6 @@
 enum shelterType {
   STONE,
   CLOUD,
-  TERRAIN,
 };
 
 void bot1Main(App* app, Player* firstPlayer, Player* secondPlayer,

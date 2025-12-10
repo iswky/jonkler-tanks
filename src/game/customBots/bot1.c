@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include <log/log.h>
+#include <time.h>
 
 #include "../../math/math.h"
 #include "../../math/rand.h"
@@ -16,13 +17,10 @@
 #include "../player_movement.h"
 #include "../specialConditions/wind.h"
 
-#include <stdio.h>
-#include <sys/types.h>
-
 // returning X coordinate of the nearest stone
 // or -1 if stone wasnt found
-static int32_t findNearestStone(SDL_bool commingFromLeft) {
-  int32_t res = -1;
+static SDL_Point findNearestStone(SDL_bool commingFromLeft) {
+  SDL_Point res = {-1, -1};
   if (!commingFromLeft) {
     for (int32_t i = MAXSTONES - 1; i >= 0; --i) {
       // skipping non existing objects or alredy destroyed objects
@@ -33,8 +31,13 @@ static int32_t findNearestStone(SDL_bool commingFromLeft) {
       int obstacleX = obstacles[i].obstacleObject->data.texture.constRect.x;
       int obstacleW = obstacles[i].obstacleObject->data.texture.constRect.w;
 
-      res = obstacleX;
-      res += obstacleW;
+      res.x = obstacleX;
+      res.x += obstacleW;
+
+      int obstacleY = obstacles[i].obstacleObject->data.texture.constRect.y;
+
+      res.y = obstacleY;
+
       break;
     }
   } else {
@@ -45,7 +48,11 @@ static int32_t findNearestStone(SDL_bool commingFromLeft) {
       }
 
       int obstacleX = obstacles[i].obstacleObject->data.texture.constRect.x;
-      res = obstacleX;
+      res.x = obstacleX;
+
+      int obstacleY = obstacles[i].obstacleObject->data.texture.constRect.y;
+
+      res.y = obstacleY;
       break;
     }
   }
@@ -54,8 +61,8 @@ static int32_t findNearestStone(SDL_bool commingFromLeft) {
 
 // returning X coordinate of the nearest cloud
 // or -1 if no cloud was found
-static int32_t findNearestCloud(SDL_bool isFirstPlayer) {
-  int32_t res = -1;
+static SDL_Point findNearestCloud(SDL_bool isFirstPlayer) {
+  SDL_Point res = {-1, -1};
   if (!isFirstPlayer) {
     for (int32_t i = MAXCLOUDS + MAXSTONES - 1; i >= MAXSTONES; --i) {
       // skipping non existing objects or alredy destroyed objects
@@ -66,8 +73,12 @@ static int32_t findNearestCloud(SDL_bool isFirstPlayer) {
       int obstacleX = obstacles[i].obstacleObject->data.texture.constRect.x;
       int obstacleW = obstacles[i].obstacleObject->data.texture.constRect.w;
 
-      res = obstacleX;
-      res += obstacleW;
+      res.x = obstacleX;
+      res.x += obstacleW;
+
+      int obstacleY = obstacles[i].obstacleObject->data.texture.constRect.y;
+
+      res.y = obstacleY;
       break;
     }
   } else {
@@ -78,35 +89,51 @@ static int32_t findNearestCloud(SDL_bool isFirstPlayer) {
       }
 
       int obstacleX = obstacles[i].obstacleObject->data.texture.constRect.x;
-      res = obstacleX;
+      res.x = obstacleX;
+
+      int obstacleY = obstacles[i].obstacleObject->data.texture.constRect.y;
+
+      res.y = obstacleY;
       break;
     }
   }
   return res;
 }
 
-// returning best X position on a terrain with sharp rise (for left player)
-// or steep descent (for right player)
-// or -1 if no hiding spot was found
-static int32_t findNearestTerrainHidingSpot(SDL_bool isFirstPlayer) {}
-
 // func will find shelter (either under a cloud or behind a rock)
-static void findShelter(App* app, Player* currPlayer, SDL_bool isFirstPlayer) {
+static void findShelter(App* app, int32_t* heightMap, Player* currPlayer,
+                        SDL_bool isFirstPlayer) {
   enum shelterType shelter;
-  int32_t shelterPos = findNearestStone(isFirstPlayer);
+
+  SDL_Point shelterPos = findNearestStone(isFirstPlayer);
   log_info("stone pos: %d (isFirst: %d)", shelterPos, isFirstPlayer);
 
   // if stone was not found
-  if (shelterPos == -1) {
+  if (shelterPos.x == -1) {
     shelterPos = findNearestCloud(isFirstPlayer);
     log_info("cloud pos: %d (isFirst: %d)", shelterPos, isFirstPlayer);
 
-    if (shelterPos == -1) {
+    if (shelterPos.x == -1) {
+      return;
     } else {
       shelter = CLOUD;
     }
   } else {
     shelter = STONE;
+  }
+
+  if (shelter == STONE) {
+    //  if curr shelter is STONE we re just simply moving towards it
+    while (
+        smoothMove(app, isFirstPlayer, !isFirstPlayer, heightMap, obstacles)) {
+      ;
+    }
+  } else if (shelter == CLOUD) {
+    // If its a cloud, we try to hide beneath it a lil lefter(left player)
+    // or righter(right player)
+    // according to my super math calculations it will be about 83 px
+    if (isFirstPlayer) {
+    }
   }
 }
 
@@ -238,11 +265,10 @@ void bot1Main(App* app, Player* firstPlayer, Player* secondPlayer,
   // getting current wind speed
   int32_t windStrengthMin, windStrengthMax;
   getWindRange(app, &windStrengthMin, &windStrengthMax);
-  double windStrength =
-      windStrengthMin + (windStrengthMax - windStrengthMin) / 2.;
+  double windStrength = AVG(windStrengthMin, windStrengthMax);
 
   // 1. (!) firstly we should find shelter
-  findShelter(app, app->currPlayer, app->currPlayer == firstPlayer);
+  findShelter(app, heightMap, app->currPlayer, app->currPlayer == firstPlayer);
 
   // calculating initHitPosition
   int32_t hitPos =

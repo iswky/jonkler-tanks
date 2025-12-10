@@ -43,4 +43,7 @@ SDL_bool isInTriangle(const int32_t x, const int32_t y, SDL_Point p1,
 SDL_bool isInCircle(const int32_t x, const int32_t y, const SDL_Point* center,
                     const int32_t radius);
 
+int32_t findLineHeightIntersections(SDL_Point p1, SDL_Point p2,
+                                    int32_t* heightMap, int32_t width);
+
 #endif

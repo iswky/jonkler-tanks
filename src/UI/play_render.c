@@ -634,11 +634,11 @@ static void playMain(App* app, uint32_t SEED) {
     objs->tree5 = createTree(app, objs->heightMap, 850, 950, 10);
     uint32_t currCnt = 0;
     // creating clouds
-    objs->cloud1 = createCloud(app, objs->heightMap, 100, 200, 10, currCnt++);
+    objs->cloud1 = createCloud(app, objs->heightMap, 150, 200, 10, currCnt++);
     objs->cloud2 = createCloud(app, objs->heightMap, 250, 400, 10, currCnt++);
     objs->cloud3 = createCloud(app, objs->heightMap, 450, 600, 10, currCnt++);
-    objs->cloud4 = createCloud(app, objs->heightMap, 650, 800, 10, currCnt++);
-    objs->cloud5 = createCloud(app, objs->heightMap, 850, 950, 10, currCnt++);
+    objs->cloud4 = createCloud(app, objs->heightMap, 600, 800, 10, currCnt++);
+    objs->cloud5 = createCloud(app, objs->heightMap, 800, 830, 10, currCnt++);
     currCnt = 0;
     // creating stones
     objs->stone1 = createStone(app, objs->heightMap, 200, 300, currCnt++);
