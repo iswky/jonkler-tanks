@@ -94,20 +94,36 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
   double dt = 1. / 60;
   double currTime = 0.0;
 
+  SDL_FPoint relativePos = {
+      .x = 0.0f,
+      .y = 0.0f,
+  };
+
+  double windAngleRad = DEGTORAD(normalizeAngle(
+      360 - app->globalConditions.wind.directionIcon->data.texture.angle));
+  double windStrength = app->globalConditions.wind.windStrength;
+  double windStrengthX = windStrength * cos(windAngleRad);
+  double windStrengthY = windStrength * sin(windAngleRad);
+
   int32_t currX = (int32_t)initPos->x;
   int32_t currY = (int32_t)initPos->y;
 
   // while we dont hit the ground
   while (app->currState == PLAY) {
     currTime += dt;
+
+    getPositionAtSpecTime(&relativePos, vx, vy, windStrengthX, windStrengthY,
+                          currTime);
     double dy =
         currY - initPos->y - (vy * currTime - 0.5 * G * currTime * currTime);
     double dx = currX - initPos->x + vx * currTime;
 
     projectile->data.texture.angle = 360 - atan2(dy, dx) * 180.0 / M_PI;
 
-    currX = initPos->x + vx * currTime;
-    currY = initPos->y - (vy * currTime - 0.5 * G * currTime * currTime);
+    // currX = initPos->x + vx * currTime;
+    // currY = initPos->y - (vy * currTime - 0.5 * G * currTime * currTime);
+    currX = initPos->x + relativePos.x;
+    currY = initPos->y - relativePos.y;
 
     int32_t currXScaled = currX * app->scalingFactorX;
     int32_t currYScaled = currY * app->scalingFactorY;
