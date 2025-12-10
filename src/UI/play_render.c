@@ -274,9 +274,11 @@ static void playMainLoop(App* app, struct playMainObjects* objs) {
       objs->arrow->data.texture.flipFlag = SDL_FLIP_HORIZONTAL;
     }
   }
+
   if (objs->oldHealthPlayer1 != objs->firstPlayer.health) {
     SDL_DestroyTexture(objs->playerScore1->data.texture.texture);
-    objs->oldHealthPlayer1 = objs->firstPlayer.health;
+    objs->oldHealthPlayer1 =
+        objs->firstPlayer.health > 0 ? objs->firstPlayer.health : 0;
     snprintf(temp, sizeof(temp), "HEALTH: %4d", objs->oldHealthPlayer1);
     objs->playerScore1->data.texture.texture =
         createTextTexture(app->renderer, objs->smallFont, temp, 168, 0, 0, 255);
@@ -297,7 +299,8 @@ static void playMainLoop(App* app, struct playMainObjects* objs) {
   }
   if (objs->oldHealthPlayer2 != objs->secondPlayer.health) {
     SDL_DestroyTexture(objs->playerScore2->data.texture.texture);
-    objs->oldHealthPlayer2 = objs->secondPlayer.health;
+    objs->oldHealthPlayer1 =
+        objs->secondPlayer.health > 0 ? objs->secondPlayer.health : 0;
     snprintf(temp, sizeof(temp), "HEALTH: %4d", objs->oldHealthPlayer2);
     objs->playerScore2->data.texture.texture = createTextTexture(
         app->renderer, objs->smallFont, temp, 0, 168, 107, 255);

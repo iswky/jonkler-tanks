@@ -201,8 +201,6 @@ inline static void helpMainLoop(App* app, helpMainObjects* objs) {
 inline static void helpMainClear(helpMainObjects* objs) {
   freeRenderObject(objs->returnArrowObj);
   SDL_DestroyTexture(objs->textTexture);
-
-  free(objs);
 }
 
 void helpMain(App* app) {
