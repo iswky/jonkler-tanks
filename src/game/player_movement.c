@@ -49,7 +49,6 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
   if (app->currPlayer->buffs.weaponIsBroken) {
     currGunAngle = addSpreadToCurrAngle(app->currWeapon, currGunAngle);
   }
-  // currGunAngle = addSpreadToCurrAngle(app->currWeapon, currGunAngle);
 
   // thats an init pos of a curr player tank
   SDL_Point tempPos;
@@ -109,13 +108,15 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
   int32_t explosionRadius;
   SDL_bool isHittableNearby;
   double damageMultiplier;
+  int32_t healthDamage;
   switch (app->currWeapon) {
     // small bullet
     case 0:
       vel = app->currPlayer->firingPower * 2;
-      explosionRadius = 0;
+      explosionRadius = projectile->data.texture.constRect.w;
       isHittableNearby = SDL_FALSE;
       damageMultiplier = 1.5;
+      healthDamage = 5;
       break;
     // BIG BULLET
     case 1:
@@ -123,6 +124,7 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
       explosionRadius = projectile->data.texture.constRect.w;
       isHittableNearby = SDL_FALSE;
       damageMultiplier = 2.0;
+      healthDamage = 10;
       break;
     // small boom
     case 2:
@@ -130,6 +132,7 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
       explosionRadius = projectile->data.texture.constRect.w * 2;
       isHittableNearby = SDL_TRUE;
       damageMultiplier = 1.25;
+      healthDamage = 8;
       break;
     // BIG BOOM
     case 3:
@@ -137,12 +140,14 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
       explosionRadius = projectile->data.texture.constRect.w * 4;
       isHittableNearby = SDL_TRUE;
       damageMultiplier = 1.75;
+      healthDamage = 16;
       break;
     default:
       vel = app->currPlayer->firingPower;
       explosionRadius = projectile->data.texture.constRect.w;
       isHittableNearby = SDL_FALSE;
       damageMultiplier = 1;
+      healthDamage = 1;
       break;
   }
 
@@ -295,9 +300,11 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
                      damageMultiplier;
         if (app->currPlayer->buffs.isDoubleDamage) {
           deltaDamage *= 2.0;
+          enemyPlayer->health -= healthDamage * 2.0;
         }
         if (enemyPlayer->buffs.isShielded) {
           deltaDamage *= 0.15;  // 85% damage blocked
+          enemyPlayer->health -= healthDamage * 0.15;
         }
         app->currPlayer->score += (int32_t)deltaDamage;
       }
@@ -308,9 +315,11 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
                      damageMultiplier;
         if (app->currPlayer->buffs.isDoubleDamage) {
           deltaDamage *= 2.0;
+          enemyPlayer->health -= healthDamage * 2.0;
         }
         if (enemyPlayer->buffs.isShielded) {
           deltaDamage *= 0.15;  // 85% damage blocked
+          enemyPlayer->health -= healthDamage * 0.15;
         }
         app->currPlayer->score += (int32_t)deltaDamage;
       }
@@ -336,8 +345,7 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
     // ground impact check
     if ((currY + projectile->data.texture.constRect.h) * app->scalingFactorY >=
         currMapHeight) {
-      //     printf("GROUND HIT!\n");
-      //
+      log_warn("GROUND HIT at %d", currX);
 
       if (isHittableNearby) {
         int32_t center = enemyPlayer->tankObj->data.texture.constRect.x +
@@ -358,9 +366,11 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
                     damageMultiplier / 1.5;
             if (app->currPlayer->buffs.isDoubleDamage) {
               deltaDamage *= 2.0;
+              enemyPlayer->health -= healthDamage * 2.0 / 2.0;
             }
             if (enemyPlayer->buffs.isShielded) {
               deltaDamage *= 0.15;  // 85% damage blocked
+              enemyPlayer->health -= healthDamage * 0.15 / 2.0;
             }
             app->currPlayer->score += (int32_t)deltaDamage;
           }
@@ -372,9 +382,11 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
                         damageMultiplier / 1.5;
             if (app->currPlayer->buffs.isDoubleDamage) {
               deltaDamage *= 2.0;
+              enemyPlayer->health -= healthDamage * 2.0 / 2.0;
             }
             if (enemyPlayer->buffs.isShielded) {
               deltaDamage *= 0.15;  // 85% damage blocked
+              enemyPlayer->health -= healthDamage * 0.15 / 2.0;
             }
             app->currPlayer->score += (int32_t)deltaDamage;
           }
@@ -496,7 +508,7 @@ int32_t playerMove(void* data) {
     // blocking input during event spin
     if (*isSpinning) continue;
     // each player shot 12 times => game is over rn
-    if (app->timesPlayed >= 24) {
+    if (firstPlayer->health <= 0 || secondPlayer->health <= 0) {
       SDL_Delay(1500);
       if (firstPlayer->score > secondPlayer->score) {
         if (firstPlayer->type != MONKE) {

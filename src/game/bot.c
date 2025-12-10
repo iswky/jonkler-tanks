@@ -14,6 +14,7 @@
 #include "../math/rand.h"
 #include "obstacle.h"
 #include "player_movement.h"
+#include "specialConditions/wind.h"
 
 // custom bots should be included here
 #include "customBots/bot1.h"
@@ -33,6 +34,10 @@ static int32_t calcBestOption(App* app, Player* firstPlayer,
   } else {
     enemy = firstPlayer;
   }
+
+  int32_t windStrengthMin, windStrengthMax;
+  getWindRange(app, &windStrengthMin, &windStrengthMax);
+  double windStrength = (windStrengthMax + windStrengthMin) / 2.;
 
   // getting collison for an enemy player
   SDL_Point collisionP1, collisionP2, collisionP3;
@@ -152,7 +157,7 @@ static int32_t calcBestOption(App* app, Player* firstPlayer,
   int32_t hitPos =
       calcHitPosition(&currPos, initVel, initGunAngle, heightMap, app,
                       &collisionP1, &collisionP2, &collisionP3, collisionP1R,
-                      collisionP2R, collisionP3R, projectile);
+                      collisionP2R, collisionP3R, projectile, windStrength);
 
   // if we hitted enemy in the tank (oh yeah, thats the best option)
   if (hitPos < -1) {
@@ -234,10 +239,10 @@ static int32_t calcBestOption(App* app, Player* firstPlayer,
     currAngle = 360 - normalizeAngle(currAngle);
 
     for (int32_t firingPower = 0; firingPower <= 99; ++firingPower) {
-      int32_t hitPos = calcHitPosition(&currPos, firingPower * velMultiplicator,
-                                       currAngle, heightMap, app, &collisionP1,
-                                       &collisionP2, &collisionP3, collisionP1R,
-                                       collisionP2R, collisionP3R, projectile);
+      int32_t hitPos = calcHitPosition(
+          &currPos, firingPower * velMultiplicator, currAngle, heightMap, app,
+          &collisionP1, &collisionP2, &collisionP3, collisionP1R, collisionP2R,
+          collisionP3R, projectile, windStrength);
       // collision hit
       if (hitPos < -1) {
         if (!isFinded) {
@@ -314,7 +319,8 @@ void botMain(App* app, Player* player1, Player* player2, int32_t* heightMap,
   switch (playerType) {
 #ifdef BOT1_ADDED
     case BOT1:
-      bot1Main();
+      bot1Main(app, player1, player2, heightMap, projectile, explosion,
+               regenMap, recalcBulletPath, initGunAngle);
       break;
 #endif
 #ifdef BOT2_ADDED

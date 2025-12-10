@@ -359,6 +359,11 @@ inline static void playMainClear(App* app, struct playMainObjects* objs) {
   freeRenderObject(objs->cloud3);
   freeRenderObject(objs->cloud4);
   freeRenderObject(objs->cloud5);
+  freeRenderObject(objs->cloud6);
+  freeRenderObject(objs->cloud7);
+  freeRenderObject(objs->cloud8);
+  freeRenderObject(objs->cloud9);
+  freeRenderObject(objs->cloud10);
 
   TTF_CloseFont(objs->smallFont);
   SDL_DestroyTexture(objs->gameMap);
@@ -554,7 +559,8 @@ static void playMain(App* app, uint32_t SEED) {
     // setting up the 'default' settings
     if (!wasLoaded) {
       log_info("using default settings for players!");
-      objs->firstPlayer.movesLeft = 9;
+      objs->firstPlayer.movesLeft = 30;
+      objs->firstPlayer.health = 100;
       objs->firstPlayer.gunAngle = 0.0;
       objs->firstPlayer.firingPower = 30;
       objs->firstPlayer.tankAngle = anglePlayer1;
@@ -577,7 +583,8 @@ static void playMain(App* app, uint32_t SEED) {
         default:
           break;
       }
-      objs->secondPlayer.movesLeft = 9;
+      objs->secondPlayer.movesLeft = 30;
+      objs->secondPlayer.health = 100;
       objs->secondPlayer.gunAngle = 0.0;
       objs->secondPlayer.firingPower = 30;
       objs->secondPlayer.tankAngle = anglePlayer2;
@@ -634,11 +641,17 @@ static void playMain(App* app, uint32_t SEED) {
     objs->tree5 = createTree(app, objs->heightMap, 850, 950, 10);
     uint32_t currCnt = 0;
     // creating clouds
-    objs->cloud1 = createCloud(app, objs->heightMap, 100, 200, 10, currCnt++);
-    objs->cloud2 = createCloud(app, objs->heightMap, 250, 400, 10, currCnt++);
-    objs->cloud3 = createCloud(app, objs->heightMap, 450, 600, 10, currCnt++);
-    objs->cloud4 = createCloud(app, objs->heightMap, 650, 800, 10, currCnt++);
-    objs->cloud5 = createCloud(app, objs->heightMap, 850, 950, 10, currCnt++);
+    objs->cloud1 = createCloud(app, objs->heightMap, 150, 200, 10, currCnt++);
+    objs->cloud2 = createCloud(app, objs->heightMap, 200, 350, 10, currCnt++);
+    objs->cloud3 = createCloud(app, objs->heightMap, 350, 500, 10, currCnt++);
+    objs->cloud4 = createCloud(app, objs->heightMap, 500, 650, 10, currCnt++);
+    objs->cloud5 = createCloud(app, objs->heightMap, 650, 800, 10, currCnt++);
+    objs->cloud6 = createCloud(app, objs->heightMap, 200, 350, 10, currCnt++);
+    objs->cloud7 = createCloud(app, objs->heightMap, 650, 800, 10, currCnt++);
+    objs->cloud8 = createCloud(app, objs->heightMap, 250, 600, 0, currCnt++);
+    objs->cloud9 = createCloud(app, objs->heightMap, 250, 600, 0, currCnt++);
+    objs->cloud10 = createCloud(app, objs->heightMap, 250, 600, 0, currCnt++);
+
     currCnt = 0;
     // creating stones
     objs->stone1 = createStone(app, objs->heightMap, 200, 300, currCnt++);
@@ -690,14 +703,14 @@ static void playMain(App* app, uint32_t SEED) {
         app->renderer, TEXT, 1, b_NONE, temp, objs->smallFont,
         &(SDL_Point){10, app->screenHeight / app->scalingFactorY - 40},
         &(SDL_Color){255, 255, 255, 255});
-    snprintf(temp, sizeof(temp), "SCORE: %4d", objs->firstPlayer.score);
+    snprintf(temp, sizeof(temp), "HEALTH: %3d", objs->firstPlayer.health);
     objs->playerScore1 = createRenderObject(
         app->renderer, TEXT, 1, b_NONE, temp, objs->smallFont,
         &(SDL_Point){10, objs->betmentAvatar->data.texture.constRect.y +
                              objs->betmentAvatar->data.texture.constRect.h +
                              10},
         &(SDL_Color){168, 0, 0, 255});
-    snprintf(temp, sizeof(temp), "SCORE: %4d", objs->secondPlayer.score);
+    snprintf(temp, sizeof(temp), "HEALTH: %3d", objs->secondPlayer.health);
     objs->playerScore2 = createRenderObject(
         app->renderer, TEXT, 1, b_NONE, temp, objs->smallFont,
         &(SDL_Point){0, objs->betmentAvatar->data.texture.constRect.y +
@@ -705,7 +718,7 @@ static void playMain(App* app, uint32_t SEED) {
         &(SDL_Color){0, 168, 107, 255});
     objs->playerScore2->data.texture.constRect.x =
         app->screenWidth / app->scalingFactorX -
-        objs->playerScore2->data.texture.constRect.w - 30;
+        objs->playerScore2->data.texture.constRect.w - 10;
     // Buff icons under SCORE (double damage, then shield) for both players
     objs->p1DoubleDmgIcon =
         createRenderObject(app->renderer, TEXTURE, 1, b_NONE,
@@ -794,6 +807,11 @@ static void playMain(App* app, uint32_t SEED) {
       objs->cloud3,
       objs->cloud4,
       objs->cloud5,
+      objs->cloud6,
+      objs->cloud7,
+      objs->cloud8,
+      objs->cloud9,
+      objs->cloud10,
       objs->playerScore1,
       objs->playerScore2,
       objs->p1DoubleDmgIcon,
