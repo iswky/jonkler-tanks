@@ -313,6 +313,8 @@ inline static void leaderboardMainClear(leaderboardMainObjects* objs) {
   freeRenderObject(objs->scoreLabel);
   freeRenderObject(objs->returnArrowObj);
   SDL_DestroyTexture(objs->leaderboard);
+
+  free(objs);
 }
 
 void leaderboardMain(App* app, const char* name) {
@@ -440,6 +442,8 @@ inline static void leaderboardAddMainClear(App* app,
   freeRenderObject(objs->wonLabel);
   freeRenderObject(objs->scoreLabel);
   freeRenderObject(objs->continueButton);
+
+  free(objs);
 }
 
 void leaderboardAddMain(App* app) {

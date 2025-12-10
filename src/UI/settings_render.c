@@ -213,6 +213,8 @@ inline static void settingsMainClear(settingsMainObjects* objs) {
 
   SDL_DestroyTexture(objs->checkboxCheckedText);
   SDL_DestroyTexture(objs->checkboxText);
+
+  free(objs);
 }
 
 void settingsMain(App* app) {
