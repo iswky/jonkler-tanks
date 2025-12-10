@@ -141,6 +141,11 @@ int32_t calcHitPosition(SDL_FPoint* initPos, double initVel, double angle,
         isInCircle(currXScaled, currYScaled, collision3, collision3R)) {
       return -currXScaled;
     }
+    // hit at obstacles
+    // res will be currXscaled_currYScaled
+    if (checkObstacleCollisions(currX, currY)) {
+      return currXScaled * 10000 + currYScaled;
+    }
 
     // successful hit
     if ((currY + projectile->data.texture.constRect.h) * app->scalingFactorY >=
