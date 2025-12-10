@@ -142,12 +142,13 @@ void bot1Main(App* app, Player* firstPlayer, Player* secondPlayer,
   int32_t initVel = app->currPlayer->firingPower * velMultiplicator;
 
   // getting current weapon state
-  SDL_bool weaponIsBroken = app->currPlayer->buffs.weaponIsBroken;
+  SDL_bool isWeaponBroken = app->currPlayer->buffs.weaponIsBroken;
 
   // getting current wind speed
   int32_t windStrengthMin, windStrengthMax;
   getWindRange(app, &windStrengthMin, &windStrengthMax);
-  double windStrength = 1.f;
+  double windStrength =
+      windStrengthMin + (windStrengthMax - windStrengthMin) / 2.;
 
   // getting current wind angle
   double windAngle = getWindAngle(app);
@@ -156,8 +157,10 @@ void bot1Main(App* app, Player* firstPlayer, Player* secondPlayer,
   int32_t hitPos = calcHitPosition(
       &currPos, initVel, initGunAngle, heightMap, app, &collisionP1,
       &collisionP2, &collisionP3, collisionP1R, collisionP2R, collisionP3R,
-      projectile, windStrength, windAngle);
+      projectile, windStrength, app->globalConditions.wind.windStrength);
 
-  if (hitPos > app->screenWidth || hitPos == -1) {
-  }
+  log_warn("curr hit pos is at %d", hitPos);
+  // if calculated hitPos is invalid
+  shoot(app, firstPlayer, secondPlayer, projectile, explosion, heightMap,
+        regenMap);
 }

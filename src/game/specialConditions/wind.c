@@ -52,8 +52,8 @@ static void updateWindSpeedLabel(App* app, RenderObject* speedLabel,
   app->globalConditions.wind.windStrengthRange.max = maxWindSpeedLabel;
 
   char temp[16];
-  snprintf(temp, 16, "%d - %d m/s", minWindSpeedLabel % 20,
-           maxWindSpeedLabel % 20);
+  snprintf(temp, 16, "%d - %d m/s", minWindSpeedLabel % 100,
+           maxWindSpeedLabel % 100);
   log_debug("%s, REAL=%.1lf", temp, windStrength);
   TTF_Font* speedLabelFont = loadSmallFont(app, 30);
 

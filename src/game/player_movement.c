@@ -336,8 +336,7 @@ void shoot(App* app, Player* firstPlayer, Player* secondPlayer,
     // ground impact check
     if ((currY + projectile->data.texture.constRect.h) * app->scalingFactorY >=
         currMapHeight) {
-      //     printf("GROUND HIT!\n");
-      //
+      log_warn("GROUND HIT at %d", currX);
 
       if (isHittableNearby) {
         int32_t center = enemyPlayer->tankObj->data.texture.constRect.x +
